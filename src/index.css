@@ -50,11 +50,18 @@
   --color-on-background: #191c1e;
   --color-surface-variant: #e0e3e5;
 
+  --spacing-container-padding: 1.25rem;
+  --max-width-max-width: 1200px;
+
   --font-display: "Quicksand", sans-serif;
   --font-sans: "Inter", sans-serif;
 }
 
-body {
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  min-height: 100vh;
   background-color: var(--color-background);
   color: var(--color-on-surface);
   font-family: var(--font-sans);
