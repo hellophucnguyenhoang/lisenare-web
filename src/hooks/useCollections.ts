@@ -3,7 +3,7 @@ import {
   listCollections,
   createCollection,
   deleteCollection,
-  renameCollection,
+  updateCollection,
 } from "@/api/collections";
 
 export function useCollections() {
@@ -16,7 +16,29 @@ export function useCollections() {
 export function useCreateCollection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: createCollection,
+    mutationFn: (data: {
+      name: string;
+      description?: string | null;
+      tags?: string[];
+    }) => createCollection(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["collections"] }),
+  });
+}
+
+export function useUpdateCollection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      collectionId,
+      data,
+    }: {
+      collectionId: number;
+      data: {
+        name?: string | null;
+        description?: string | null;
+        tags?: string[] | null;
+      };
+    }) => updateCollection(collectionId, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["collections"] }),
   });
 }
@@ -24,21 +46,7 @@ export function useCreateCollection() {
 export function useDeleteCollection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: deleteCollection,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["collections"] }),
-  });
-}
-
-export function useRenameCollection() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      collectionId,
-      newName,
-    }: {
-      collectionId: number;
-      newName: string;
-    }) => renameCollection(collectionId, newName),
+    mutationFn: (collectionId: number) => deleteCollection(collectionId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["collections"] }),
   });
 }

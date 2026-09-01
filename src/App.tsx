@@ -36,7 +36,7 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("practice");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
 

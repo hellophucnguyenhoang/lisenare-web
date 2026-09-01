@@ -1,27 +1,28 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import {
-  BookOpen,
-  Plane,
-  Briefcase,
-  Utensils,
+  FolderPlus,
+  FolderEdit,
   X,
   Check,
-  Clock,
+  Plus,
+  Tag,
 } from "lucide-react";
 import { type Collection } from "@/types";
 
 interface AddCollectionModalProps {
   onClose: () => void;
-  onAddCollection?: (
-    name: string,
-    description: string,
-    iconName?: string,
-  ) => void;
+  onAddCollection?: (data: {
+    name: string;
+    description: string;
+    tags: string[];
+  }) => void;
   onEditCollection?: (
     id: number,
-    name: string,
-    description: string,
-    iconName?: string,
+    data: {
+      name: string;
+      description: string;
+      tags: string[];
+    },
   ) => void;
   collectionToEdit?: Collection;
 }
@@ -32,126 +33,204 @@ export default function AddCollectionModal({
   onEditCollection,
   collectionToEdit,
 }: AddCollectionModalProps) {
-  const [newColName, setNewColName] = useState(collectionToEdit?.name || "");
-  const [newColDesc, setNewColDesc] = useState(
+  const [name, setName] = useState(collectionToEdit?.name || "");
+  const [description, setDescription] = useState(
     collectionToEdit?.description || "",
   );
-  const [newColIcon, setNewColIcon] = useState("BookOpen");
+  const [tags, setTags] = useState<string[]>(collectionToEdit?.tags || []);
+  const [tagInput, setTagInput] = useState("");
 
-  const getIcon = (name: string, className = "w-6 h-6 text-primary") => {
-    switch (name) {
-      case "Plane":
-        return <Plane className={className} />;
-      case "Briefcase":
-        return <Briefcase className={className} />;
-      case "Utensils":
-        return <Utensils className={className} />;
-      case "Clock":
-        return <Clock className={className} />;
-      default:
-        return <BookOpen className={className} />;
+  const handleAddTag = () => {
+    const trimmed = tagInput.trim().toLowerCase();
+    if (trimmed && !tags.includes(trimmed)) {
+      setTags([...tags, trimmed]);
+      setTagInput("");
     }
   };
 
-  const handleSubmit = () => {
-    if (newColName.trim() === "") {
-      alert("Please enter a collection name");
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
+  const handleSubmit = (e?: React.SubmitEvent) => {
+    if (e) e.preventDefault();
+    if (!name.trim()) {
       return;
     }
 
+    const payload = {
+      name: name.trim(),
+      description: description.trim(),
+      tags,
+    };
+
     if (collectionToEdit && onEditCollection) {
-      onEditCollection(collectionToEdit.id, newColName, newColDesc, newColIcon);
+      onEditCollection(collectionToEdit.id, payload);
     } else if (onAddCollection) {
-      onAddCollection(newColName, newColDesc, newColIcon);
+      onAddCollection(payload);
     }
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in duration-300">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-primary font-display">
-            {collectionToEdit ? "Edit Collection" : "Create Collection"}
-          </h3>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <div className="bg-surface-container-lowest border border-outline-variant/70 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+        {/* Modal Header */}
+        <div className="flex justify-between items-center pb-4 border-b border-outline-variant/30">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              {collectionToEdit ? (
+                <FolderEdit className="w-5 h-5" />
+              ) : (
+                <FolderPlus className="w-5 h-5" />
+              )}
+            </div>
+            <div>
+              <h3 className="text-base font-bold font-display text-on-surface">
+                {collectionToEdit ? "Edit Collection" : "Create Collection"}
+              </h3>
+              <p className="text-xs text-outline">
+                {collectionToEdit
+                  ? "Update collection details & tags"
+                  : "Organize vocabulary by topics"}
+              </p>
+            </div>
+          </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-outline hover:text-on-surface p-1 rounded-full hover:bg-surface-container"
+            className="text-outline hover:text-on-surface p-1.5 rounded-xl hover:bg-surface-container transition-colors cursor-pointer"
+            aria-label="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant mb-1">
-              Collection Name
+        {/* Form Content */}
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
+          {/* Collection Name */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="input-collection-name"
+              className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
+            >
+              Collection Name <span className="text-error">*</span>
             </label>
             <input
+              id="input-collection-name"
               type="text"
-              value={newColName}
-              onChange={(e) => setNewColName(e.target.value)}
-              placeholder="e.g. Slang Words, Medical Terms..."
-              className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none text-sm font-semibold"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Slang Words, Medical Terms, Travel"
+              className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-sm font-medium text-on-surface placeholder:text-outline transition-all"
+              required
+              autoFocus
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant mb-1">
+          {/* Description */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="input-collection-desc"
+              className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
+            >
               Description (Optional)
             </label>
             <textarea
-              value={newColDesc}
-              onChange={(e) => setNewColDesc(e.target.value)}
+              id="input-collection-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what this collection is for..."
               rows={2}
-              className="w-full px-3 py-2 bg-surface border border-outline-variant rounded-xl focus:ring-1 focus:ring-primary focus:outline-none text-sm"
+              className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-sm font-medium text-on-surface placeholder:text-outline transition-all resize-none"
             />
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-on-surface-variant mb-2">
-              Select Icon
+          {/* Tags */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="input-collection-tags"
+              className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
+            >
+              Tags (Optional)
             </label>
-            <div className="grid grid-cols-5 gap-2">
-              {[
-                { name: "BookOpen", label: "Book" },
-                { name: "Plane", label: "Travel" },
-                { name: "Briefcase", label: "Business" },
-                { name: "Utensils", label: "Food" },
-                { name: "Clock", label: "Routine" },
-              ].map((ic) => (
-                <button
-                  key={ic.name}
-                  type="button"
-                  onClick={() => setNewColIcon(ic.name)}
-                  className={`py-2.5 flex flex-col items-center justify-center border rounded-xl transition-all ${
-                    newColIcon === ic.name
-                      ? "border-primary bg-primary/10 text-primary font-semibold"
-                      : "border-outline-variant/60 hover:bg-surface"
-                  }`}
-                >
-                  {getIcon(
-                    ic.name,
-                    `w-5 h-5 mb-1 ${newColIcon === ic.name ? "text-primary" : "text-outline"}`,
-                  )}
-                  <span className="text-[10px] font-bold">{ic.label}</span>
-                </button>
-              ))}
+            <div className="flex gap-2">
+              <div className="relative flex-1 flex items-center">
+                <div className="absolute left-3 pointer-events-none text-outline">
+                  <Tag className="w-3.5 h-3.5" />
+                </div>
+                <input
+                  id="input-collection-tags"
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  placeholder="Type a tag and press Enter"
+                  className="w-full pl-9 pr-3.5 py-2 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-xs font-medium text-on-surface placeholder:text-outline transition-all"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddTag}
+                disabled={!tagInput.trim()}
+                className="px-3 py-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-on-surface text-xs font-bold rounded-xl transition-all disabled:opacity-40 cursor-pointer flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add
+              </button>
             </div>
+
+            {/* Tag Pills */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 border border-primary/20 text-primary rounded-lg text-xs font-semibold"
+                  >
+                    <span>{tag}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="text-primary/70 hover:text-primary transition-colors cursor-pointer"
+                      title={`Remove tag ${tag}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="w-full bg-primary text-on-primary py-3 rounded-xl font-bold hover:bg-primary/95 transition-all shadow-md mt-2 flex items-center justify-center gap-2"
-          >
-            <Check className="w-5 h-5" />
-            <span>
-              {collectionToEdit ? "Save Changes" : "Create Collection"}
-            </span>
-          </button>
-        </div>
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2 border-t border-outline-variant/30">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 px-4 bg-surface hover:bg-surface-container border border-outline-variant/60 text-on-surface font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={!name.trim()}
+              className="flex-2 py-2.5 px-4 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary/95 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+            >
+              <Check className="w-4 h-4" />
+              <span>
+                {collectionToEdit ? "Save Changes" : "Create Collection"}
+              </span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
