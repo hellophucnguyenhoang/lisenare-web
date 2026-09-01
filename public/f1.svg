@@ -1,0 +1,21 @@
+<svg 
+    
+    
+    xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 256 256">
+    <!-- Background -->
+    <rect width="240" height="240" x="8" y="8" fill="#fbfbfb" rx="56" ry="56"/>
+    <!-- L Shape -->
+    <path fill="#0c7979" d="
+        M 48 192 
+        L 48 68 
+        A 20 20 0 0 1 88 68 
+        L 88 152 
+        Z 
+
+        M 64 208 
+        L 188 208 
+        A 20 20 0 0 0 188 168 
+        L 104 168 
+        Z
+    "/>
+</svg>

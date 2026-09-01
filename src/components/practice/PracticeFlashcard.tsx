@@ -1,0 +1,90 @@
+import { Volume2, Eye, EyeOff } from "lucide-react";
+import { type Brick } from "@/types";
+
+interface PracticeFlashcardProps {
+  activeBrick: Brick;
+  isRevealed: boolean;
+  onToggleReveal: () => void;
+  onPlayAudio: () => void;
+}
+
+export default function PracticeFlashcard({
+  activeBrick,
+  isRevealed,
+  onToggleReveal,
+  onPlayAudio,
+}: PracticeFlashcardProps) {
+  return (
+    <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-8 flex flex-col items-center text-center relative overflow-hidden">
+      <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase mb-4">
+        Vietnamese
+      </span>
+
+      {/* Native Phrase */}
+      <div className="mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold font-display text-on-background tracking-tight">
+          {activeBrick.nativeText}
+        </h2>
+      </div>
+
+      {/* Action controls: English Audio Listen (always visible) & Icon-only Reveal Toggle */}
+      <div className="flex items-center justify-center gap-3 my-2">
+        <button
+          type="button"
+          id="btn-practice-listen-audio"
+          onClick={onPlayAudio}
+          className="p-3 bg-primary/10 text-primary hover:bg-primary/20 rounded-full active:scale-90 transition-all shadow-xs cursor-pointer"
+          title="Listen to English pronunciation"
+          aria-label="Listen to English pronunciation"
+        >
+          <Volume2 className="w-5 h-5" />
+        </button>
+
+        <button
+          type="button"
+          id="btn-practice-toggle-reveal"
+          onClick={onToggleReveal}
+          className={`p-3 rounded-full transition-all active:scale-90 shadow-xs cursor-pointer ${
+            isRevealed
+              ? "bg-secondary/15 text-secondary ring-2 ring-secondary/20 hover:bg-secondary/25"
+              : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-secondary"
+          }`}
+          title={isRevealed ? "Hide English answer" : "Reveal English answer"}
+          aria-label={
+            isRevealed ? "Hide English answer" : "Reveal English answer"
+          }
+        >
+          {isRevealed ? (
+            <EyeOff className="w-5 h-5" />
+          ) : (
+            <Eye className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+
+      {/* Revealed English Content */}
+      {isRevealed && (
+        <div className="w-full animate-in fade-in zoom-in-95 duration-300 flex flex-col items-center mt-3 pt-4 border-t border-outline-variant/30">
+          <span className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold tracking-wider uppercase mb-2">
+            English
+          </span>
+          <h3 className="text-xl md:text-2xl font-bold text-primary mb-1 font-display">
+            {activeBrick.targetText}
+          </h3>
+          {activeBrick.targetPron && (
+            <p className="text-xs text-outline font-mono select-none">
+              {activeBrick.targetPron}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Context pill if available */}
+      {activeBrick.context && (
+        <p className="text-xs text-on-surface-variant/80 italic mt-6 border-t border-outline-variant/20 pt-4 w-full">
+          "{activeBrick.context}"
+        </p>
+      )}
+    </div>
+  );
+}
