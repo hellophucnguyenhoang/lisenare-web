@@ -75,7 +75,7 @@ export default function ForgotPasswordForm({
     sendOtp(username.trim(), {
       onSuccess: () => {
         setSuccessMessage("Verification code sent to your registered email!");
-        setResendCountdown(60);
+        setResendCountdown(60 * 5);
         setStep(2);
         setTimeout(() => {
           otpInputRefs.current[0]?.focus();

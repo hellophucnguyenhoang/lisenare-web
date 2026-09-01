@@ -7,7 +7,7 @@ import { Plus, ArrowLeft, BookOpen, X, Search } from "lucide-react";
 import {
   useCollections,
   useDeleteCollection,
-  useRenameCollection,
+  useUpdateCollection,
   useCreateCollection,
 } from "@/hooks/useCollections";
 import { useBricks, useDeleteBrick } from "@/hooks/useBricks";
@@ -47,16 +47,27 @@ export default function CollectionsPage({
   const bricks = bricksData?.items || [];
 
   const deleteCollection = useDeleteCollection();
-  const renameCollection = useRenameCollection();
+  const updateCollection = useUpdateCollection();
   const createCollection = useCreateCollection();
   const deleteBrick = useDeleteBrick();
 
-  const handleAddCollection = (name: string, description: string) => {
-    createCollection.mutate({ name, description });
+  const handleAddCollection = (data: {
+    name: string;
+    description: string;
+    tags: string[];
+  }) => {
+    createCollection.mutate(data);
   };
 
-  const handleEditCollection = (id: number, name: string) => {
-    renameCollection.mutate({ collectionId: id, newName: name });
+  const handleEditCollection = (
+    id: number,
+    data: {
+      name: string;
+      description: string;
+      tags: string[];
+    },
+  ) => {
+    updateCollection.mutate({ collectionId: id, data });
   };
 
   const handleDeleteCollection = (id: number) => {

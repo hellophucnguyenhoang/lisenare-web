@@ -42,7 +42,7 @@ export default function EmailManagerModal({
   const [newEmail, setNewEmail] = useState("");
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(60 * 5);
   const [isCounting, setIsCounting] = useState(false);
 
   const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
@@ -137,8 +137,13 @@ export default function EmailManagerModal({
       return;
     }
 
-    if (currentEmail && oldEmail.trim().toLowerCase() === newEmail.trim().toLowerCase()) {
-      setErrorMessage("New email address must be different from your current email.");
+    if (
+      currentEmail &&
+      oldEmail.trim().toLowerCase() === newEmail.trim().toLowerCase()
+    ) {
+      setErrorMessage(
+        "New email address must be different from your current email.",
+      );
       return;
     }
 
@@ -153,7 +158,7 @@ export default function EmailManagerModal({
             `Verification code sent to ${maskEmail(newEmail.trim())}`,
           );
           setStep("verify-otp");
-          setCountdown(60);
+          setCountdown(60 * 5);
           setIsCounting(true);
           setOtpDigits(["", "", "", "", "", ""]);
           setTimeout(() => {
@@ -404,7 +409,11 @@ export default function EmailManagerModal({
 
         {/* STEP 3: Verify OTP Code */}
         {step === "verify-otp" && (
-          <form onSubmit={handleVerifyOtp} className="mt-5 space-y-4" noValidate>
+          <form
+            onSubmit={handleVerifyOtp}
+            className="mt-5 space-y-4"
+            noValidate
+          >
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary mb-2">
                 <KeyRound className="w-5 h-5" />
@@ -446,7 +455,9 @@ export default function EmailManagerModal({
               <button
                 type="button"
                 disabled={isCounting || isLoading}
-                onClick={(e) => handleSendOtp(e as unknown as React.SubmitEvent)}
+                onClick={(e) =>
+                  handleSendOtp(e as unknown as React.SubmitEvent)
+                }
                 className="font-bold text-primary hover:underline disabled:text-outline/50 disabled:no-underline cursor-pointer"
               >
                 {isCounting ? `Resend in ${countdown}s` : "Resend OTP"}

@@ -23,7 +23,7 @@ function toCollection(api: CollectionReadApi): Collection {
     description: api.description,
     brickCount: api.brick_count,
     learnedCount: api.learned_count,
-    tags: api.tags,
+    tags: api.tags || [],
   };
 }
 
@@ -36,28 +36,37 @@ export async function listCollections() {
 
 export async function createCollection(data: {
   name: string;
-  description?: string;
+  description?: string | null;
+  tags?: string[];
 }) {
   const api = await request<CollectionReadApi>("/collections", {
     method: "POST",
+    body: {
+      name: data.name,
+      description: data.description || null,
+      tags: data.tags || [],
+    },
+  });
+  return toCollection(api);
+}
+
+export async function updateCollection(
+  collectionId: number,
+  data: {
+    name?: string | null;
+    description?: string | null;
+    tags?: string[] | null;
+  },
+) {
+  const api = await request<CollectionReadApi>(`/collections/${collectionId}`, {
+    method: "PATCH",
     body: data,
   });
   return toCollection(api);
 }
 
 export async function deleteCollection(collectionId: number) {
-  await request(`/collections?collection_id=${collectionId}`, {
+  await request<void>(`/collections/${collectionId}`, {
     method: "DELETE",
   });
-}
-
-export async function renameCollection(
-  collectionId: number,
-  newName: string,
-) {
-  const api = await request<CollectionReadApi>(
-    `/collections/${collectionId}/name`,
-    { method: "PATCH", body: { new_name: newName } },
-  );
-  return toCollection(api);
 }
