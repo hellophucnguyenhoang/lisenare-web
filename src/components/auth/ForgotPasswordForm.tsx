@@ -26,7 +26,7 @@ export default function ForgotPasswordForm({
   setErrorMessage,
   setSuccessMessage,
 }: ForgotPasswordFormProps) {
-  const { sendOtp, verifyOtp, resetPassword, isLoading } = useAuth();
+  const { sendOtp, resetPassword, isLoading } = useAuth();
   const [step, setStep] = useState<ForgotPasswordStep>(1);
 
   // Step 1 State
@@ -44,7 +44,6 @@ export default function ForgotPasswordForm({
   const [resendCountdown, setResendCountdown] = useState<number>(0);
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Step 3 State
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -122,8 +121,8 @@ export default function ForgotPasswordForm({
     }
   };
 
-  // Step 2: Verify OTP
-  const handleVerifyOtp = (e: React.SubmitEvent) => {
+  // Step 2: Submit OTP and New Password together
+  const handleResetPasswordSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
@@ -134,25 +133,11 @@ export default function ForgotPasswordForm({
       return;
     }
 
-    const res = verifyOtp(fullOtp);
-    if (res.success) {
-      setSuccessMessage("Code verified! Please set your new password.");
-      setStep(3);
-    } else {
-      setErrorMessage(res.error || "Invalid or expired OTP code.");
-    }
-  };
-
-  // Step 3: Reset Password
-  const handleResetPasswordSubmit = (e: React.SubmitEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    setSuccessMessage(null);
-
-    if (newPassword.length < 6) {
-      setErrorMessage("New password must be at least 6 characters long.");
+    if (newPassword.length < 8) {
+      setErrorMessage("New password must be at least 8 characters long.");
       return;
     }
+
     if (newPassword !== confirmNewPassword) {
       setErrorMessage("Passwords do not match.");
       return;
@@ -161,7 +146,7 @@ export default function ForgotPasswordForm({
     resetPassword(
       {
         username: username.trim(),
-        otp: otpDigits.join(""),
+        otp: fullOtp,
         new_password: newPassword,
       },
       {
@@ -184,15 +169,21 @@ export default function ForgotPasswordForm({
         <button
           type="button"
           id="btn-back-to-login"
-          onClick={onSwitchToLogin}
+          onClick={() => {
+            if (step === 2) {
+              setStep(1);
+            } else {
+              onSwitchToLogin();
+            }
+          }}
           className="flex items-center gap-1.5 text-xs font-bold text-outline hover:text-primary transition-colors py-1 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Login
+          {step === 2 ? "Back" : "Back to Login"}
         </button>
 
         <div className="flex items-center gap-1.5">
-          {[1, 2, 3].map((s) => (
+          {[1, 2].map((s) => (
             <span
               key={s}
               className={`w-2 h-2 rounded-full transition-all ${
@@ -218,7 +209,7 @@ export default function ForgotPasswordForm({
               Reset Password
             </h2>
             <p className="text-xs text-on-surface-variant font-medium">
-              Step 1 of 3: Enter your username
+              Step 1 of 2: Enter your username
             </p>
           </div>
 
@@ -242,6 +233,7 @@ export default function ForgotPasswordForm({
                   placeholder="e.g. phuchoang"
                   className="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                   required
+                  autoFocus
                 />
               </div>
             </div>
@@ -249,7 +241,7 @@ export default function ForgotPasswordForm({
             <button
               type="submit"
               id="btn-send-otp"
-              disabled={isLoading}
+              disabled={isLoading || !username.trim()}
               className="w-full py-3 px-6 bg-primary hover:bg-primary-container text-on-primary font-bold text-sm rounded-xl shadow-md transition-all active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-3"
             >
               {isLoading ? (
@@ -258,35 +250,57 @@ export default function ForgotPasswordForm({
                   <span>Sending OTP...</span>
                 </>
               ) : (
-                <span>Send OTP</span>
+                <span>Send OTP Code</span>
               )}
             </button>
           </form>
         </div>
       )}
 
-      {/* STEP 2: Inline OTP Verification Input + Resend OTP Countdown */}
+      {/* STEP 2: Unified Form with OTP + New Password submitted together */}
       {step === 2 && (
         <div className="space-y-5 animate-in fade-in duration-200">
           <div className="text-center space-y-1.5">
-            <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary mx-auto flex items-center justify-center mb-2 shadow-xs">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center mb-2 shadow-xs">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
-              Verify OTP Code
+              Set New Password
             </h2>
             <p className="text-xs text-on-surface-variant font-medium">
-              Step 2 of 3: Enter the 6-digit code sent to you if the username
-              exists
+              Step 2 of 2: Enter the 6-digit code and your new password
             </p>
           </div>
 
-          <form onSubmit={handleVerifyOtp} className="space-y-5" noValidate>
+          <form
+            onSubmit={handleResetPasswordSubmit}
+            className="space-y-4"
+            noValidate
+          >
             {/* 6 Digit Inline OTP Input Grid */}
-            <div className="space-y-2">
-              <label className="block text-center text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                6-Digit Verification Code
-              </label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+                  6-Digit Verification Code
+                </label>
+                {resendCountdown > 0 ? (
+                  <span className="text-[11px] text-outline font-medium">
+                    Resend in{" "}
+                    <strong className="text-primary">{resendCountdown}s</strong>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    id="btn-resend-otp"
+                    onClick={() => handleSendOtp()}
+                    disabled={isLoading}
+                    className="text-[11px] text-primary font-bold hover:underline flex items-center gap-1 cursor-pointer transition-all"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    Resend OTP
+                  </button>
+                )}
+              </div>
               <div className="flex justify-between gap-2">
                 {otpDigits.map((digit, idx) => (
                   <input
@@ -309,76 +323,13 @@ export default function ForgotPasswordForm({
               </div>
             </div>
 
-            {/* Resend OTP Timer & Button */}
-            <div className="flex items-center justify-center gap-2 text-xs">
-              {resendCountdown > 0 ? (
-                <span className="text-outline font-medium">
-                  Resend code in{" "}
-                  <strong className="text-primary font-bold">
-                    {resendCountdown}s
-                  </strong>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  id="btn-resend-otp"
-                  onClick={() => handleSendOtp()}
-                  disabled={isLoading}
-                  className="text-primary font-bold hover:underline flex items-center gap-1.5 cursor-pointer transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Resend OTP Code
-                </button>
-              )}
-            </div>
-
-            {/* Verify Button */}
-            <button
-              type="submit"
-              id="btn-verify-otp"
-              disabled={isLoading}
-              className="w-full py-3 px-6 bg-primary hover:bg-primary-container text-on-primary font-bold text-sm rounded-xl shadow-md transition-all active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Verifying...</span>
-                </>
-              ) : (
-                <span>Verify</span>
-              )}
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* STEP 3: Set New Password & Confirm New Password */}
-      {step === 3 && (
-        <div className="space-y-5 animate-in fade-in duration-200">
-          <div className="text-center space-y-1.5">
-            <div className="w-12 h-12 rounded-2xl bg-green-500/10 text-green-700 mx-auto flex items-center justify-center mb-2 shadow-xs">
-              <KeyRound className="w-6 h-6" />
-            </div>
-            <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
-              New Password
-            </h2>
-            <p className="text-xs text-on-surface-variant font-medium">
-              Step 3 of 3: Create a fresh, secure password
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleResetPasswordSubmit}
-            className="space-y-4"
-            noValidate
-          >
             {/* New Password */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 pt-1">
               <label
                 htmlFor="new-password"
                 className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
               >
-                New Password
+                New Password (min. 8 characters)
               </label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -390,8 +341,9 @@ export default function ForgotPasswordForm({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="w-full pl-10 pr-11 py-3 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
+                  className="w-full pl-10 pr-11 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
                   required
+                  minLength={8}
                 />
                 <button
                   type="button"
@@ -429,7 +381,7 @@ export default function ForgotPasswordForm({
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   placeholder="Re-enter new password"
-                  className={`w-full pl-10 pr-11 py-3 bg-surface-container-low border rounded-xl text-sm font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-all ${
+                  className={`w-full pl-10 pr-11 py-2.5 bg-surface-container-low border rounded-xl text-sm font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 transition-all ${
                     confirmNewPassword && newPassword === confirmNewPassword
                       ? "border-green-500/60 focus:ring-green-500/40"
                       : "border-outline-variant/60 focus:ring-primary/40 focus:border-primary"
@@ -462,13 +414,18 @@ export default function ForgotPasswordForm({
             <button
               type="submit"
               id="btn-reset-password-submit"
-              disabled={isLoading}
-              className="w-full py-3 px-6 bg-primary hover:bg-primary-container text-on-primary font-bold text-sm rounded-xl shadow-md transition-all active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-2"
+              disabled={
+                isLoading ||
+                otpDigits.join("").length !== 6 ||
+                newPassword.length < 8 ||
+                newPassword !== confirmNewPassword
+              }
+              className="w-full py-3 px-6 bg-primary hover:bg-primary-container text-on-primary font-bold text-sm rounded-xl shadow-md transition-all active:scale-98 disabled:opacity-60 flex items-center justify-center gap-2 cursor-pointer mt-3"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Updating password...</span>
+                  <span>Resetting password...</span>
                 </>
               ) : (
                 <span>Reset Password</span>
