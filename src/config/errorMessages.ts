@@ -34,5 +34,5 @@ export const ERROR_MESSAGES: Record<string, string> = {
   // FRONTEND-RELATED LOGIC
   // Fallbacks
   TOKEN_EXPIRED: "Your session has expired. Please log in again.",
-  UNKNOWN_ERROR: "Sorry, something went wrong. Please try again later.",
+  UNKNOWN_ERROR: "Sorry, something unknown went wrong.",
 };

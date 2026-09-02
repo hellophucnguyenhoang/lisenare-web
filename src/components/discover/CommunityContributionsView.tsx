@@ -9,12 +9,12 @@ import {
   Flag,
   CheckCircle2,
 } from "lucide-react";
+import { playShortAudio } from "@/utils/audio";
 import AudioWaveform from "@/components/common/AudioWaveform";
 
 interface CommunityContributionsViewProps {
   brick: Brick;
   onBack: () => void;
-  onPlayAudio: (text: string) => void;
   onIncrementPoints: (pts: number) => void;
   onUpdateBrickContributions: (
     brickId: number,
@@ -26,37 +26,16 @@ interface CommunityContributionsViewProps {
 export default function CommunityContributionsView({
   brick,
   onBack,
-  onPlayAudio,
   onIncrementPoints,
   onUpdateBrickContributions,
   onShowToast,
 }: CommunityContributionsViewProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecordedAudio, setHasRecordedAudio] = useState(false);
-  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
   const [contribs, setContribs] = useState<AudioContribution[]>([]);
 
-  const handlePlayContributionAudio = (
-    contrib: AudioContribution,
-    brickTargetText: string,
-  ) => {
-    if (playingAudioId === contrib.id) {
-      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
-      setPlayingAudioId(null);
-      return;
-    }
-
-    setPlayingAudioId(contrib.id);
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(brickTargetText);
-      utterance.lang = "en-US";
-      utterance.onend = () => setPlayingAudioId(null);
-      utterance.onerror = () => setPlayingAudioId(null);
-      window.speechSynthesis.speak(utterance);
-    } else {
-      setTimeout(() => setPlayingAudioId(null), 2500);
-    }
+  const handlePlayContributionAudio = (contrib: AudioContribution) => {
+    playShortAudio(contrib.audioUrl || brick.targetAudioPath);
   };
 
   const handleLikeContribution = (contribId: string) => {
@@ -167,7 +146,7 @@ export default function CommunityContributionsView({
           <button
             type="button"
             id="btn-play-standard-audio"
-            onClick={() => onPlayAudio(brick.targetText)}
+            onClick={() => playShortAudio(brick.targetAudioPath)}
             className="p-3 bg-primary/10 text-primary rounded-full hover:bg-primary/20 active:scale-90 transition-all shadow-xs cursor-pointer"
             title="Listen to standard pronunciation"
             aria-label="Listen to standard pronunciation"
@@ -252,8 +231,6 @@ export default function CommunityContributionsView({
           </div>
         ) : (
           contribs.map((contrib) => {
-            const isPlaying = playingAudioId === contrib.id;
-
             return (
               <div
                 key={contrib.id}
@@ -285,26 +262,12 @@ export default function CommunityContributionsView({
                       <button
                         type="button"
                         id={`btn-play-contrib-${contrib.id}`}
-                        onClick={() =>
-                          handlePlayContributionAudio(contrib, brick.targetText)
-                        }
-                        className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer ${
-                          isPlaying
-                            ? "bg-primary text-on-primary shadow-xs animate-pulse"
-                            : "bg-primary/10 text-primary hover:bg-primary/20"
-                        }`}
+                        onClick={() => handlePlayContributionAudio(contrib)}
+                        className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer bg-primary/10 text-primary hover:bg-primary/20"
                       >
                         <Volume2 className="w-3.5 h-3.5" />
-                        <span>{isPlaying ? "Playing..." : "Listen Audio"}</span>
+                        <span>Listen Audio</span>
                       </button>
-
-                      {isPlaying && (
-                        <div className="flex items-center gap-1 h-3">
-                          <span className="w-1 bg-primary h-full animate-bounce"></span>
-                          <span className="w-1 bg-primary h-3/4 animate-bounce delay-100"></span>
-                          <span className="w-1 bg-primary h-1/2 animate-bounce delay-200"></span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>

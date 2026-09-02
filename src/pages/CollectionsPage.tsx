@@ -13,19 +13,28 @@ import {
 import { useBricks, useDeleteBrick } from "@/hooks/useBricks";
 
 interface CollectionsPageProps {
+  selectedCollectionId?: number | null;
+  onSelectCollection?: (id: number | null) => void;
   onNavigateToAddBrick: (collectionId: number) => void;
   onNavigateToEditBrick: (brickId: number) => void;
   onNavigateToPractice: (brick: Brick) => void;
 }
 
 export default function CollectionsPage({
+  selectedCollectionId: propSelectedCollectionId,
+  onSelectCollection,
   onNavigateToAddBrick,
   onNavigateToEditBrick,
   onNavigateToPractice,
 }: CollectionsPageProps) {
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    number | null
-  >(null);
+  const [internalSelectedId, setInternalSelectedId] = useState<number | null>(
+    null,
+  );
+  const selectedCollectionId =
+    propSelectedCollectionId !== undefined
+      ? propSelectedCollectionId
+      : internalSelectedId;
+  const setSelectedCollectionId = onSelectCollection || setInternalSelectedId;
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null,
@@ -149,20 +158,16 @@ export default function CollectionsPage({
             className="p-2 -ml-2 rounded-full hover:bg-surface-container transition-all active:scale-95 cursor-pointer"
             aria-label="Back to collections"
           >
-            <ArrowLeft className="w-6 h-6 text-primary" />
+            <ArrowLeft className="w-6 h-6 text-on-surface" />
           </button>
           <h1 className="text-xl font-bold font-display text-primary flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-primary" />
-            {activeCollection?.name}
+            Bricks
           </h1>
         </div>
 
         {/* Hero Card / Stats block */}
         <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-6 shadow-xs">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">
-              Collection Detail
-            </span>
             <h2 className="text-2xl font-bold font-display text-on-surface">
               {activeCollection?.name}
             </h2>
@@ -199,7 +204,7 @@ export default function CollectionsPage({
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline" />
           <input
             type="text"
-            placeholder="Search words in this collection..."
+            placeholder="Search bricks in this collection..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-11 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none text-sm transition-all shadow-xs"
@@ -221,7 +226,6 @@ export default function CollectionsPage({
           </div>
         ) : filteredBricks.length === 0 ? (
           <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-10 text-center bg-surface-container-lowest/50">
-            <BookOpen className="w-10 h-10 text-outline mx-auto mb-3" />
             <h3 className="text-base font-bold text-on-surface">
               No Bricks Found
             </h3>
@@ -230,13 +234,6 @@ export default function CollectionsPage({
                 ? "No vocabulary bricks match your search."
                 : "Start expanding this collection by adding your first word or phrase."}
             </p>
-            <button
-              onClick={() => onNavigateToAddBrick(selectedCollectionId)}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary/95 transition-all shadow-sm active:scale-95 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add Your First Brick</span>
-            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

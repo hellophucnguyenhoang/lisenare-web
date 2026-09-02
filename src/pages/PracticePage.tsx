@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { type Brick } from "@/types";
 import { useBricks } from "@/hooks/useBricks";
+import { playShortAudio } from "@/utils/audio";
 import PracticeHeader from "@/components/practice/PracticeHeader";
 import PracticeFlashcard from "@/components/practice/PracticeFlashcard";
 import PracticeInputSection from "@/components/practice/PracticeInputSection";
@@ -18,7 +19,6 @@ export default function PracticePage() {
   const [typedAnswer, setTypedAnswer] = useState("");
   const [showTypeInput, setShowTypeInput] = useState(false);
   const [learnerAudioUrl, setLearnerAudioUrl] = useState<string | null>(null);
-  const [userSpokenText, setUserSpokenText] = useState<string | null>(null);
 
   const [evaluationFeedback, setEvaluationFeedback] = useState<{
     show: boolean;
@@ -51,39 +51,7 @@ export default function PracticePage() {
 
   const activeBrick = sessionBricks[currentIndex];
 
-  // Text-To-Speech for Target Language
-  const speakTargetText = () => {
-    if (!activeBrick) return;
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(activeBrick.targetText);
-      utterance.lang = "en-US";
 
-      const voices = window.speechSynthesis.getVoices();
-      const enVoice = voices.find((v) => v.lang.startsWith("en-"));
-      if (enVoice) utterance.voice = enVoice;
-
-      window.speechSynthesis.speak(utterance);
-    }
-  };
-
-  // Playback Learner Audio
-  const playLearnerAudio = () => {
-    if (learnerAudioUrl) {
-      const audio = new Audio(learnerAudioUrl);
-      audio.play().catch(() => {
-        if ("speechSynthesis" in window && userSpokenText) {
-          const u = new SpeechSynthesisUtterance(userSpokenText);
-          u.lang = "en-US";
-          window.speechSynthesis.speak(u);
-        }
-      });
-    } else if (userSpokenText && "speechSynthesis" in window) {
-      const u = new SpeechSynthesisUtterance(userSpokenText);
-      u.lang = "en-US";
-      window.speechSynthesis.speak(u);
-    }
-  };
 
   // Reset state on card transition
   useEffect(() => {
@@ -92,13 +60,11 @@ export default function PracticePage() {
       setTypedAnswer("");
       setEvaluationFeedback(null);
       setLearnerAudioUrl(null);
-      setUserSpokenText(null);
     }
   }, [activeBrick]);
 
   const startRecordingAudio = () => {
     setLearnerAudioUrl(null);
-    setUserSpokenText(null);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       audioChunksRef.current = [];
       navigator.mediaDevices
@@ -196,7 +162,6 @@ export default function PracticePage() {
     setIsRevealed(true);
 
     const userText = spokenText || activeBrick.targetText;
-    setUserSpokenText(userText);
 
     const targetWords = activeBrick.targetText
       .toLowerCase()
@@ -262,7 +227,6 @@ export default function PracticePage() {
     if (typedAnswer.trim() === "") return;
 
     setIsRevealed(true);
-    setUserSpokenText(typedAnswer);
 
     const targetWords = activeBrick.targetText
       .toLowerCase()
@@ -354,7 +318,7 @@ export default function PracticePage() {
           activeBrick={activeBrick}
           isRevealed={isRevealed}
           onToggleReveal={() => setIsRevealed(!isRevealed)}
-          onPlayAudio={speakTargetText}
+          onPlayAudio={() => playShortAudio(activeBrick.targetAudioPath)}
         />
 
         <PracticeInputSection
@@ -377,8 +341,8 @@ export default function PracticePage() {
           activeBrick={activeBrick}
           onClose={() => setEvaluationFeedback(null)}
           onNext={handleNext}
-          onPlayTargetAudio={speakTargetText}
-          onPlayLearnerAudio={playLearnerAudio}
+          onPlayTargetAudio={() => playShortAudio(activeBrick.targetAudioPath)}
+          onPlayLearnerAudio={() => playShortAudio(learnerAudioUrl)}
         />
       )}
     </div>
