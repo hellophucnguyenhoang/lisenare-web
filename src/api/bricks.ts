@@ -1,6 +1,31 @@
 import { request } from "./client";
 import type { Brick } from "@/types";
 
+// ── API request payload schemas (multipart/form-data) ───
+
+export interface BrickCreateJsonData {
+  native_text: string;
+  target_text: string;
+  target_pron?: string | null;
+  context?: string | null;
+  unit_type?: string;
+  is_private?: boolean;
+  collection_id?: number;
+  collection_name?: string;
+  tags?: string[];
+}
+
+export interface BrickUpdateJsonData {
+  native_text?: string | null;
+  target_text?: string | null;
+  target_pron?: string | null;
+  context?: string | null;
+  unit_type?: string | null;
+  is_private?: boolean | null;
+  collection_id?: number | null;
+  tags?: string[] | null;
+}
+
 // ── API response types (snake_case from server) ─────────
 
 interface BrickReadApi {

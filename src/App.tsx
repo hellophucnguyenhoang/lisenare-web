@@ -37,6 +37,9 @@ const queryClient = new QueryClient({
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
+  const [selectedCollectionId, setSelectedCollectionId] = useState<
+    number | null
+  >(null);
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
 
@@ -74,9 +77,12 @@ export default function App() {
       case "collections":
         return (
           <CollectionsPage
-            onNavigateToAddBrick={(collectionId) =>
-              setSubview({ type: "addBrick", collectionId })
-            }
+            selectedCollectionId={selectedCollectionId}
+            onSelectCollection={setSelectedCollectionId}
+            onNavigateToAddBrick={(collectionId) => {
+              setSelectedCollectionId(collectionId);
+              setSubview({ type: "addBrick", collectionId });
+            }}
             onNavigateToEditBrick={(brickId) => {
               const cached = queryClient.getQueriesData<{ items: Brick[] }>({
                 queryKey: ["bricks"],
@@ -84,7 +90,10 @@ export default function App() {
               const brick = cached
                 .flatMap(([, data]) => data?.items ?? [])
                 .find((b) => b.id === brickId);
-              if (brick) setSubview({ type: "editBrick", brick });
+              if (brick) {
+                setSelectedCollectionId(brick.collectionId);
+                setSubview({ type: "editBrick", brick });
+              }
             }}
             onNavigateToPractice={() => setActiveTab("practice")}
           />
