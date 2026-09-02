@@ -57,7 +57,7 @@ export type Subview =
   | null;
 
 export type AuthMode = "login" | "register" | "forgot-password";
-export type ForgotPasswordStep = 1 | 2 | 3;
+export type ForgotPasswordStep = 1 | 2;
 
 export type BrickStatus = "new" | "learned";
 export type SortOption = "random" | "newest" | "oldest" | "az" | "za";

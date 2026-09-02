@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   apiLogin,
@@ -11,7 +10,6 @@ import {
 
 export function useAuth() {
   const qc = useQueryClient();
-  const [resetToken, setResetToken] = useState<string>("");
 
   const loginMutation = useMutation({
     mutationFn: (params: { username: string; password: string }) =>
@@ -72,14 +70,6 @@ export function useAuth() {
     sendOtpMutation.mutate(username, options);
   };
 
-  const verifyOtp = (code: string) => {
-    if (code.length === 6) {
-      setResetToken(code);
-      return { success: true };
-    }
-    return { success: false, error: "Invalid verification code" };
-  };
-
   const resetPassword = (
     params: ResetPasswordParams,
     options?: Parameters<typeof resetPasswordMutation.mutate>[1],
@@ -96,10 +86,8 @@ export function useAuth() {
     loginWithGoogle,
     register,
     sendOtp,
-    verifyOtp,
     resetPassword,
     logout,
-    resetToken,
     loginMutation,
     registerMutation,
     sendOtpMutation,
