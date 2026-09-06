@@ -1,25 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Save } from "lucide-react";
 import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
+import { useCollections } from "@/hooks/useCollections";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/collections/BrickTextInputs";
 import BrickAudioSection from "@/components/collections/BrickAudioSection";
 import BrickTagsSection from "@/components/collections/BrickTagsSection";
+import BrickCollectionSelector from "@/components/collections/BrickCollectionSelector";
 
 interface AddBrickPageProps {
-  collectionId: number;
+  collectionId?: number;
   onBack: () => void;
 }
 
 export default function AddBrickPage({
-  collectionId,
+  collectionId: initialCollectionId,
   onBack,
 }: AddBrickPageProps) {
+  const { data: collections = [] } = useCollections();
+  const [selectedCollectionId, setSelectedCollectionId] = useState<
+    number | null
+  >(initialCollectionId ?? null);
+
   const [nativeText, setNativeText] = useState("");
   const [targetText, setTargetText] = useState("");
   const [pronunciation, setPronunciation] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    if (selectedCollectionId === null && collections.length > 0) {
+      setSelectedCollectionId(initialCollectionId ?? collections[0].id);
+    }
+  }, [collections, initialCollectionId, selectedCollectionId]);
 
   const createBrick = useCreateBrick();
   const checkExists = useCheckBrickExists(targetText);
@@ -28,6 +41,11 @@ export default function AddBrickPage({
   const isCheckingTargetExists = checkExists.isFetching;
 
   const handleSave = () => {
+    if (!selectedCollectionId) {
+      toast.error("Please choose or create a collection for this brick.");
+      return;
+    }
+
     if (!nativeText.trim() || !targetText.trim()) {
       alert("Please fill out both native and target text fields.");
       return;
@@ -42,7 +60,7 @@ export default function AddBrickPage({
         target_pron: pronunciation.trim() || null,
         unit_type: "sentence",
         is_private: true,
-        collection_id: collectionId,
+        collection_id: selectedCollectionId,
         tags,
       }),
     );
@@ -78,6 +96,12 @@ export default function AddBrickPage({
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
+        {/* Collection Selector: choose, create, or edit collection */}
+        <BrickCollectionSelector
+          selectedCollectionId={selectedCollectionId}
+          onSelectCollection={setSelectedCollectionId}
+        />
+
         {/* Languages inputs */}
         <BrickTextInputs
           nativeText={nativeText}

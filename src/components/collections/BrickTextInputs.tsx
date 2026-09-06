@@ -1,4 +1,5 @@
 import { AlertTriangle, Loader2 } from "lucide-react";
+import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface BrickTextInputsProps {
   nativeText: string;
@@ -27,12 +28,11 @@ export default function BrickTextInputs({
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-2">
           <span>Native Sentence</span>
         </label>
-        <input
-          type="text"
+        <PlainTextInput
           value={nativeText}
-          onChange={(e) => onNativeTextChange(e.target.value)}
+          onChange={onNativeTextChange}
           placeholder="Type native sentence..."
-          className="w-full h-14 px-4 rounded-xl bg-surface border-2 border-transparent focus:border-primary focus:ring-0 transition-all font-semibold text-sm outline-none placeholder:text-on-surface-variant/40"
+          className="w-full h-14 px-4 rounded-xl bg-surface border-2 border-transparent focus-within:border-primary font-semibold text-sm outline-none"
         />
       </div>
 
@@ -50,15 +50,14 @@ export default function BrickTextInputs({
         </div>
 
         <div className="relative">
-          <input
-            type="text"
+          <PlainTextInput
             value={targetText}
-            onChange={(e) => onTargetTextChange(e.target.value)}
+            onChange={onTargetTextChange}
             placeholder="Type target sentence..."
-            className={`w-full h-14 px-4 rounded-xl bg-surface border-2 transition-all font-semibold text-sm outline-none placeholder:text-on-surface-variant/40 ${
+            className={`w-full h-14 px-4 rounded-xl bg-surface border-2 transition-all font-semibold text-sm outline-none ${
               targetExists
-                ? "border-amber-400 focus:border-amber-500 text-amber-900 bg-amber-50/20"
-                : "border-transparent focus:border-primary text-primary"
+                ? "border-amber-400 focus-within:border-amber-500 text-amber-900 bg-amber-50/20"
+                : "border-transparent focus-within:border-primary text-primary"
             }`}
           />
         </div>
@@ -75,12 +74,11 @@ export default function BrickTextInputs({
         <label className="text-sm font-bold text-on-surface-variant">
           Target Pronunciation (Optional)
         </label>
-        <input
-          type="text"
+        <PlainTextInput
           value={pronunciation}
-          onChange={(e) => onPronunciationChange(e.target.value)}
+          onChange={onPronunciationChange}
           placeholder="Phonetic transcription e.g. /wɛər ɪz ðə ˈlaɪbrɛri/"
-          className="w-full h-12 px-4 rounded-xl bg-surface border-2 border-transparent focus:border-primary focus:ring-0 transition-all text-xs font-mono outline-none"
+          className="w-full h-12 px-4 rounded-xl bg-surface border-2 border-transparent focus-within:border-primary text-xs font-mono outline-none"
         />
       </div>
     </section>

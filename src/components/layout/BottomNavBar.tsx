@@ -1,4 +1,4 @@
-import { Mic, BookOpen, Compass, User } from 'lucide-react';
+import { Mic, Blocks, Compass, User } from 'lucide-react';
 import { type ActiveTab } from '@/types';
 
 interface BottomNavBarProps {
@@ -10,7 +10,7 @@ interface BottomNavBarProps {
 export default function BottomNavBar({ activeTab, setActiveTab, clearSubviews }: BottomNavBarProps) {
   const tabs = [
     { id: 'practice' as const, label: 'Practice', icon: Mic },
-    { id: 'collections' as const, label: 'Collection', icon: BookOpen },
+    { id: 'bricks' as const, label: 'Bricks', icon: Blocks },
     { id: 'discover' as const, label: 'Discover', icon: Compass },
     { id: 'profile' as const, label: 'Profile', icon: User },
   ];

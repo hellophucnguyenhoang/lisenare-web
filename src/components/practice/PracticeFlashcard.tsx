@@ -57,13 +57,13 @@ export default function PracticeFlashcard({
   }, [activeBrick.targetText, alignmentSegments]);
 
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-8 sm:p-10 flex flex-col items-center text-center relative overflow-hidden transition-all">
-      <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase mb-5">
+    <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-5 sm:p-8 flex flex-col items-center text-center relative overflow-hidden transition-all">
+      <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase mb-3 sm:mb-5">
         Native Sentence
       </span>
 
       {/* Native Phrase */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <h2 className="text-base md:text-lg lg:text-xl font-bold font-display text-on-background tracking-tight leading-snug">
           {activeBrick.nativeText}
         </h2>
@@ -139,7 +139,7 @@ export default function PracticeFlashcard({
 
       {/* Context pill if available */}
       {activeBrick.context && (
-        <p className="text-xs text-on-surface-variant/80 italic mt-6 border-t border-outline-variant/20 pt-4 w-full">
+        <p className="text-xs text-on-surface-variant/80 italic mt-4 sm:mt-6 border-t border-outline-variant/20 pt-3 sm:pt-4 w-full">
           "{activeBrick.context}"
         </p>
       )}

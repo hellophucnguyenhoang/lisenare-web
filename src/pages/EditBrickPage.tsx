@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import BrickTextInputs from "@/components/collections/BrickTextInputs";
 import BrickAudioSection from "@/components/collections/BrickAudioSection";
 import BrickTagsSection from "@/components/collections/BrickTagsSection";
+import BrickCollectionSelector from "@/components/collections/BrickCollectionSelector";
 
 interface EditBrickPageProps {
   brick: Brick;
@@ -17,6 +18,10 @@ interface EditBrickPageProps {
 }
 
 export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
+  const [selectedCollectionId, setSelectedCollectionId] = useState<
+    number | null
+  >(brick.collectionId);
+
   const [nativeText, setNativeText] = useState(brick.nativeText);
   const [targetText, setTargetText] = useState(brick.targetText);
   const [pronunciation, setPronunciation] = useState(brick.targetPron || "");
@@ -35,6 +40,11 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   const isCheckingTargetExists = isTargetTextChanged && checkExists.isFetching;
 
   const handleSave = () => {
+    if (!selectedCollectionId) {
+      toast.error("Please select a collection for this brick.");
+      return;
+    }
+
     if (!nativeText.trim() || !targetText.trim()) {
       alert("Please fill out both native and target text fields.");
       return;
@@ -48,7 +58,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         target_text: targetText.trim(),
         target_pron: pronunciation.trim() || null,
         unit_type: brick.unitType || "sentence",
-        collection_id: brick.collectionId,
+        collection_id: selectedCollectionId,
         is_private: brick.isPrivate ?? true,
         tags,
       }),
@@ -107,6 +117,12 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
+        {/* Collection Selector: choose, create, or edit collection */}
+        <BrickCollectionSelector
+          selectedCollectionId={selectedCollectionId}
+          onSelectCollection={setSelectedCollectionId}
+        />
+
         {/* Core text inputs */}
         <BrickTextInputs
           nativeText={nativeText}
@@ -139,10 +155,6 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
             <Trash2 className="w-5 h-5" />
             <span>Delete Brick</span>
           </button>
-          <p className="text-center text-[10px] text-outline font-medium">
-            This action cannot be undone. All progress for this brick will be
-            lost.
-          </p>
         </section>
       </main>
     </div>

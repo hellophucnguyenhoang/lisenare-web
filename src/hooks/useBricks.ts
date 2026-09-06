@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   listBricks,
   createBrick,
@@ -28,6 +28,19 @@ export function useBricks(params?: BrickListParams) {
   return useQuery({
     queryKey: ["bricks", params],
     queryFn: () => listBricks(params),
+  });
+}
+
+export function useInfiniteBricks(params?: Omit<BrickListParams, "page">) {
+  return useInfiniteQuery({
+    queryKey: ["bricks", "infinite", params],
+    queryFn: ({ pageParam }) => listBricks({ ...params, page: pageParam }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalFetched = allPages.reduce((sum, p) => sum + p.items.length, 0);
+      if (totalFetched >= lastPage.total) return undefined;
+      return allPages.length + 1;
+    },
   });
 }
 

@@ -1,5 +1,6 @@
 import { useState, type KeyboardEvent } from "react";
 import { Tag, Plus, X } from "lucide-react";
+import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface BrickTagsSectionProps {
   tags: string[];
@@ -24,7 +25,7 @@ export default function BrickTagsSection({
     onChange(tags.filter((t) => t !== tagToRemove));
   };
 
-  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleTagKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
@@ -45,14 +46,13 @@ export default function BrickTagsSection({
             <div className="absolute left-3 pointer-events-none text-outline">
               <Tag className="w-3.5 h-3.5" />
             </div>
-            <input
+            <PlainTextInput
               id="input-brick-tags"
-              type="text"
               value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
+              onChange={setTagInput}
               onKeyDown={handleTagKeyDown}
               placeholder="Type a tag and press Enter"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-xs font-medium text-on-surface placeholder:text-outline transition-all"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-xs font-medium text-on-surface transition-all outline-none"
             />
           </div>
           <button

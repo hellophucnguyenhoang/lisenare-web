@@ -8,6 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import AudioWaveform from "@/components/common/AudioWaveform";
+import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface PracticeInputSectionProps {
   showTypeInput: boolean;
@@ -41,7 +42,7 @@ export default function PracticeInputSection({
   onNext,
 }: PracticeInputSectionProps) {
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full max-w-full space-y-4 min-w-0">
       {/* Practice Instruction Banner */}
       <div className="text-center">
         <p className="text-xs text-primary font-medium">
@@ -55,22 +56,37 @@ export default function PracticeInputSection({
       {showTypeInput && (
         <form
           onSubmit={onSubmitTypedAnswer}
-          className="w-full flex items-center gap-2 animate-in slide-in-from-bottom-2 duration-200"
+          autoComplete="none"
+          className="w-full max-w-full flex items-center gap-2 animate-in slide-in-from-bottom-2 duration-200 min-w-0"
         >
-          <input
-            type="text"
-            placeholder="Type target sentence..."
-            value={typedAnswer}
-            onChange={(e) => onChangeTypedAnswer(e.target.value)}
-            disabled={isEvaluating}
-            className="grow px-4 py-3 bg-surface-container-lowest border border-outline-variant/70 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-sm font-medium text-on-surface transition-all shadow-xs outline-none placeholder:text-outline disabled:opacity-50"
-            autoFocus
-          />
+          <div className="grow min-w-0">
+            <PlainTextInput
+              placeholder="Type target sentence..."
+              value={typedAnswer}
+              onChange={onChangeTypedAnswer}
+              disabled={isEvaluating}
+              autoFocus
+              onFocus={() => {
+                requestAnimationFrame(() => {
+                  window.scrollTo({ top: 0, behavior: "instant" });
+                });
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: "instant" });
+                }, 80);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && typedAnswer.trim() && !isEvaluating) {
+                  onSubmitTypedAnswer(e as unknown as React.SubmitEvent);
+                }
+              }}
+              className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant/70 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm font-medium text-on-surface transition-all shadow-xs outline-none"
+            />
+          </div>
           <button
             type="submit"
             id="btn-submit-typed-answer"
             disabled={!typedAnswer.trim() || isEvaluating}
-            className="bg-primary text-on-primary px-4 py-3 rounded-xl font-bold text-xs hover:bg-primary/95 transition-all cursor-pointer active:scale-95 shadow-xs disabled:opacity-40 flex items-center gap-1.5"
+            className="shrink-0 bg-primary text-on-primary px-4 py-3 rounded-xl font-bold text-xs hover:bg-primary/95 transition-all cursor-pointer active:scale-95 shadow-xs disabled:opacity-40 flex items-center gap-1.5"
           >
             {isEvaluating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -83,7 +99,7 @@ export default function PracticeInputSection({
             id="btn-cancel-typed-answer"
             onClick={onCancelTypeInput}
             disabled={isEvaluating}
-            className="p-3 border border-outline-variant/60 bg-surface-container-lowest text-outline hover:text-primary rounded-xl hover:bg-surface-container transition-colors cursor-pointer active:scale-95 disabled:opacity-40"
+            className="shrink-0 p-3 border border-outline-variant/60 bg-surface-container-lowest text-outline hover:text-primary rounded-xl hover:bg-surface-container transition-colors cursor-pointer active:scale-95 disabled:opacity-40"
             title="Switch to microphone"
             aria-label="Switch to microphone"
           >

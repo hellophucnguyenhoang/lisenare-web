@@ -3,6 +3,7 @@ import { type Snippet } from "@/types";
 import { Search, SlidersHorizontal, X, Loader2 } from "lucide-react";
 import SnippetCard from "@/components/discover/SnippetCard";
 import SaveToCollectionModal from "@/components/collections/SaveToCollectionModal";
+import PlainTextInput from "@/components/common/PlainTextInput";
 import { useRandomSnippets } from "@/hooks/useSnippets";
 import { useCollections } from "@/hooks/useCollections";
 import { toast } from "sonner";
@@ -51,12 +52,11 @@ export default function DiscoverPage() {
       <div className="mb-8 flex gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-outline w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search snippets or context..."
+          <PlainTextInput
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none text-sm transition-all shadow-xs"
+            onChange={setSearchQuery}
+            placeholder="Search snippets or context..."
+            className="w-full pl-12 pr-10 py-3 bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary text-sm font-medium transition-all shadow-xs outline-none"
           />
           {searchQuery && (
             <button
