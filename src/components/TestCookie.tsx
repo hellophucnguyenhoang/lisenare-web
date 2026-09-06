@@ -6,7 +6,7 @@ export default function TestCookie() {
   const queryClient = useQueryClient();
 
   // 1. GET DATA (Query)
-  const { data: userData } = useQuery({
+  const { data: learnerData } = useQuery({
     queryKey: ["me"],
     queryFn: () => request("/learners/me"),
   });
@@ -31,7 +31,7 @@ export default function TestCookie() {
     mutationFn: () =>
       request<{ message: string }>("/auth/logout", { method: "POST" }),
     onSuccess: () => {
-      // Clear user data from cache on logout
+      // Clear learner data from cache on logout
       queryClient.setQueryData(["me"], null);
     },
   });
@@ -69,7 +69,9 @@ export default function TestCookie() {
 
       <div className="p-4 bg-gray-50 border rounded">
         <pre className="text-xs whitespace-pre-wrap">
-          {userData ? JSON.stringify(userData, null, 2) : "No user logged in"}
+          {learnerData
+            ? JSON.stringify(learnerData, null, 2)
+            : "No learner logged in"}
         </pre>
       </div>
     </div>

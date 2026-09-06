@@ -59,7 +59,7 @@ export default function BrickTagsSection({
             type="button"
             onClick={handleAddTag}
             disabled={!tagInput.trim()}
-            className="px-3.5 py-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-on-surface text-xs font-bold rounded-xl transition-all disabled:opacity-40 cursor-pointer flex items-center gap-1"
+            className="px-3.5 py-2.5 bg-primary hover:bg-primary/95 text-on-primary text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 disabled:opacity-40 cursor-pointer flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" />
             Add

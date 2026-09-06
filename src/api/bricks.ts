@@ -126,3 +126,9 @@ export async function getNextBrick(collectionIds?: number[]) {
   );
   return api ? toBrick(api) : null;
 }
+
+export async function checkBrickExists(targetText: string): Promise<boolean> {
+  const q = new URLSearchParams();
+  q.set("target_text", targetText);
+  return request<boolean>(`/bricks/exists?${q.toString()}`);
+}

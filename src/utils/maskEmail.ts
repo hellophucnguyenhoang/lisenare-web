@@ -20,7 +20,7 @@ export function maskEmail(email: string | null | undefined): string {
 
   const firstChar = localPart[0];
   const lastChar = localPart[localPart.length - 1];
-  const stars = "*".repeat(Math.min(Math.max(localPart.length - 2, 3), 6));
+  const stars = "*".repeat(3);
 
   return `${firstChar}${stars}${lastChar}${domain}`;
 }

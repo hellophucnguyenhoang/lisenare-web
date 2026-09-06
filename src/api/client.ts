@@ -69,7 +69,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
  *
  * @example
  * // 1. Simple GET (Auth is included by default)
- * const data = await request<User>("/me");
+ * const data = await request<Learner>("/learners/me");
  *
  * @example
  * // 2. POST with JSON body

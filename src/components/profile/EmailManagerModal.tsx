@@ -19,7 +19,7 @@ import { toast } from "sonner";
 interface EmailManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentUser?: Learner;
+  currentLearner?: Learner;
 }
 
 type EmailStep = "overview" | "enter-details" | "verify-otp" | "success";
@@ -27,11 +27,11 @@ type EmailStep = "overview" | "enter-details" | "verify-otp" | "success";
 export default function EmailManagerModal({
   isOpen,
   onClose,
-  currentUser,
+  currentLearner,
 }: EmailManagerModalProps) {
-  const currentEmail = currentUser?.email || "";
-  const isVerified = currentUser?.isEmailVerified ?? Boolean(currentEmail);
-  const currentUsername = currentUser?.name || "";
+  const currentEmail = currentLearner?.email || "";
+  const isVerified = currentLearner?.isEmailVerified ?? Boolean(currentEmail);
+  const currentUsername = currentLearner?.name || "";
 
   const sendEmailOtpMutation = useSendEmailChangeOtp();
   const changeEmailMutation = useChangeEmail();
