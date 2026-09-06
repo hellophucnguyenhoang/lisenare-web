@@ -34,7 +34,7 @@ export default function ProfilePage({
   onOpenAuth,
   onLogout,
 }: ProfilePageProps) {
-  const { data: learner, isLoading: loadingUser } = useLearnerMe();
+  const { data: learner, isLoading: loadingLearner } = useLearnerMe();
   const { data: bricksData } = useBricks();
   const bricks = bricksData?.items ?? [];
 
@@ -60,11 +60,11 @@ export default function ProfilePage({
 
   const maxWeeklyCount = Math.max(...weeklyActivity.map((w) => w.count));
 
-  const userName = learner?.name || "Learner";
-  const userEmail = learner?.email || "";
-  const isEmailVerified = learner?.isEmailVerified ?? Boolean(userEmail);
+  const learnerName = learner?.name || "Learner";
+  const learnerEmail = learner?.email || "";
+  const isEmailVerified = learner?.isEmailVerified ?? Boolean(learnerEmail);
 
-  if (loadingUser) {
+  if (loadingLearner) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-24 text-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
@@ -155,10 +155,10 @@ export default function ProfilePage({
   // ─────────────────────────────────────────────────────────────
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 pb-24 animate-in fade-in duration-300 space-y-6">
-      {/* User Header Profile Card */}
+      {/* Learner Header Profile Card */}
       <ProfileHeaderCard
-        userName={userName}
-        userEmail={userEmail}
+        learnerName={learnerName}
+        learnerEmail={learnerEmail}
         isEmailVerified={isEmailVerified}
         onOpenEmailModal={() => setIsEmailModalOpen(true)}
         onOpenNameModal={() => setIsNameModalOpen(true)}
@@ -268,7 +268,7 @@ export default function ProfilePage({
                 Email Settings
               </h4>
               <p className="text-[10px] text-outline truncate">
-                {userEmail
+                {learnerEmail
                   ? isEmailVerified
                     ? "Verified"
                     : "Unverified"
@@ -343,7 +343,7 @@ export default function ProfilePage({
       <EmailManagerModal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
-        currentUser={learner}
+        currentLearner={learner}
       />
 
       {/* Change Password Modal */}
@@ -355,7 +355,7 @@ export default function ProfilePage({
       {/* Change Name Modal */}
       <ChangeNameModal
         isOpen={isNameModalOpen}
-        currentName={userName}
+        currentName={learnerName}
         onClose={() => setIsNameModalOpen(false)}
       />
     </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Save } from "lucide-react";
-import { useCreateBrick } from "@/hooks/useBricks";
+import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/collections/BrickTextInputs";
 import BrickAudioSection from "@/components/collections/BrickAudioSection";
@@ -22,6 +22,10 @@ export default function AddBrickPage({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const createBrick = useCreateBrick();
+  const checkExists = useCheckBrickExists(targetText);
+
+  const isTargetExists = checkExists.data === true;
+  const isCheckingTargetExists = checkExists.isFetching;
 
   const handleSave = () => {
     if (!nativeText.trim() || !targetText.trim()) {
@@ -82,6 +86,8 @@ export default function AddBrickPage({
           onTargetTextChange={setTargetText}
           pronunciation={pronunciation}
           onPronunciationChange={setPronunciation}
+          targetExists={isTargetExists}
+          isCheckingTargetExists={isCheckingTargetExists}
         />
 
         {/* Pronunciation Recording / Preview section */}

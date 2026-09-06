@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster, toast } from "sonner";
 import { request, RequestError } from "@/api/client";
+import { useLearnerMe } from "@/hooks/useLearner";
 import {
   type Brick,
   type ActiveTab,
@@ -35,40 +36,66 @@ const queryClient = new QueryClient({
   },
 });
 
-export default function App() {
+function AppContent() {
+  const { data: learner, isLoading: isCheckingAuth } = useLearnerMe();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
+  const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<
     number | null
   >(null);
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
 
+  // Set initial tab on load/reload based on authentication state
+  useEffect(() => {
+    if (!hasInitializedTab && !isCheckingAuth) {
+      if (learner) {
+        setActiveTab("practice");
+      } else {
+        setActiveTab("profile");
+      }
+      setHasInitializedTab(true);
+    }
+  }, [hasInitializedTab, isCheckingAuth, learner]);
+
   const handleLogout = async () => {
-    await request("/auth/logout", { method: "POST" });
+    try {
+      await request("/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
     queryClient.clear();
+    setActiveTab("profile");
     toast.success("Logged out successfully");
-    window.location.href = "/";
   };
+
+  if (isCheckingAuth && !hasInitializedTab) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // Render subview pages (overlays on top of tabs)
   if (subview?.type === "addBrick") {
     return (
-      <QueryClientProvider client={queryClient}>
+      <>
         <AddBrickPage
           collectionId={subview.collectionId}
           onBack={() => setSubview(null)}
         />
         <Toaster position="top-center" richColors />
-      </QueryClientProvider>
+      </>
     );
   }
 
   if (subview?.type === "editBrick") {
     return (
-      <QueryClientProvider client={queryClient}>
+      <>
         <EditBrickPage brick={subview.brick} onBack={() => setSubview(null)} />
         <Toaster position="top-center" richColors />
-      </QueryClientProvider>
+      </>
     );
   }
 
@@ -113,34 +140,33 @@ export default function App() {
   };
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-surface pb-20">
-        {renderTab()}
+    <div className="min-h-screen bg-surface pb-20">
+      {renderTab()}
 
-        <BottomNavBar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          clearSubviews={() => setSubview(null)}
-        />
-      </div>
+      <BottomNavBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        clearSubviews={() => setSubview(null)}
+      />
 
       <AuthModal
         isOpen={Boolean(authModalMode)}
         initialMode={authModalMode || "login"}
         onClose={() => setAuthModalMode(null)}
+        onSuccess={() => {
+          setActiveTab("practice");
+        }}
       />
 
       <Toaster position="top-center" richColors />
-    </QueryClientProvider>
+    </div>
   );
 }
 
-// export default function App() {
-//   return (
-//     <QueryClientProvider client={queryClient}>
-//       <TestCookie />
-
-//       <Toaster position="top-center" richColors />
-//     </QueryClientProvider>
-//   );
-// }
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
+  );
+}

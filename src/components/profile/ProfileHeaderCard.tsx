@@ -2,16 +2,16 @@ import { Edit3, Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import { maskEmail } from "@/utils/maskEmail";
 
 interface ProfileHeaderCardProps {
-  userName: string;
-  userEmail: string;
+  learnerName: string;
+  learnerEmail: string;
   isEmailVerified: boolean;
   onOpenEmailModal: () => void;
   onOpenNameModal: () => void;
 }
 
 export default function ProfileHeaderCard({
-  userName,
-  userEmail,
+  learnerName,
+  learnerEmail,
   isEmailVerified,
   onOpenEmailModal,
   onOpenNameModal,
@@ -23,16 +23,16 @@ export default function ProfileHeaderCard({
         <div className="w-16 h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
           <img
             src="https://placecats.com/300/300"
-            alt={userName}
+            alt={learnerName}
             className="w-full h-full object-cover"
           />
         </div>
 
-        {/* User Info */}
+        {/* Learner Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold font-display text-on-surface truncate">
-              {userName}
+              {learnerName}
             </h2>
             <button
               type="button"
@@ -47,7 +47,7 @@ export default function ProfileHeaderCard({
           </div>
 
           <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant">
-            {userEmail ? (
+            {learnerEmail ? (
               <button
                 type="button"
                 onClick={onOpenEmailModal}
@@ -59,7 +59,7 @@ export default function ProfileHeaderCard({
                 }
               >
                 <Mail className="w-3.5 h-3.5 text-outline group-hover:text-primary transition-colors shrink-0" />
-                <span className="truncate">{maskEmail(userEmail)}</span>
+                <span className="truncate">{maskEmail(learnerEmail)}</span>
                 {isEmailVerified ? (
                   <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md shrink-0">
                     <CheckCircle2 className="w-3 h-3" />

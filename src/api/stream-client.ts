@@ -5,7 +5,7 @@ export const streamChat = async (
   question: string,
   onChunk: (chunk: string) => void,
 ) => {
-  console.log(`userQuestion:${question}`);
+  console.log(`learnerQuestion:${question}`);
   const response = await fetch(`${API_BASE_URL}/chat`, {
     method: "POST",
     headers: {

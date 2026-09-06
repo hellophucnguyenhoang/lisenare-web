@@ -18,13 +18,9 @@ export const ERROR_MESSAGES: Record<string, string> = {
     "The verification code you entered is invalid. Please double-check it.",
 
   // Collections Management
-  RESERVED_COLLECTION_NAME:
-    "This collection name is reserved for system use. Please pick a different name.",
-  COLLECTION_ALREADY_EXISTS:
-    "You already have a collection with this name. Try a unique name.",
+  COLLECTION_ALREADY_EXISTS: "You already have this collection.",
 
   // Bricks Management
-  BRICK_ALREADY_EXISTS: "This item already exists in your learning library.",
   BRICK_EDIT_FORBIDDEN: "You do not have permission to modify this item.",
 
   // External / AI Engine Errors

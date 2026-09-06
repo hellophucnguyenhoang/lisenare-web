@@ -3,7 +3,7 @@ import { type Collection, type Brick, type SortOption } from "@/types";
 import BrickCard from "@/components/collections/BrickCard";
 import CollectionCard from "@/components/collections/CollectionCard";
 import AddCollectionModal from "@/components/collections/AddCollectionModal";
-import { Plus, ArrowLeft, BookOpen, X, Search } from "lucide-react";
+import { Plus, ArrowLeft, X, Search } from "lucide-react";
 import {
   useCollections,
   useDeleteCollection,

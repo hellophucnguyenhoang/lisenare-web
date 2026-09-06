@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { type Brick } from "@/types";
 import { ArrowLeft, Trash2, Check } from "lucide-react";
-import { useUpdateBrick, useDeleteBrick } from "@/hooks/useBricks";
+import {
+  useUpdateBrick,
+  useDeleteBrick,
+  useCheckBrickExists,
+} from "@/hooks/useBricks";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/collections/BrickTextInputs";
 import BrickAudioSection from "@/components/collections/BrickAudioSection";
@@ -21,6 +25,14 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
 
   const updateBrick = useUpdateBrick();
   const deleteBrick = useDeleteBrick();
+
+  const isTargetTextChanged =
+    targetText.trim().toLowerCase() !==
+    (brick.targetText || "").trim().toLowerCase();
+  const checkExists = useCheckBrickExists(targetText, isTargetTextChanged);
+
+  const isTargetExists = isTargetTextChanged && checkExists.data === true;
+  const isCheckingTargetExists = isTargetTextChanged && checkExists.isFetching;
 
   const handleSave = () => {
     if (!nativeText.trim() || !targetText.trim()) {
@@ -103,6 +115,8 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           onTargetTextChange={setTargetText}
           pronunciation={pronunciation}
           onPronunciationChange={setPronunciation}
+          targetExists={isTargetExists}
+          isCheckingTargetExists={isCheckingTargetExists}
         />
 
         {/* Pronunciation audio section */}

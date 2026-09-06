@@ -1,6 +1,12 @@
 import { useState, useRef, useMemo, type ChangeEvent } from "react";
 import { Mic, Upload, Volume2 } from "lucide-react";
-import { playShortAudio } from "@/utils/audio";
+import {
+  playShortAudio,
+  getAudioMediaStream,
+  createMediaRecorder,
+  getSupportedAudioMimeType,
+} from "@/utils/audio";
+import { toast } from "sonner";
 
 interface BrickAudioSectionProps {
   audioBlob: Blob | null;
@@ -22,31 +28,45 @@ export default function BrickAudioSection({
     return audioBlob ? URL.createObjectURL(audioBlob) : null;
   }, [audioBlob]);
 
-  const handleRecord = () => {
+  const handleRecord = async () => {
     if (isRecording) {
       mediaRecorderRef.current?.stop();
       setIsRecording(false);
     } else {
-      navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-        const mediaRecorder = new MediaRecorder(stream);
+      try {
+        const stream = await getAudioMediaStream();
+        const mediaRecorder = createMediaRecorder(stream);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
         mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
+          if (e.data && e.data.size > 0) {
             audioChunksRef.current.push(e.data);
           }
         };
 
         mediaRecorder.onstop = () => {
-          const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const mimeType =
+            mediaRecorder.mimeType ||
+            getSupportedAudioMimeType() ||
+            "audio/webm";
+          const blob = new Blob(audioChunksRef.current, { type: mimeType });
           onAudioChange(blob);
           stream.getTracks().forEach((track) => track.stop());
         };
 
         mediaRecorder.start();
         setIsRecording(true);
-      });
+      } catch (err: unknown) {
+        console.warn("Microphone access error:", err);
+        const error = err as { name?: string; message?: string };
+        const msg =
+          error?.name === "NotAllowedError" ||
+          error?.name === "PermissionDeniedError"
+            ? "Microphone permission was denied. Please allow microphone access in your browser settings."
+            : error?.message || "Could not access microphone.";
+        toast.error(msg);
+      }
     }
   };
 

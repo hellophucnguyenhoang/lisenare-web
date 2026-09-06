@@ -1,277 +1,251 @@
 import { useState, useEffect, useRef } from "react";
-import { type Brick } from "@/types";
-import { useBricks } from "@/hooks/useBricks";
-import { playShortAudio } from "@/utils/audio";
+import { useQuery } from "@tanstack/react-query";
+import { getNextBrick } from "@/api/bricks";
+import {
+  playShortAudio,
+  getAudioMediaStream,
+  createMediaRecorder,
+  getSupportedAudioMimeType,
+} from "@/utils/audio";
+import { transcribeAudio, compareSentences } from "@/api/evaluation";
 import PracticeHeader from "@/components/practice/PracticeHeader";
 import PracticeFlashcard from "@/components/practice/PracticeFlashcard";
 import PracticeInputSection from "@/components/practice/PracticeInputSection";
 import PracticeEvaluationModal from "@/components/practice/PracticeEvaluationModal";
+import { toast } from "sonner";
 
 export default function PracticePage() {
-  const { data: bricksData, isLoading } = useBricks();
-  const allBricks = bricksData?.items ?? [];
+  const [finishedCount, setFinishedCount] = useState(0);
 
-  // Practice session state
-  const [sessionBricks, setSessionBricks] = useState<Brick[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Turn state
   const [isRevealed, setIsRevealed] = useState(false);
+  const [hasListenedTargetAudio, setHasListenedTargetAudio] = useState(false);
+  const [hasSubmittedThisTurn, setHasSubmittedThisTurn] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState("");
   const [showTypeInput, setShowTypeInput] = useState(false);
   const [learnerAudioUrl, setLearnerAudioUrl] = useState<string | null>(null);
 
-  const [evaluationFeedback, setEvaluationFeedback] = useState<{
-    show: boolean;
-    overall: number;
-    pronunciation: number;
-    accuracy: number;
-    message: string;
-    phonemes?: { word: string; status: "correct" | "partial" | "missed" }[];
+  const [evaluationResult, setEvaluationResult] = useState<{
+    score: number;
+    passed: boolean;
+    targetText: string;
+    learnerText: string;
   } | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  // Stats
-  const learnedCount = allBricks.filter((b) => b.learned).length;
-  const newCount = allBricks.filter((b) => !b.learned).length;
+  // Fetch the active brick via React Query (deduplicated across renders/StrictMode mounts)
+  const {
+    data: activeBrick,
+    isLoading: isLoadingBrick,
+    refetch,
+  } = useQuery({
+    queryKey: ["bricks", "practice-next"],
+    queryFn: () => getNextBrick(),
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
-  // Initialize a randomized session once bricks are loaded
-  useEffect(() => {
-    if (sessionBricks.length === 0 && allBricks.length > 0) {
-      const pool = [...allBricks].sort(() => 0.5 - Math.random()).slice(0, 5);
-      setSessionBricks(pool);
-      setCurrentIndex(0);
-      setIsRevealed(false);
-      setTypedAnswer("");
-      setShowTypeInput(false);
-      setEvaluationFeedback(null);
-    }
-  }, [allBricks, sessionBricks.length]);
+  const isAnswerRevealed = isRevealed || hasListenedTargetAudio;
 
-  const activeBrick = sessionBricks[currentIndex];
-
-
-
-  // Reset state on card transition
+  // Reset turn state whenever active brick changes
   useEffect(() => {
     if (activeBrick) {
       setIsRevealed(false);
+      setHasListenedTargetAudio(false);
+      setHasSubmittedThisTurn(false);
       setTypedAnswer("");
-      setEvaluationFeedback(null);
+      setEvaluationResult(null);
       setLearnerAudioUrl(null);
     }
-  }, [activeBrick]);
+  }, [activeBrick?.id]);
 
-  const startRecordingAudio = () => {
+  const handleStartRecording = async () => {
     setLearnerAudioUrl(null);
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      audioChunksRef.current = [];
-      navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-          const recorder = new MediaRecorder(stream);
-          mediaRecorderRef.current = recorder;
-          recorder.ondataavailable = (e) => {
-            if (e.data.size > 0) {
-              audioChunksRef.current.push(e.data);
-            }
-          };
-          recorder.onstop = () => {
-            const blob = new Blob(audioChunksRef.current, {
-              type: "audio/webm",
-            });
-            if (blob.size > 0) {
-              const url = URL.createObjectURL(blob);
-              setLearnerAudioUrl(url);
-            }
-            stream.getTracks().forEach((t) => t.stop());
-          };
-          recorder.start();
-        })
-        .catch((err) => {
-          console.warn("Microphone stream error:", err);
-        });
+    audioChunksRef.current = [];
+
+    try {
+      const stream = await getAudioMediaStream();
+      streamRef.current = stream;
+      const recorder = createMediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch (err: unknown) {
+      console.warn("Microphone access error:", err);
+      const error = err as { name?: string; message?: string };
+      const msg =
+        error?.name === "NotAllowedError" ||
+        error?.name === "PermissionDeniedError"
+          ? "Microphone permission was denied. Please allow microphone access in your browser settings."
+          : error?.message || "Could not access microphone.";
+      toast.error(msg);
     }
   };
 
-  const stopRecordingAudio = () => {
+  const handleCancelRecording = () => {
     if (
       mediaRecorderRef.current &&
       mediaRecorderRef.current.state !== "inactive"
     ) {
+      mediaRecorderRef.current.onstop = null;
       mediaRecorderRef.current.stop();
     }
-  };
-
-  // Handle Mic Recording & Evaluation
-  const handleMicClick = () => {
-    if (isRecording) {
-      setIsRecording(false);
-      stopRecordingAudio();
-      evaluateSpeech();
-    } else {
-      setIsRecording(true);
-      startRecordingAudio();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const SpeechRecognitionCtor =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
-      if (SpeechRecognitionCtor) {
-        const recognition = new SpeechRecognitionCtor();
-        recognition.lang = "en-US";
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        recognition.onresult = (event: any) => {
-          const spoken = event.results[0][0].transcript;
-          evaluateSpeech(spoken);
-        };
-
-        recognition.onerror = () => {
-          setTimeout(() => {
-            evaluateSpeech();
-          }, 1200);
-        };
-
-        recognition.start();
-        setTimeout(() => {
-          if (recognition) recognition.stop();
-          setIsRecording(false);
-          stopRecordingAudio();
-        }, 4000);
-      } else {
-        // Fallback: auto-stop after timeout
-        setTimeout(() => {
-          setIsRecording(false);
-          stopRecordingAudio();
-          evaluateSpeech();
-        }, 2500);
-      }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
     }
+    audioChunksRef.current = [];
+    setIsRecording(false);
   };
 
-  // Evaluate Pronunciation
-  const evaluateSpeech = (spokenText?: string) => {
+  const handleSubmitRecording = async () => {
     if (!activeBrick) return;
 
-    stopRecordingAudio();
+    if (
+      !mediaRecorderRef.current ||
+      mediaRecorderRef.current.state === "inactive"
+    ) {
+      setIsRecording(false);
+      return;
+    }
+
+    const recorder = mediaRecorderRef.current;
+
+    // Collect audio blob on stop
+    const audioBlobPromise = new Promise<Blob>((resolve) => {
+      recorder.onstop = () => {
+        const mimeType =
+          recorder.mimeType || getSupportedAudioMimeType() || "audio/webm";
+        const blob = new Blob(audioChunksRef.current, {
+          type: mimeType,
+        });
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((t) => t.stop());
+          streamRef.current = null;
+        }
+        resolve(blob);
+      };
+    });
+
+    recorder.stop();
     setIsRecording(false);
-    setIsRevealed(true);
+    setIsEvaluating(true);
 
-    const userText = spokenText || activeBrick.targetText;
+    try {
+      const blob = await audioBlobPromise;
+      if (blob.size > 0) {
+        const url = URL.createObjectURL(blob);
+        setLearnerAudioUrl(url);
 
-    const targetWords = activeBrick.targetText
-      .toLowerCase()
-      .replace(/[¿?¡!.,]/g, "")
-      .split(/\s+/);
-    const spokenWords = userText
-      .toLowerCase()
-      .replace(/[¿?¡!.,]/g, "")
-      .split(/\s+/);
+        // 1. Transcribe audio via /audio/transcripts
+        const transcript = await transcribeAudio(blob);
 
-    let matchCount = 0;
-    const phonemes = activeBrick.targetText.split(/\s+/).map((rawWord) => {
-      const cleanWord = rawWord.toLowerCase().replace(/[¿?¡!.,]/g, "");
-      if (spokenWords.includes(cleanWord)) {
-        matchCount++;
-        return { word: rawWord, status: "correct" as const };
-      } else if (
-        spokenWords.some((w) => w.includes(cleanWord) || cleanWord.includes(w))
-      ) {
-        matchCount += 0.5;
-        return { word: rawWord, status: "partial" as const };
+        // 2. Determine whether review_base should be included (only on the first submit of this turn)
+        const reviewBase = !hasSubmittedThisTurn
+          ? {
+              brick_id: activeBrick.id,
+              is_answer_revealed: isAnswerRevealed,
+              learner_target_text: transcript || null,
+            }
+          : null;
+
+        setHasSubmittedThisTurn(true);
+
+        // 3. Compare transcript with target text via /text/sentence-comparison
+        const res = await compareSentences({
+          sentence1: transcript || "",
+          sentence2: activeBrick.targetText,
+          review_base: reviewBase,
+        });
+
+        setIsRevealed(true);
+        const passed = res.score >= (res.threshold ?? 0.7);
+        setEvaluationResult({
+          score: res.score,
+          passed,
+          targetText: activeBrick.targetText,
+          learnerText: transcript || "",
+        });
       } else {
-        return { word: rawWord, status: "missed" as const };
+        toast.error("No audio recorded. Please try again.");
       }
-    });
-
-    const matchPercentage =
-      targetWords.length > 0
-        ? Math.min(
-            100,
-            Math.max(65, Math.round((matchCount / targetWords.length) * 100)),
-          )
-        : 88;
-
-    const pronScore = matchPercentage;
-    const accScore = Math.floor(Math.random() * 12) + 85;
-
-    setEvaluationFeedback({
-      show: true,
-      overall: Math.round((pronScore + accScore) / 2),
-      pronunciation: pronScore,
-      accuracy: accScore,
-      message:
-        pronScore >= 90
-          ? "Excellent pronunciation! Clear enunciation and tone."
-          : "Good attempt! Pay attention to word stress and rhythm.",
-      phonemes,
-    });
-  };
-
-  const handleNext = () => {
-    setEvaluationFeedback(null);
-    if (currentIndex < sessionBricks.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setIsRevealed(false);
-      setTypedAnswer("");
-      setShowTypeInput(false);
+    } catch (err) {
+      console.error("Evaluation error:", err);
+      toast.error("Evaluation failed. Please try again.");
+    } finally {
+      setIsEvaluating(false);
     }
   };
 
-  const handleTypedSubmit = (e: React.SubmitEvent) => {
+  const handleTypedSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    if (typedAnswer.trim() === "") return;
+    if (!activeBrick || typedAnswer.trim() === "") return;
 
-    setIsRevealed(true);
+    setIsEvaluating(true);
+    try {
+      // Determine whether review_base should be included (only on the first submit of this turn)
+      const reviewBase = !hasSubmittedThisTurn
+        ? {
+            brick_id: activeBrick.id,
+            is_answer_revealed: isAnswerRevealed,
+            learner_target_text: typedAnswer.trim(),
+          }
+        : null;
 
-    const targetWords = activeBrick.targetText
-      .toLowerCase()
-      .replace(/[¿?¡!.,]/g, "")
-      .split(/\s+/);
-    const typedWords = typedAnswer
-      .toLowerCase()
-      .replace(/[¿?¡!.,]/g, "")
-      .split(/\s+/);
+      setHasSubmittedThisTurn(true);
 
-    let matchCount = 0;
-    const phonemes = activeBrick.targetText.split(/\s+/).map((rawWord) => {
-      const cleanWord = rawWord.toLowerCase().replace(/[¿?¡!.,]/g, "");
-      if (typedWords.includes(cleanWord)) {
-        matchCount++;
-        return { word: rawWord, status: "correct" as const };
-      } else if (
-        typedWords.some((w) => w.includes(cleanWord) || cleanWord.includes(w))
-      ) {
-        matchCount += 0.5;
-        return { word: rawWord, status: "partial" as const };
-      } else {
-        return { word: rawWord, status: "missed" as const };
-      }
-    });
+      const res = await compareSentences({
+        sentence1: typedAnswer.trim(),
+        sentence2: activeBrick.targetText,
+        review_base: reviewBase,
+      });
 
-    const score =
-      targetWords.length > 0
-        ? Math.min(100, Math.round((matchCount / targetWords.length) * 100))
-        : 75;
-
-    setEvaluationFeedback({
-      show: true,
-      overall: score,
-      pronunciation: 88,
-      accuracy: score,
-      message:
-        score >= 90
-          ? "Brilliant match! Your writing is spot on."
-          : "Close match! Compare spelling with the target language.",
-      phonemes,
-    });
+      setIsRevealed(true);
+      const passed = res.score >= (res.threshold ?? 0.7);
+      setEvaluationResult({
+        score: res.score,
+        passed,
+        targetText: activeBrick.targetText,
+        learnerText: typedAnswer.trim(),
+      });
+    } catch (err) {
+      console.error("Typed evaluation error:", err);
+      toast.error("Evaluation failed. Please try again.");
+    } finally {
+      setIsEvaluating(false);
+    }
   };
 
-  if (isLoading) {
+  const handleNext = async () => {
+    setEvaluationResult(null);
+    setFinishedCount((prev) => prev + 1);
+    setIsRevealed(false);
+    setHasListenedTargetAudio(false);
+    setHasSubmittedThisTurn(false);
+    setTypedAnswer("");
+    setShowTypeInput(false);
+    setLearnerAudioUrl(null);
+
+    const result = await refetch();
+    if (!result.data) {
+      toast.success("Session completed! Great job!");
+    }
+  };
+
+  if (isLoadingBrick) {
     return (
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-24 text-center animate-in fade-in duration-300">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
@@ -279,7 +253,7 @@ export default function PracticePage() {
     );
   }
 
-  if (sessionBricks.length === 0) {
+  if (!activeBrick) {
     return (
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-24 text-center animate-in fade-in duration-300">
         <div className="w-16 h-16 rounded-2xl border border-primary/20 flex items-center justify-center mx-auto mb-4 shadow-xs overflow-hidden">
@@ -301,48 +275,58 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-6 max-w-lg mx-auto w-full animate-in fade-in duration-300">
-      {/* Session progress dashboard */}
-      <PracticeHeader
-        learnedCount={learnedCount}
-        newCount={newCount}
-        currentIndex={currentIndex}
-        totalCount={sessionBricks.length}
-        showTypeInput={showTypeInput}
-        onToggleTypeInput={() => setShowTypeInput(!showTypeInput)}
-      />
-
+    <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-8 max-w-lg mx-auto w-full animate-in fade-in duration-300 min-h-[calc(100vh-6rem)]">
       {/* Main Flashcard & Interactive Input section */}
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-4">
+        {/* Minimal header with finished count and monkey status icons */}
+        <PracticeHeader
+          finishedCount={finishedCount}
+          isAnswerRevealed={isAnswerRevealed}
+          hasSubmittedThisTurn={hasSubmittedThisTurn}
+        />
+
         <PracticeFlashcard
           activeBrick={activeBrick}
           isRevealed={isRevealed}
           onToggleReveal={() => setIsRevealed(!isRevealed)}
-          onPlayAudio={() => playShortAudio(activeBrick.targetAudioPath)}
+          onPlayAudio={() => {
+            setHasListenedTargetAudio(true);
+            playShortAudio(activeBrick.targetAudioPath);
+          }}
         />
 
         <PracticeInputSection
           showTypeInput={showTypeInput}
+          onToggleTypeInput={() => setShowTypeInput(!showTypeInput)}
           typedAnswer={typedAnswer}
           onChangeTypedAnswer={setTypedAnswer}
           onSubmitTypedAnswer={handleTypedSubmit}
           onCancelTypeInput={() => setShowTypeInput(false)}
           isRecording={isRecording}
-          onMicClick={handleMicClick}
-          showNextButton={Boolean(isRevealed || evaluationFeedback)}
+          isEvaluating={isEvaluating}
+          onStartRecording={handleStartRecording}
+          onSubmitRecording={handleSubmitRecording}
+          onCancelRecording={handleCancelRecording}
+          showNextButton={Boolean(evaluationResult?.passed)}
           onNext={handleNext}
         />
       </div>
 
-      {/* Dynamic Scoreboard & Evaluation Dialog */}
-      {evaluationFeedback && (
+      {/* Minimal Scoreboard & Evaluation Dialog */}
+      {evaluationResult && (
         <PracticeEvaluationModal
-          feedback={evaluationFeedback}
-          activeBrick={activeBrick}
-          onClose={() => setEvaluationFeedback(null)}
+          score={evaluationResult.score}
+          passed={evaluationResult.passed}
+          targetText={evaluationResult.targetText}
+          learnerText={evaluationResult.learnerText}
+          onClose={() => setEvaluationResult(null)}
           onNext={handleNext}
-          onPlayTargetAudio={() => playShortAudio(activeBrick.targetAudioPath)}
+          onPlayTargetAudio={() => {
+            setHasListenedTargetAudio(true);
+            playShortAudio(activeBrick.targetAudioPath);
+          }}
           onPlayLearnerAudio={() => playShortAudio(learnerAudioUrl)}
+          hasLearnerAudio={Boolean(learnerAudioUrl)}
         />
       )}
     </div>

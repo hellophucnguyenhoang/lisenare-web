@@ -18,7 +18,7 @@ interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   clearSubviews: () => void;
-  currentUser?: Learner;
+  currentLearner?: Learner;
   onOpenAuth?: (mode: AuthMode) => void;
   onLogout?: () => void;
 }
@@ -27,7 +27,7 @@ export default function Header({
   activeTab,
   setActiveTab,
   clearSubviews,
-  currentUser,
+  currentLearner,
   onOpenAuth,
   onLogout,
 }: HeaderProps) {
@@ -40,7 +40,7 @@ export default function Header({
     { id: "discover" as const, label: "Discover" },
   ];
 
-  const isLoggedIn = Boolean(currentUser);
+  const isLoggedIn = Boolean(currentLearner);
 
   // Close dropdown on outside click or Escape key
   useEffect(() => {
@@ -66,10 +66,12 @@ export default function Header({
     };
   }, [isMenuOpen]);
 
-  const userName = currentUser?.name || "Learner";
-  const userEmail = currentUser?.email || "";
-  const isEmailVerified = currentUser?.isEmailVerified ?? Boolean(userEmail);
-  const userAvatar = currentUser?.avatarUrl || "https://placecats.com/300/300";
+  const learnerName = currentLearner?.name || "Learner";
+  const learnerEmail = currentLearner?.email || "";
+  const isEmailVerified =
+    currentLearner?.isEmailVerified ?? Boolean(learnerEmail);
+  const learnerAvatar =
+    currentLearner?.avatarUrl || "https://placecats.com/300/300";
 
   const handleLogoutClick = () => {
     setIsMenuOpen(false);
@@ -158,22 +160,22 @@ export default function Header({
               >
                 <div className="w-6 h-6 rounded-full overflow-hidden border border-primary/30 relative shrink-0">
                   <img
-                    src={userAvatar}
-                    alt={userName}
+                    src={learnerAvatar}
+                    alt={learnerName}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="font-bold text-xs">{userName}</span>
+                <span className="font-bold text-xs">{learnerName}</span>
                 <ChevronDown
                   className={`w-3.5 h-3.5 text-outline transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`}
                 />
               </button>
             )}
 
-            {/* Logged-In User Information & Logout Popover Dropdown */}
+            {/* Logged-In Learner Information & Logout Popover Dropdown */}
             {isLoggedIn && isMenuOpen && (
               <div
-                id="header-user-dropdown"
+                id="header-learner-dropdown"
                 className="absolute right-0 mt-2 w-72 sm:w-80 bg-surface-container-lowest border border-outline-variant/80 rounded-2xl shadow-xl p-4 z-50 animate-in fade-in zoom-in-95 duration-150"
               >
                 {/* Header profile info */}
@@ -181,8 +183,8 @@ export default function Header({
                   <div className="relative shrink-0">
                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-fixed-dim bg-surface-container-high">
                       <img
-                        src={userAvatar}
-                        alt={userName}
+                        src={learnerAvatar}
+                        alt={learnerName}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -192,21 +194,23 @@ export default function Header({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1">
                       <h3 className="text-sm font-bold text-on-surface truncate">
-                        {userName}
+                        {learnerName}
                       </h3>
                       <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
                         Active
                       </span>
                     </div>
                     <p className="text-xs font-semibold text-primary truncate">
-                      {userName}
+                      {learnerName}
                     </p>
 
                     {/* Email & status */}
-                    {userEmail ? (
+                    {learnerEmail ? (
                       <div className="flex items-center gap-1 text-[11px] text-outline mt-0.5 truncate">
                         <Mail className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{maskEmail(userEmail)}</span>
+                        <span className="truncate">
+                          {maskEmail(learnerEmail)}
+                        </span>
                         {isEmailVerified && (
                           <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
                         )}
