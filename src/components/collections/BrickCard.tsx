@@ -10,7 +10,7 @@ import {
 
 interface BrickCardProps {
   brick: Brick;
-  onEditBrick: (brickId: number) => void;
+  onEditBrick: (brick: Brick) => void;
   onDeleteBrick: (brickId: number) => void;
   onStudyBrick: (brick: Brick) => void;
 }
@@ -56,7 +56,7 @@ export default function BrickCard({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onEditBrick(brick.id);
+                      onEditBrick(brick);
                       setIsMenuOpen(false);
                     }}
                     className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface"

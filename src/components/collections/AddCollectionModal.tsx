@@ -1,6 +1,7 @@
 import { useState, type KeyboardEvent } from "react";
 import { FolderPlus, FolderEdit, X, Check, Plus, Tag } from "lucide-react";
 import { type Collection } from "@/types";
+import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface AddCollectionModalProps {
   onClose: () => void;
@@ -45,7 +46,7 @@ export default function AddCollectionModal({
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  const handleTagKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleTagKeyDown = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleAddTag();
@@ -107,7 +108,7 @@ export default function AddCollectionModal({
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4" autoComplete="off" noValidate>
           {/* Collection Name */}
           <div className="space-y-1.5">
             <label
@@ -116,14 +117,12 @@ export default function AddCollectionModal({
             >
               Collection Name <span className="text-error">*</span>
             </label>
-            <input
+            <PlainTextInput
               id="input-collection-name"
-              type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={setName}
               placeholder="e.g. Slang Words, Medical Terms, Travel"
-              className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-sm font-medium text-on-surface placeholder:text-outline transition-all"
-              required
+              className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm font-medium text-on-surface transition-all outline-none"
               autoFocus
             />
           </div>
@@ -138,6 +137,11 @@ export default function AddCollectionModal({
             </label>
             <textarea
               id="input-collection-desc"
+              name="collection-description"
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              data-form-type="other"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what this collection is for..."
@@ -159,14 +163,13 @@ export default function AddCollectionModal({
                 <div className="absolute left-3 pointer-events-none text-outline">
                   <Tag className="w-3.5 h-3.5" />
                 </div>
-                <input
+                <PlainTextInput
                   id="input-collection-tags"
-                  type="text"
                   value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
+                  onChange={setTagInput}
                   onKeyDown={handleTagKeyDown}
                   placeholder="Type a tag and press Enter"
-                  className="w-full pl-9 pr-3.5 py-2 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-xs font-medium text-on-surface placeholder:text-outline transition-all"
+                  className="w-full pl-9 pr-3.5 py-2 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-xs font-medium text-on-surface transition-all outline-none"
                 />
               </div>
               <button

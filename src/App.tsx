@@ -4,13 +4,13 @@ import { Toaster, toast } from "sonner";
 import { request, RequestError } from "@/api/client";
 import { useLearnerMe } from "@/hooks/useLearner";
 import {
-  type Brick,
   type ActiveTab,
   type AuthMode,
   type Subview,
 } from "@/types";
 
-import CollectionsPage from "@/pages/CollectionsPage";
+import BricksPage from "@/pages/BricksPage";
+import SearchPage from "@/pages/SearchPage";
 import DiscoverPage from "@/pages/DiscoverPage";
 import PracticePage from "@/pages/PracticePage";
 import ProfilePage from "@/pages/ProfilePage";
@@ -40,11 +40,9 @@ function AppContent() {
   const { data: learner, isLoading: isCheckingAuth } = useLearnerMe();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    number | null
-  >(null);
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
+  const [isPracticeTyping, setIsPracticeTyping] = useState(false);
 
   // Set initial tab on load/reload based on authentication state
   useEffect(() => {
@@ -99,36 +97,40 @@ function AppContent() {
     );
   }
 
+  if (subview?.type === "search") {
+    return (
+      <>
+        <SearchPage
+          onBack={() => setSubview(null)}
+          onNavigateToPractice={() => {
+            setSubview(null);
+            setActiveTab("practice");
+          }}
+        />
+        <Toaster position="top-center" richColors />
+      </>
+    );
+  }
+
   const renderTab = () => {
     switch (activeTab) {
-      case "collections":
+      case "bricks":
         return (
-          <CollectionsPage
-            selectedCollectionId={selectedCollectionId}
-            onSelectCollection={setSelectedCollectionId}
+          <BricksPage
             onNavigateToAddBrick={(collectionId) => {
-              setSelectedCollectionId(collectionId);
               setSubview({ type: "addBrick", collectionId });
             }}
-            onNavigateToEditBrick={(brickId) => {
-              const cached = queryClient.getQueriesData<{ items: Brick[] }>({
-                queryKey: ["bricks"],
-              });
-              const brick = cached
-                .flatMap(([, data]) => data?.items ?? [])
-                .find((b) => b.id === brickId);
-              if (brick) {
-                setSelectedCollectionId(brick.collectionId);
-                setSubview({ type: "editBrick", brick });
-              }
+            onNavigateToEditBrick={(brick) => {
+              setSubview({ type: "editBrick", brick });
             }}
             onNavigateToPractice={() => setActiveTab("practice")}
+            onNavigateToSearch={() => setSubview({ type: "search" })}
           />
         );
       case "discover":
         return <DiscoverPage />;
       case "practice":
-        return <PracticePage />;
+        return <PracticePage onTypingModeChange={setIsPracticeTyping} />;
       case "profile":
         return (
           <ProfilePage
@@ -139,15 +141,25 @@ function AppContent() {
     }
   };
 
+  const isTypingActive = isPracticeTyping && activeTab === "practice";
+
   return (
-    <div className="min-h-screen bg-surface pb-20">
+    <div
+      className={`min-h-screen bg-surface ${
+        isTypingActive
+          ? "pb-2 max-h-[100dvh] overflow-y-auto overscroll-none"
+          : "pb-20"
+      }`}
+    >
       {renderTab()}
 
-      <BottomNavBar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        clearSubviews={() => setSubview(null)}
-      />
+      {!isTypingActive && (
+        <BottomNavBar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          clearSubviews={() => setSubview(null)}
+        />
+      )}
 
       <AuthModal
         isOpen={Boolean(authModalMode)}

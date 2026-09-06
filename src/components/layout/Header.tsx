@@ -36,7 +36,7 @@ export default function Header({
 
   const navItems = [
     { id: "practice" as const, label: "Practice" },
-    { id: "collections" as const, label: "Collections" },
+    { id: "bricks" as const, label: "Bricks" },
     { id: "discover" as const, label: "Discover" },
   ];
 
@@ -95,7 +95,7 @@ export default function Header({
         <div className="flex items-center gap-3">
           <div
             onClick={() => {
-              setActiveTab("collections");
+              setActiveTab("bricks");
               clearSubviews();
             }}
             className="flex items-center gap-2.5 cursor-pointer group select-none"

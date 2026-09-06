@@ -14,7 +14,11 @@ import PracticeInputSection from "@/components/practice/PracticeInputSection";
 import PracticeEvaluationModal from "@/components/practice/PracticeEvaluationModal";
 import { toast } from "sonner";
 
-export default function PracticePage() {
+interface PracticePageProps {
+  onTypingModeChange?: (isTyping: boolean) => void;
+}
+
+export default function PracticePage({ onTypingModeChange }: PracticePageProps) {
   const [finishedCount, setFinishedCount] = useState(0);
 
   // Turn state
@@ -64,6 +68,17 @@ export default function PracticePage() {
       setLearnerAudioUrl(null);
     }
   }, [activeBrick?.id]);
+
+  // Ensure view stays pinned to top when keyboard/typing mode opens on mobile
+  useEffect(() => {
+    if (showTypeInput) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+    onTypingModeChange?.(showTypeInput);
+    return () => {
+      onTypingModeChange?.(false);
+    };
+  }, [showTypeInput, onTypingModeChange]);
 
   const handleStartRecording = async () => {
     setLearnerAudioUrl(null);
@@ -275,9 +290,15 @@ export default function PracticePage() {
   }
 
   return (
-    <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-8 max-w-lg mx-auto w-full animate-in fade-in duration-300 min-h-[calc(100vh-6rem)]">
+    <div
+      className={`grow flex flex-col items-center px-4 sm:px-6 max-w-lg mx-auto w-full animate-in fade-in duration-300 ${
+        showTypeInput
+          ? "justify-start pt-2 sm:pt-4 pb-2 sm:pb-4 min-h-0"
+          : "justify-center py-6 sm:py-8 min-h-[calc(100dvh-10rem)]"
+      }`}
+    >
       {/* Main Flashcard & Interactive Input section */}
-      <div className="w-full space-y-4">
+      <div className="w-full max-w-full space-y-4 min-w-0">
         {/* Minimal header with finished count and monkey status icons */}
         <PracticeHeader
           finishedCount={finishedCount}

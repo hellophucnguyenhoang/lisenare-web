@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X, User, Loader2, AlertCircle } from "lucide-react";
 import { useUpdateLearnerName } from "@/hooks/useLearner";
 import { toast } from "sonner";
+import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface ChangeNameModalProps {
   isOpen: boolean;
@@ -106,7 +107,7 @@ export default function ChangeNameModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-5" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-5" autoComplete="off" noValidate>
           <div className="space-y-1.5">
             <label
               htmlFor="edit-display-name"
@@ -118,14 +119,12 @@ export default function ChangeNameModal({
               <div className="absolute left-3.5 pointer-events-none text-outline">
                 <User className="w-4 h-4" />
               </div>
-              <input
+              <PlainTextInput
                 id="edit-display-name"
-                type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={setName}
                 placeholder="Enter your name"
-                className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm font-medium text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all"
-                required
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm font-medium text-on-surface focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all outline-none"
                 autoFocus
               />
             </div>

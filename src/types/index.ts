@@ -50,10 +50,11 @@ export interface Snippet {
   tags: string[];
 }
 
-export type ActiveTab = "practice" | "collections" | "discover" | "profile";
+export type ActiveTab = "practice" | "bricks" | "discover" | "profile";
 export type Subview =
-  | { type: "addBrick"; collectionId: number }
+  | { type: "addBrick"; collectionId?: number }
   | { type: "editBrick"; brick: Brick }
+  | { type: "search" }
   | null;
 
 export type AuthMode = "login" | "register" | "forgot-password";
