@@ -8,7 +8,21 @@ import {
   getNextBrick,
   type BrickListParams,
 } from "@/api/bricks";
+import { getForcedAlignment, type WordSegmentSecond } from "@/api/evaluation";
 import { useDebounce } from "./useDebounce";
+
+export function useForcedAlignment(
+  audioPath: string | null | undefined,
+  enabled = true,
+) {
+  return useQuery<WordSegmentSecond[]>({
+    queryKey: ["audio", "forced-alignment", audioPath],
+    queryFn: () =>
+      audioPath ? getForcedAlignment(audioPath) : Promise.resolve([]),
+    enabled: Boolean(audioPath) && enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useBricks(params?: BrickListParams) {
   return useQuery({

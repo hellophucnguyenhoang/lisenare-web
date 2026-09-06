@@ -63,7 +63,7 @@ export default function PracticeEvaluationModal({
               <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
                 Target Sentence
               </span>
-              <p className="text-sm font-semibold text-primary break-words">
+              <p className="text-sm font-semibold text-primary wrap-break-word">
                 {targetText}
               </p>
             </div>
@@ -85,7 +85,7 @@ export default function PracticeEvaluationModal({
               <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
                 Your Sentence
               </span>
-              <p className="text-sm font-semibold text-on-surface break-words">
+              <p className="text-sm font-semibold text-on-surface wrap-break-word">
                 {learnerText || "(No speech detected)"}
               </p>
             </div>

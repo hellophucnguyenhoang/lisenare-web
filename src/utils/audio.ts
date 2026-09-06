@@ -1,13 +1,36 @@
 import { resolveAudioUrl } from "@/api/endpoints";
 
+// Global reference to the currently playing audio element
+let activeAudio: HTMLAudioElement | null = null;
+
+/**
+ * Immediately stops and cleans up any currently playing audio clip.
+ */
+export const stopShortAudio = (): void => {
+  if (activeAudio) {
+    try {
+      activeAudio.pause();
+      activeAudio.currentTime = 0;
+      activeAudio.src = "";
+    } catch {
+      // Ignore pause errors
+    }
+    activeAudio = null;
+  }
+};
+
 /**
  * Instantiates and plays a short audio clip from a relative path or direct URL.
- * Handles browser autoplay promise rejections gracefully.
+ * Automatically stops and cancels any previously playing audio to prevent audio overlap.
  */
 export const playShortAudio = (
   relativePath: string | null | undefined,
+  startTimeSec?: number,
 ): void => {
   if (!relativePath) return;
+
+  // Stop any previously playing audio instance immediately
+  stopShortAudio();
 
   const fullUrl =
     relativePath.startsWith("blob:") ||
@@ -17,10 +40,44 @@ export const playShortAudio = (
       : resolveAudioUrl(relativePath);
 
   const audio = new Audio(fullUrl);
+  activeAudio = audio;
 
-  audio.play().catch((error) => {
-    console.error("Audio playback failed:", error);
-  });
+  const startPlayback = () => {
+    // If another audio was triggered before this one started, abort
+    if (activeAudio !== audio) return;
+
+    if (typeof startTimeSec === "number" && startTimeSec >= 0) {
+      try {
+        audio.currentTime = startTimeSec;
+      } catch (e) {
+        console.warn("Could not set audio currentTime:", e);
+      }
+    }
+
+    audio.play().catch((error) => {
+      // Don't log abort errors if user intentionally cancelled by playing another audio
+      if (error?.name !== "AbortError") {
+        console.error("Audio playback failed:", error);
+      }
+    });
+  };
+
+  audio.onended = () => {
+    if (activeAudio === audio) {
+      activeAudio = null;
+    }
+  };
+
+  if (typeof startTimeSec === "number" && startTimeSec > 0) {
+    if (audio.readyState >= 1) {
+      startPlayback();
+    } else {
+      audio.addEventListener("loadedmetadata", startPlayback, { once: true });
+      audio.load();
+    }
+  } else {
+    startPlayback();
+  }
 };
 
 /**
