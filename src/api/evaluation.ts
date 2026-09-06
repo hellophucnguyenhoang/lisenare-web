@@ -46,3 +46,17 @@ export async function compareSentences(
     },
   });
 }
+
+export interface WordSegmentSecond {
+  word: string;
+  start_sec: number;
+  end_sec: number;
+}
+
+export async function getForcedAlignment(
+  audioPath: string,
+): Promise<WordSegmentSecond[]> {
+  const encodedPath = encodeURIComponent(audioPath);
+  return request<WordSegmentSecond[]>(`/audio/forced-alignment/${encodedPath}`);
+}
+

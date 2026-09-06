@@ -289,9 +289,9 @@ export default function PracticePage() {
           activeBrick={activeBrick}
           isRevealed={isRevealed}
           onToggleReveal={() => setIsRevealed(!isRevealed)}
-          onPlayAudio={() => {
+          onPlayAudio={(startTimeSec?: number) => {
             setHasListenedTargetAudio(true);
-            playShortAudio(activeBrick.targetAudioPath);
+            playShortAudio(activeBrick.targetAudioPath, startTimeSec);
           }}
         />
 
