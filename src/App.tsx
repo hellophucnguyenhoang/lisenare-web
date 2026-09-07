@@ -130,7 +130,12 @@ function AppContent() {
       case "discover":
         return <DiscoverPage />;
       case "practice":
-        return <PracticePage onTypingModeChange={setIsPracticeTyping} />;
+        return (
+          <PracticePage
+            onTypingModeChange={setIsPracticeTyping}
+            onNavigateToAddBrick={() => setSubview({ type: "addBrick" })}
+          />
+        );
       case "profile":
         return (
           <ProfilePage

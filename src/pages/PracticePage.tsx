@@ -12,14 +12,21 @@ import PracticeHeader from "@/components/practice/PracticeHeader";
 import PracticeFlashcard from "@/components/practice/PracticeFlashcard";
 import PracticeInputSection from "@/components/practice/PracticeInputSection";
 import PracticeEvaluationModal from "@/components/practice/PracticeEvaluationModal";
+import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
+import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface PracticePageProps {
   onTypingModeChange?: (isTyping: boolean) => void;
+  onNavigateToAddBrick?: () => void;
 }
 
-export default function PracticePage({ onTypingModeChange }: PracticePageProps) {
+export default function PracticePage({
+  onTypingModeChange,
+  onNavigateToAddBrick,
+}: PracticePageProps) {
   const [finishedCount, setFinishedCount] = useState(0);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   // Turn state
   const [isRevealed, setIsRevealed] = useState(false);
@@ -269,22 +276,61 @@ export default function PracticePage({ onTypingModeChange }: PracticePageProps) 
   }
 
   if (!activeBrick) {
+    if (showInstructions) {
+      return (
+        <PracticeInstructionsPage
+          onBack={() => setShowInstructions(false)}
+          onNavigateToAddBrick={onNavigateToAddBrick}
+        />
+      );
+    }
+
     return (
-      <div className="max-w-lg mx-auto px-4 sm:px-6 py-24 text-center animate-in fade-in duration-300">
-        <div className="w-16 h-16 rounded-2xl border border-primary/20 flex items-center justify-center mx-auto mb-4 shadow-xs overflow-hidden">
+      <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
+        {/* App Logo */}
+        <div className="w-20 h-20 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-6 overflow-hidden p-3.5">
           <img
             src="/favicon.svg"
             alt="Lisenare Logo"
             className="w-full h-full object-contain rounded-xl"
           />
         </div>
-        <h2 className="text-2xl font-bold font-display text-on-surface">
-          No Bricks Ready to Practice
+
+        {/* Title */}
+        <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface tracking-tight mb-2">
+          Ready for your next brick?
         </h2>
-        <p className="text-sm text-on-surface-variant max-w-sm mx-auto mt-2">
-          Add some language bricks from the "Collections" tab or the "Discover"
-          feed to start practicing!
+
+        {/* Subtitle */}
+        <p className="text-sm text-on-surface-variant max-w-xs mx-auto mb-8 leading-relaxed">
+          Add a new language brick to expand your collection and start practicing.
         </p>
+
+        {/* Add Brick Button */}
+        {onNavigateToAddBrick && (
+          <button
+            type="button"
+            id="btn-empty-add-brick"
+            onClick={onNavigateToAddBrick}
+            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-on-primary font-bold text-sm shadow-md shadow-primary/20 hover:bg-primary/95 active:scale-95 transition-all cursor-pointer"
+          >
+            <Plus className="w-5 h-5 stroke-[2.5]" />
+            <span>Add Brick</span>
+          </button>
+        )}
+
+        {/* Small Question leading to Text Instruction Page */}
+        <button
+          type="button"
+          id="btn-how-practice-works"
+          onClick={() => setShowInstructions(true)}
+          className="mt-8 inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer group"
+        >
+          <HelpCircle className="w-4 h-4 text-outline group-hover:text-primary transition-colors" />
+          <span className="underline underline-offset-4 font-medium">
+            How does practice work?
+          </span>
+        </button>
       </div>
     );
   }
