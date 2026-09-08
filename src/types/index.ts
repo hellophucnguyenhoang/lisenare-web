@@ -35,18 +35,17 @@ export interface Learner {
   avatarUrl?: string;
 }
 
-export interface Snippet {
-  id: number;
-  content: string;
-  translation: string | null;
-  contentAudioPath: string | null;
-  contentPron: string | null;
-  context: string | null;
-  isPublic: boolean;
-  lastEditAt: string;
-  creator: Learner;
-  reaction: string | null;
-  contributionCount: number;
+export interface DiscoverVideo {
+  id: string;
+  ytbVideoId: string;
+  title: string;
+  channel: string;
+  start: number;
+  duration: number;
+  transcript: string;
+  translation: string;
+  category: string;
+  level: "Beginner" | "Intermediate" | "Advanced";
   tags: string[];
 }
 
@@ -62,14 +61,3 @@ export type ForgotPasswordStep = 1 | 2;
 
 export type BrickStatus = "new" | "learned";
 export type SortOption = "random" | "newest" | "oldest" | "az" | "za";
-
-export interface AudioContribution {
-  id: string;
-  author: string;
-  avatarUrl?: string;
-  audioUrl?: string;
-  likes: number;
-  isLiked?: boolean;
-  isReported?: boolean;
-  createdAt: string;
-}
