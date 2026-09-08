@@ -5,25 +5,20 @@ import {
   X,
   Blocks,
   Video,
-  Sparkles,
   ExternalLink,
-  Volume2,
-  Languages,
 } from "lucide-react";
 import {
   useSearchContextBricks,
   useSearchContextVideos,
-  useSearchContextSnippets,
 } from "@/hooks/useContextSearch";
-import { playShortAudio } from "@/utils/audio";
 import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface SearchPageProps {
   onBack: () => void;
-  onNavigateToPractice?: () => void;
+  onNavigateToPractice?: (brickId?: number) => void;
 }
 
-type SearchTab = "bricks" | "videos" | "snippets";
+type SearchTab = "bricks" | "videos";
 
 const POPULAR_SUGGESTIONS = [
   "hang out",
@@ -47,13 +42,9 @@ export default function SearchPage({
   const [searchInput, setSearchInput] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("bricks");
-  const [revealedTranslationIds, setRevealedTranslationIds] = useState<
-    number[]
-  >([]);
 
   const bricksQuery = useSearchContextBricks(activeQuery);
   const videosQuery = useSearchContextVideos(activeQuery);
-  const snippetsQuery = useSearchContextSnippets(activeQuery);
 
   const handleSearchSubmit = (e?: React.SubmitEvent) => {
     if (e) e.preventDefault();
@@ -68,22 +59,11 @@ export default function SearchPage({
     setActiveQuery(suggestion);
   };
 
-  const toggleSnippetTranslation = (id: number) => {
-    setRevealedTranslationIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    );
-  };
-
   const bricks = bricksQuery.data ?? [];
   const videos = videosQuery.data ?? [];
-  const snippets = snippetsQuery.data ?? [];
 
   const isLoadingCurrentTab =
-    activeTab === "bricks"
-      ? bricksQuery.isLoading
-      : activeTab === "videos"
-        ? videosQuery.isLoading
-        : snippetsQuery.isLoading;
+    activeTab === "bricks" ? bricksQuery.isLoading : videosQuery.isLoading;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-28 animate-in fade-in duration-300">
@@ -102,7 +82,7 @@ export default function SearchPage({
             Context Search
           </h1>
           <p className="text-xs text-on-surface-variant mt-0.5">
-            Search vocabulary, real-life video clips, and community snippets
+            Search vocabulary and real-life video clips by meaning or situation
           </p>
         </div>
       </div>
@@ -204,22 +184,6 @@ export default function SearchPage({
                 {videos.length}
               </span>
             </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("snippets")}
-              className={`pb-3 text-xs sm:text-sm font-bold transition-all border-b-2 flex items-center gap-2 cursor-pointer ${
-                activeTab === "snippets"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Snippets</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary font-bold">
-                {snippets.length}
-              </span>
-            </button>
           </div>
 
           {/* Tab Content */}
@@ -240,8 +204,7 @@ export default function SearchPage({
                       </h3>
                       <p className="text-xs text-on-surface-variant max-w-sm mx-auto mt-1">
                         No vocabulary bricks matched "{activeQuery}". Try
-                        searching with related keywords or check the Videos and
-                        Snippets tabs.
+                        searching with related keywords or check the Videos tab.
                       </p>
                     </div>
                   ) : (
@@ -267,7 +230,9 @@ export default function SearchPage({
                             <div className="pt-3 border-t border-outline-variant/30 flex justify-end">
                               <button
                                 type="button"
-                                onClick={onNavigateToPractice}
+                                onClick={() =>
+                                  onNavigateToPractice?.(brick.brick_id)
+                                }
                                 className="px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer"
                               >
                                 Practice
@@ -358,101 +323,6 @@ export default function SearchPage({
                 </div>
               )}
 
-              {/* TAB 3: SNIPPETS */}
-              {activeTab === "snippets" && (
-                <div>
-                  {snippets.length === 0 ? (
-                    <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-10 text-center bg-surface-container-lowest/50">
-                      <Sparkles className="w-8 h-8 text-outline mx-auto mb-2 opacity-50" />
-                      <h3 className="text-base font-bold text-on-surface">
-                        No Community Snippets Found
-                      </h3>
-                      <p className="text-xs text-on-surface-variant max-w-sm mx-auto mt-1">
-                        No snippets matched "{activeQuery}". Try searching for
-                        another context or check the Discover page.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {snippets.map((snippet) => {
-                        const isTranslationVisible =
-                          revealedTranslationIds.includes(snippet.id);
-
-                        return (
-                          <div
-                            key={snippet.id}
-                            className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-primary/25 transition-all"
-                          >
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-outline uppercase tracking-wider">
-                                  by {snippet.creator.name}
-                                </span>
-                                {snippet.contentAudioPath && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      playShortAudio(snippet.contentAudioPath)
-                                    }
-                                    className="p-2 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-90 cursor-pointer"
-                                    title="Listen to pronunciation"
-                                  >
-                                    <Volume2 className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
-
-                              <h3 className="text-lg font-bold font-display text-on-surface leading-snug">
-                                {snippet.content}
-                              </h3>
-
-                              {snippet.contentPron && (
-                                <p className="text-xs text-outline font-mono">
-                                  {snippet.contentPron}
-                                </p>
-                              )}
-
-                              {isTranslationVisible && snippet.translation && (
-                                <p className="text-xs font-medium text-on-surface-variant bg-surface-container/60 p-2.5 rounded-xl border border-outline-variant/30 animate-in fade-in">
-                                  {snippet.translation}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="flex items-center justify-between pt-4 mt-3 border-t border-outline-variant/30">
-                              <div className="flex flex-wrap gap-1">
-                                {snippet.tags.slice(0, 2).map((tag) => (
-                                  <span
-                                    key={tag}
-                                    className="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[10px] font-medium rounded-md"
-                                  >
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-
-                              {snippet.translation && (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    toggleSnippetTranslation(snippet.id)
-                                  }
-                                  className="inline-flex items-center gap-1 text-xs text-primary font-semibold hover:underline cursor-pointer"
-                                >
-                                  <Languages className="w-3.5 h-3.5" />
-                                  <span>
-                                    {isTranslationVisible ? "Hide" : "Translate"}
-                                  </span>
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </>

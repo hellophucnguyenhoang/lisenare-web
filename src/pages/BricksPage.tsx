@@ -22,7 +22,7 @@ import { useInfiniteBricks, useDeleteBrick } from "@/hooks/useBricks";
 interface BricksPageProps {
   onNavigateToAddBrick: (collectionId?: number) => void;
   onNavigateToEditBrick: (brick: Brick) => void;
-  onNavigateToPractice: () => void;
+  onNavigateToPractice: (brickId?: number) => void;
   onNavigateToSearch: () => void;
 }
 
@@ -337,7 +337,7 @@ export default function BricksPage({
             id="btn-open-context-search"
             onClick={onNavigateToSearch}
             className="flex items-center gap-2 px-3.5 py-2.5 bg-surface-container-lowest hover:bg-surface-container-high border border-outline-variant/60 hover:border-primary/40 text-on-surface font-semibold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-            title="Search Bricks, Videos & Snippets by Context"
+            title="Search Bricks & Videos by Context"
           >
             <Search className="w-4 h-4 text-primary" />
             <span className="hidden sm:inline">Search</span>
@@ -375,7 +375,8 @@ export default function BricksPage({
                 onDeleteBrick={(brickId: number) =>
                   deleteBrick.mutate(brickId)
                 }
-                onStudyBrick={() => onNavigateToPractice()}
+                onSelectBrick={() => onNavigateToPractice(brick.id)}
+                onStudyBrick={() => onNavigateToPractice(brick.id)}
               />
             ))}
           </div>

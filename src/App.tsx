@@ -43,6 +43,7 @@ function AppContent() {
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
   const [isPracticeTyping, setIsPracticeTyping] = useState(false);
+  const [practiceBrickId, setPracticeBrickId] = useState<number | null>(null);
 
   // Set initial tab on load/reload based on authentication state
   useEffect(() => {
@@ -102,7 +103,8 @@ function AppContent() {
       <>
         <SearchPage
           onBack={() => setSubview(null)}
-          onNavigateToPractice={() => {
+          onNavigateToPractice={(brickId) => {
+            setPracticeBrickId(brickId ?? null);
             setSubview(null);
             setActiveTab("practice");
           }}
@@ -123,7 +125,10 @@ function AppContent() {
             onNavigateToEditBrick={(brick) => {
               setSubview({ type: "editBrick", brick });
             }}
-            onNavigateToPractice={() => setActiveTab("practice")}
+            onNavigateToPractice={(brickId) => {
+              setPracticeBrickId(brickId ?? null);
+              setActiveTab("practice");
+            }}
             onNavigateToSearch={() => setSubview({ type: "search" })}
           />
         );
@@ -132,6 +137,8 @@ function AppContent() {
       case "practice":
         return (
           <PracticePage
+            targetBrickId={practiceBrickId}
+            onClearTargetBrickId={() => setPracticeBrickId(null)}
             onTypingModeChange={setIsPracticeTyping}
             onNavigateToAddBrick={() => setSubview({ type: "addBrick" })}
           />
@@ -161,7 +168,12 @@ function AppContent() {
       {!isTypingActive && (
         <BottomNavBar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={(tab) => {
+            if (tab === "practice") {
+              setPracticeBrickId(null);
+            }
+            setActiveTab(tab);
+          }}
           clearSubviews={() => setSubview(null)}
         />
       )}

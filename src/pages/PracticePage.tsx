@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getNextBrick } from "@/api/bricks";
 import {
   playShortAudio,
@@ -19,14 +19,30 @@ import { toast } from "sonner";
 interface PracticePageProps {
   onTypingModeChange?: (isTyping: boolean) => void;
   onNavigateToAddBrick?: () => void;
+  targetBrickId?: number | null;
+  onClearTargetBrickId?: () => void;
 }
 
 export default function PracticePage({
   onTypingModeChange,
   onNavigateToAddBrick,
+  targetBrickId,
+  onClearTargetBrickId,
 }: PracticePageProps) {
   const [finishedCount, setFinishedCount] = useState(0);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [currentBrickId, setCurrentBrickId] = useState<number | null>(
+    targetBrickId ?? null,
+  );
+  const [lastBrickId, setLastBrickId] = useState<number | null>(null);
+
+  const qc = useQueryClient();
+
+  const [prevTargetId, setPrevTargetId] = useState(targetBrickId);
+  if (targetBrickId !== prevTargetId) {
+    setPrevTargetId(targetBrickId);
+    setCurrentBrickId(targetBrickId ?? null);
+  }
 
   // Turn state
   const [isRevealed, setIsRevealed] = useState(false);
@@ -49,32 +65,31 @@ export default function PracticePage({
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
-  // Fetch the active brick via React Query (deduplicated across renders/StrictMode mounts)
+  // Fetch the active brick via React Query (uses currentBrickId when learner selected a specific brick)
   const {
     data: activeBrick,
     isLoading: isLoadingBrick,
     refetch,
   } = useQuery({
-    queryKey: ["bricks", "practice-next"],
-    queryFn: () => getNextBrick(),
-    staleTime: Infinity,
-    refetchOnMount: false,
+    queryKey: ["bricks", "practice-next", currentBrickId],
+    queryFn: () => getNextBrick({ brickId: currentBrickId }),
+    staleTime: 0,
+    refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
 
   const isAnswerRevealed = isRevealed || hasListenedTargetAudio;
 
   // Reset turn state whenever active brick changes
-  useEffect(() => {
-    if (activeBrick) {
-      setIsRevealed(false);
-      setHasListenedTargetAudio(false);
-      setHasSubmittedThisTurn(false);
-      setTypedAnswer("");
-      setEvaluationResult(null);
-      setLearnerAudioUrl(null);
-    }
-  }, [activeBrick?.id]);
+  if (activeBrick && activeBrick.id !== lastBrickId) {
+    setLastBrickId(activeBrick.id);
+    setIsRevealed(false);
+    setHasListenedTargetAudio(false);
+    setHasSubmittedThisTurn(false);
+    setTypedAnswer("");
+    setEvaluationResult(null);
+    setLearnerAudioUrl(null);
+  }
 
   // Ensure view stays pinned to top when keyboard/typing mode opens on mobile
   useEffect(() => {
@@ -261,9 +276,15 @@ export default function PracticePage({
     setShowTypeInput(false);
     setLearnerAudioUrl(null);
 
-    const result = await refetch();
-    if (!result.data) {
-      toast.success("Session completed! Great job!");
+    if (currentBrickId != null) {
+      setCurrentBrickId(null);
+      onClearTargetBrickId?.();
+      qc.invalidateQueries({ queryKey: ["bricks", "practice-next"] });
+    } else {
+      const result = await refetch();
+      if (!result.data) {
+        toast.success("Session completed! Great job!");
+      }
     }
   };
 

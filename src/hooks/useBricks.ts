@@ -7,6 +7,7 @@ import {
   checkBrickExists,
   getNextBrick,
   type BrickListParams,
+  type NextBrickParams,
 } from "@/api/bricks";
 import { getForcedAlignment, type WordSegmentSecond } from "@/api/evaluation";
 import { useDebounce } from "./useDebounce";
@@ -44,10 +45,13 @@ export function useInfiniteBricks(params?: Omit<BrickListParams, "page">) {
   });
 }
 
-export function useNextBrick(collectionIds?: number[], enabled = true) {
+export function useNextBrick(
+  params?: NextBrickParams | number[],
+  enabled = true,
+) {
   return useQuery({
-    queryKey: ["bricks", "next", collectionIds],
-    queryFn: () => getNextBrick(collectionIds),
+    queryKey: ["bricks", "next", params],
+    queryFn: () => getNextBrick(params),
     enabled,
     staleTime: 0,
   });

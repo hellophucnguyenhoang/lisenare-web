@@ -115,11 +115,34 @@ export async function deleteBrick(brickId: number) {
   await request(`/bricks/${brickId}`, { method: "DELETE" });
 }
 
-export async function getNextBrick(collectionIds?: number[]) {
+export interface NextBrickParams {
+  collectionIds?: number[];
+  brickId?: number | null;
+}
+
+export async function getNextBrick(
+  paramsOrCollectionIds?: NextBrickParams | number[],
+  maybeBrickId?: number | null,
+) {
   const q = new URLSearchParams();
-  if (collectionIds) {
+  let collectionIds: number[] | undefined;
+  let brickId: number | null | undefined;
+
+  if (Array.isArray(paramsOrCollectionIds)) {
+    collectionIds = paramsOrCollectionIds;
+    brickId = maybeBrickId;
+  } else if (paramsOrCollectionIds) {
+    collectionIds = paramsOrCollectionIds.collectionIds;
+    brickId = paramsOrCollectionIds.brickId;
+  }
+
+  if (collectionIds && collectionIds.length > 0) {
     collectionIds.forEach((id) => q.append("collection_ids", String(id)));
   }
+  if (brickId != null) {
+    q.set("brick_id", String(brickId));
+  }
+
   const qs = q.toString();
   const api = await request<BrickReadApi | null>(
     `/bricks/next${qs ? `?${qs}` : ""}`,

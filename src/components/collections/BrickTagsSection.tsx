@@ -74,7 +74,7 @@ export default function BrickTagsSection({
                 key={tag}
                 className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 border border-primary/20 text-primary rounded-lg text-xs font-semibold"
               >
-                <span>{tag}</span>
+                <span>#{tag.replace(/^#/, "")}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveTag(tag)}
