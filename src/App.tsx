@@ -44,6 +44,8 @@ function AppContent() {
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
   const [isPracticeTyping, setIsPracticeTyping] = useState(false);
   const [practiceBrickId, setPracticeBrickId] = useState<number | null>(null);
+  const [practiceFinishedCount, setPracticeFinishedCount] = useState(0);
+  const [practiceElapsedSeconds, setPracticeElapsedSeconds] = useState(0);
 
   // Set initial tab on load/reload based on authentication state
   useEffect(() => {
@@ -141,6 +143,15 @@ function AppContent() {
             onClearTargetBrickId={() => setPracticeBrickId(null)}
             onTypingModeChange={setIsPracticeTyping}
             onNavigateToAddBrick={() => setSubview({ type: "addBrick" })}
+            onNavigateToEditBrick={(brick) =>
+              setSubview({ type: "editBrick", brick })
+            }
+            finishedCount={practiceFinishedCount}
+            onIncrementFinishedCount={() =>
+              setPracticeFinishedCount((prev) => prev + 1)
+            }
+            elapsedSeconds={practiceElapsedSeconds}
+            onTickTimer={() => setPracticeElapsedSeconds((prev) => prev + 1)}
           />
         );
       case "profile":

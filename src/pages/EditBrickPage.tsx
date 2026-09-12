@@ -74,6 +74,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         onSuccess: () => {
           toast.success("Brick updated successfully!");
           setAudioBlob(null);
+          onBack();
         },
       },
     );

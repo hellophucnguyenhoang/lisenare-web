@@ -15,22 +15,50 @@ import PracticeEvaluationModal from "@/components/practice/PracticeEvaluationMod
 import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
 import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
+import { type Brick } from "@/types";
 
 interface PracticePageProps {
   onTypingModeChange?: (isTyping: boolean) => void;
   onNavigateToAddBrick?: () => void;
+  onNavigateToEditBrick?: (brick: Brick) => void;
   targetBrickId?: number | null;
   onClearTargetBrickId?: () => void;
+  finishedCount?: number;
+  onIncrementFinishedCount?: () => void;
+  elapsedSeconds?: number;
+  onTickTimer?: () => void;
 }
 
 export default function PracticePage({
   onTypingModeChange,
   onNavigateToAddBrick,
+  onNavigateToEditBrick,
   targetBrickId,
   onClearTargetBrickId,
+  finishedCount: propFinishedCount,
+  onIncrementFinishedCount,
+  elapsedSeconds: propElapsedSeconds,
+  onTickTimer,
 }: PracticePageProps) {
-  const [finishedCount, setFinishedCount] = useState(0);
+  const [localFinishedCount, setLocalFinishedCount] = useState(0);
+  const [localElapsedSeconds, setLocalElapsedSeconds] = useState(0);
   const [showInstructions, setShowInstructions] = useState(false);
+
+  const finishedCount = propFinishedCount ?? localFinishedCount;
+  const elapsedSeconds = propElapsedSeconds ?? localElapsedSeconds;
+
+  // Session timer ticks every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (onTickTimer) {
+        onTickTimer();
+      } else {
+        setLocalElapsedSeconds((prev) => prev + 1);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [onTickTimer]);
+
   const [currentBrickId, setCurrentBrickId] = useState<number | null>(
     targetBrickId ?? null,
   );
@@ -268,7 +296,11 @@ export default function PracticePage({
 
   const handleNext = async () => {
     setEvaluationResult(null);
-    setFinishedCount((prev) => prev + 1);
+    if (onIncrementFinishedCount) {
+      onIncrementFinishedCount();
+    } else {
+      setLocalFinishedCount((prev) => prev + 1);
+    }
     setIsRevealed(false);
     setHasListenedTargetAudio(false);
     setHasSubmittedThisTurn(false);
@@ -369,6 +401,7 @@ export default function PracticePage({
         {/* Minimal header with finished count and monkey status icons */}
         <PracticeHeader
           finishedCount={finishedCount}
+          elapsedSeconds={elapsedSeconds}
           isAnswerRevealed={isAnswerRevealed}
           hasSubmittedThisTurn={hasSubmittedThisTurn}
         />
@@ -381,6 +414,11 @@ export default function PracticePage({
             setHasListenedTargetAudio(true);
             playShortAudio(activeBrick.targetAudioPath, startTimeSec);
           }}
+          onEditBrick={
+            onNavigateToEditBrick
+              ? () => onNavigateToEditBrick(activeBrick)
+              : undefined
+          }
         />
 
         <PracticeInputSection
