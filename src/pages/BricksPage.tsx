@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { type Collection, type Brick, type SortOption } from "@/types";
+import { type Collection, type Brick } from "@/types";
 import BrickCard from "@/components/collections/BrickCard";
 import AddCollectionModal from "@/components/collections/AddCollectionModal";
 import {
@@ -10,6 +10,7 @@ import {
   FolderPlus,
   Pencil,
   Trash2,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   useCollections,
@@ -42,21 +43,17 @@ export default function BricksPage({
     null,
   );
 
-  // Sort state
-  const [sortType, setSortType] = useState<SortOption>("newest");
+  // Sort and filter state
+  type BrickSortType = "NEWEST" | "AZ" | "ZA";
+  type BrickStatusFilter = "LEARNED" | "NOT_LEARNED" | null;
+
+  const [sortBy, setSortBy] = useState<BrickSortType>("NEWEST");
+  const [statusFilter, setStatusFilter] = useState<BrickStatusFilter>(null);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   // Hooks
   const { data: collections = [], isLoading: isLoadingCollections } =
     useCollections();
-
-  const sortByApi =
-    sortType === "newest"
-      ? "NEWEST"
-      : sortType === "az"
-        ? "AZ"
-        : sortType === "za"
-          ? "ZA"
-          : undefined;
 
   const {
     data: bricksPages,
@@ -66,13 +63,15 @@ export default function BricksPage({
     isFetchingNextPage,
   } = useInfiniteBricks({
     collection_ids: selectedCollectionId ? [selectedCollectionId] : undefined,
-    sort_by: sortByApi as "NEWEST" | "AZ" | "ZA" | undefined,
+    status: statusFilter ?? undefined,
+    sort_by: sortBy,
     limit: 20,
   });
 
   const allBricks =
     bricksPages?.pages.flatMap((page) => page.items) ?? [];
   const totalBricks = bricksPages?.pages[0]?.total ?? 0;
+  const hasActiveFilters = statusFilter !== null || sortBy !== "NEWEST";
 
   const deleteCollection = useDeleteCollection();
   const updateCollection = useUpdateCollection();
@@ -81,6 +80,7 @@ export default function BricksPage({
 
   // Refs for click-outside
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -89,6 +89,12 @@ export default function BricksPage({
         !dropdownRef.current.contains(e.target as Node)
       ) {
         setShowCollectionDropdown(false);
+      }
+      if (
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowFilterDropdown(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -162,6 +168,11 @@ export default function BricksPage({
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
             {totalBricks} vocabulary brick{totalBricks !== 1 ? "s" : ""}
             {selectedCollection ? ` in "${selectedCollection.name}"` : ""}
+            {statusFilter === "LEARNED"
+              ? " • Learned"
+              : statusFilter === "NOT_LEARNED"
+                ? " • Not Learned"
+                : ""}
           </p>
         </div>
 
@@ -292,43 +303,159 @@ export default function BricksPage({
           )}
         </div>
 
-        {/* Right side: Sort Controls & Search Button */}
-        <div className="flex items-center gap-2.5">
-          {/* Sort Controls */}
-          <div className="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-1 text-xs shrink-0">
+        {/* Right side: Sort & Filter + Search Button */}
+        <div className="flex items-center gap-2">
+          {/* Sort & Filter Dropdown Button (icon-only) */}
+          <div className="relative" ref={filterDropdownRef}>
             <button
               type="button"
-              onClick={() => setSortType("newest")}
-              className={`px-2.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
-                sortType === "newest"
-                  ? "bg-primary text-on-primary font-bold shadow-xs"
-                  : "text-on-surface-variant hover:text-on-surface"
+              id="btn-sort-filter"
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className={`relative p-2.5 border rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
+                hasActiveFilters
+                  ? "bg-primary/10 border-primary/40 text-primary"
+                  : "bg-surface-container-lowest hover:bg-surface-container-high border-outline-variant/60 hover:border-primary/40 text-on-surface"
               }`}
+              title="Sort and filter"
+              aria-label="Sort and filter"
             >
-              Newest
+              <SlidersHorizontal className="w-4 h-4 text-primary" />
+              {hasActiveFilters && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary ring-2 ring-surface" />
+              )}
             </button>
-            <button
-              type="button"
-              onClick={() => setSortType("az")}
-              className={`px-2.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
-                sortType === "az"
-                  ? "bg-primary text-on-primary font-bold shadow-xs"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              A-Z
-            </button>
-            <button
-              type="button"
-              onClick={() => setSortType("za")}
-              className={`px-2.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
-                sortType === "za"
-                  ? "bg-primary text-on-primary font-bold shadow-xs"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              Z-A
-            </button>
+
+            {showFilterDropdown && (
+              <div className="absolute right-0 top-full mt-1.5 z-30 w-56 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-3 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+                {/* Status Filter */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
+                    Status
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilter(null);
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      statusFilter === null
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>All</span>
+                    {statusFilter === null && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilter("LEARNED");
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      statusFilter === "LEARNED"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>Learned</span>
+                    {statusFilter === "LEARNED" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusFilter("NOT_LEARNED");
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      statusFilter === "NOT_LEARNED"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>Not Learned</span>
+                    {statusFilter === "NOT_LEARNED" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="h-px bg-outline-variant/30" />
+
+                {/* Sort By */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
+                    Sort By
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("NEWEST");
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      sortBy === "NEWEST"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>Newest</span>
+                    {sortBy === "NEWEST" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("AZ");
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      sortBy === "AZ"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>A to Z</span>
+                    {sortBy === "AZ" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSortBy("ZA");
+                    }}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      sortBy === "ZA"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>Z to A</span>
+                    {sortBy === "ZA" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                </div>
+
+                {hasActiveFilters && (
+                  <>
+                    <div className="h-px bg-outline-variant/30" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setStatusFilter(null);
+                        setSortBy("NEWEST");
+                      }}
+                      className="w-full text-center py-1 text-xs text-primary font-semibold hover:underline cursor-pointer"
+                    >
+                      Reset filters
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Context Search Button */}
@@ -352,17 +479,30 @@ export default function BricksPage({
         </div>
       ) : allBricks.length === 0 ? (
         <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-10 text-center bg-surface-container-lowest/50">
-          <h3 className="text-base font-bold text-on-surface">No Bricks Yet</h3>
+          <h3 className="text-base font-bold text-on-surface">
+            {statusFilter !== null ? "No Bricks Found" : "No Bricks Yet"}
+          </h3>
           <p className="text-xs text-on-surface-variant max-w-sm mx-auto mt-1 mb-4">
-            Start building your vocabulary by adding your first brick.
+            {statusFilter !== null
+              ? `No ${statusFilter === "LEARNED" ? "learned" : "unlearned"} bricks found with the current filter.`
+              : "Start building your vocabulary by adding your first brick."}
           </p>
-          <button
-            onClick={handleAddBrick}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Your First Brick</span>
-          </button>
+          {statusFilter !== null ? (
+            <button
+              onClick={() => setStatusFilter(null)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
+            >
+              <span>Clear Filter</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleAddBrick}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Your First Brick</span>
+            </button>
+          )}
         </div>
       ) : (
         <>
