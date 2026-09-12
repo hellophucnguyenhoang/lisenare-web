@@ -112,82 +112,90 @@ export default function PracticeInputSection({
       {!showTypeInput && (
         <div className="flex flex-col items-center gap-3 w-full">
           {isEvaluating ? (
-            <div className="flex flex-col items-center gap-3 py-2">
-              <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shadow-xs">
-                <Loader2 className="w-6 h-6 text-primary animate-spin" />
-              </div>
-              <p className="text-xs text-primary font-medium animate-pulse">
-                Evaluating pronunciation...
-              </p>
-            </div>
-          ) : isRecording ? (
-            <div className="w-full flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3 w-full">
               <div className="w-full flex items-center justify-center gap-6 py-1">
-                {/* Trash / Cancel button */}
-                <button
-                  type="button"
-                  id="btn-cancel-recording"
-                  onClick={onCancelRecording}
-                  className="w-11 h-11 rounded-full border border-error/30 bg-error/10 hover:bg-error/20 text-error flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-xs"
-                  title="Cancel recording"
-                  aria-label="Cancel recording"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-
-                {/* Submit Recording button (transformed from Mic) */}
-                <button
-                  type="button"
-                  id="btn-submit-recording"
-                  onClick={onSubmitRecording}
-                  className="w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg flex items-center justify-center transition-all active:scale-95 animate-pulse ring-4 ring-emerald-400/20 cursor-pointer"
-                  title="Submit recording"
-                  aria-label="Submit recording"
-                >
-                  <Check className="w-7 h-7 stroke-[2.5]" />
-                </button>
-
-                {/* Empty spacer on right for balance */}
-                <div className="w-11 h-11 pointer-events-none" />
-              </div>
-
-              <AudioWaveform isRecording={isRecording} />
-
-              <p className="text-xs text-on-surface-variant font-medium select-none">
-                Tap checkmark to submit or trash to cancel
-              </p>
-            </div>
-          ) : (
-            <div className="w-full flex flex-col items-center gap-3">
-              <div className="relative w-full flex items-center justify-center py-1">
-                {/* Centered Microphone Button */}
-                <button
-                  type="button"
-                  id="btn-record-mic"
-                  onClick={onStartRecording}
-                  className="w-14 h-14 rounded-full text-on-primary shadow-md flex items-center justify-center transition-all active:scale-95 cursor-pointer bg-primary hover:bg-primary/95 shadow-primary/20 hover:shadow-lg"
-                  title="Tap to speak"
-                  aria-label="Record pronunciation"
-                >
-                  <Mic className="w-6 h-6" />
-                </button>
-
-                {/* Compact Keyboard Toggle on the right */}
-                <div className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2">
-                  <button
-                    type="button"
-                    id="btn-toggle-keyboard-mode"
-                    onClick={onToggleTypeInput}
-                    className="p-2.5 rounded-xl border border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-90 cursor-pointer shadow-xs"
-                    title="Switch to typing"
-                    aria-label="Switch to typing"
-                  >
-                    <Keyboard className="w-4 h-4" />
-                  </button>
+                <div className="w-11 h-11 shrink-0" />
+                <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shadow-xs">
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
                 </div>
+                <div className="w-11 h-11 shrink-0" />
               </div>
 
               <AudioWaveform isRecording={false} />
+
+              <div className="h-5 flex items-center justify-center">
+                <p className="text-xs text-primary font-medium animate-pulse">
+                  Evaluating pronunciation...
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 w-full">
+              <div className="w-full flex items-center justify-center gap-6 py-1">
+                {/* Left Slot: Fixed 44x44px for Trash / Cancel Button */}
+                <div className="w-11 h-11 shrink-0 flex items-center justify-center">
+                  {isRecording && (
+                    <button
+                      type="button"
+                      id="btn-cancel-recording"
+                      onClick={onCancelRecording}
+                      className="w-11 h-11 rounded-full border border-error/30 bg-error/10 hover:bg-error/20 text-error flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-xs animate-in fade-in zoom-in-75 duration-200"
+                      title="Cancel recording"
+                      aria-label="Cancel recording"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Center Slot: Persistent Main Action Button (Mic / Submit) */}
+                <button
+                  type="button"
+                  id={isRecording ? "btn-submit-recording" : "btn-record-mic"}
+                  onClick={isRecording ? onSubmitRecording : onStartRecording}
+                  className={`w-14 h-14 shrink-0 rounded-full flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer shadow-md ${
+                    isRecording
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/30 ring-4 ring-emerald-400/25"
+                      : "bg-primary hover:bg-primary/95 text-on-primary shadow-primary/20 hover:shadow-lg"
+                  }`}
+                  title={isRecording ? "Submit recording" : "Tap to speak"}
+                  aria-label={
+                    isRecording ? "Submit recording" : "Record pronunciation"
+                  }
+                >
+                  {isRecording ? (
+                    <Check className="w-6 h-6 stroke-[2.5] transition-transform duration-200 animate-in zoom-in-75" />
+                  ) : (
+                    <Mic className="w-6 h-6 transition-transform duration-200 animate-in zoom-in-75" />
+                  )}
+                </button>
+
+                {/* Right Slot: Fixed 44x44px for Keyboard Toggle */}
+                <div className="w-11 h-11 shrink-0 flex items-center justify-center">
+                  {!isRecording && (
+                    <button
+                      type="button"
+                      id="btn-toggle-keyboard-mode"
+                      onClick={onToggleTypeInput}
+                      className="p-2.5 rounded-xl border border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-90 cursor-pointer shadow-xs animate-in fade-in zoom-in-75 duration-200"
+                      title="Switch to typing"
+                      aria-label="Switch to typing"
+                    >
+                      <Keyboard className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Waveform */}
+              <AudioWaveform isRecording={isRecording} />
+
+              {/* Fixed-Height Instruction Caption */}
+              <div className="h-5 flex items-center justify-center">
+                <p className="text-xs text-on-surface-variant font-medium select-none transition-opacity duration-200">
+                  {isRecording && "Tap checkmark to submit or trash to cancel"}
+                </p>
+              </div>
             </div>
           )}
         </div>

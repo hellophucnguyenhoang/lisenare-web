@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Volume2, Eye, EyeOff } from "lucide-react";
+import { Volume2, Eye, EyeOff, Edit3 } from "lucide-react";
 import { type Brick } from "@/types";
 import { useForcedAlignment } from "@/hooks/useBricks";
 import { type WordSegmentSecond } from "@/api/evaluation";
@@ -9,6 +9,7 @@ interface PracticeFlashcardProps {
   isRevealed: boolean;
   onToggleReveal: () => void;
   onPlayAudio: (startTimeSec?: number) => void;
+  onEditBrick?: () => void;
 }
 
 export default function PracticeFlashcard({
@@ -16,6 +17,7 @@ export default function PracticeFlashcard({
   isRevealed,
   onToggleReveal,
   onPlayAudio,
+  onEditBrick,
 }: PracticeFlashcardProps) {
   const { data: alignmentSegments } = useForcedAlignment(
     activeBrick.targetAudioPath,
@@ -58,6 +60,19 @@ export default function PracticeFlashcard({
 
   return (
     <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-5 sm:p-8 flex flex-col items-center text-center relative overflow-hidden transition-all">
+      {onEditBrick && (
+        <button
+          type="button"
+          id="btn-practice-edit-brick"
+          onClick={onEditBrick}
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 text-outline hover:text-primary hover:bg-surface-container rounded-xl transition-all active:scale-95 cursor-pointer"
+          title="Edit this brick"
+          aria-label="Edit this brick"
+        >
+          <Edit3 className="w-4 h-4" />
+        </button>
+      )}
+
       <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase mb-3 sm:mb-5">
         Native Sentence
       </span>
