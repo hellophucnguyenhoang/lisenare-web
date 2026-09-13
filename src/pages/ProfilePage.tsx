@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { type AuthMode } from "@/types";
-import { useLearnerMe } from "@/hooks/useLearner";
+import { toast } from "sonner";
+import { type AuthMode, type PracticeLang } from "@/types";
+import { useLearnerMe, useUpdatePracticeLang } from "@/hooks/useLearner";
 import { useLearningStats, useLearningTimeseries } from "@/hooks/useStats";
 import EmailManagerModal from "@/components/profile/EmailManagerModal";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
@@ -10,6 +11,7 @@ import GuestProfileView from "@/components/profile/GuestProfileView";
 import LearningMetricsGrid from "@/components/profile/LearningMetricsGrid";
 import PracticeActivityCard from "@/components/profile/PracticeActivityCard";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
+import TargetLanguageSelector from "@/components/profile/TargetLanguageSelector";
 
 interface ProfilePageProps {
   onOpenAuth?: (mode: AuthMode) => void;
@@ -21,6 +23,7 @@ export default function ProfilePage({
   onLogout,
 }: ProfilePageProps) {
   const { data: learner, isLoading: loadingLearner } = useLearnerMe();
+  const updatePracticeLang = useUpdatePracticeLang();
   const isLoggedIn = Boolean(learner);
 
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -53,6 +56,27 @@ export default function ProfilePage({
   const learnerName = learner?.name || "Learner";
   const learnerEmail = learner?.email || "";
   const isEmailVerified = learner?.isEmailVerified ?? Boolean(learnerEmail);
+  const currentPracticeLang = (learner?.practice_lang ||
+    learner?.practiceLang ||
+    "en") as PracticeLang;
+
+  const handleSelectPracticeLang = (newLang: PracticeLang) => {
+    if (newLang === currentPracticeLang) return;
+    updatePracticeLang.mutate(newLang, {
+      onSuccess: () => {
+        const langName =
+          newLang === "ja"
+            ? "Japanese"
+            : newLang === "vi"
+            ? "Vietnam"
+            : "English";
+        toast.success(`Target language updated to ${langName}`);
+      },
+      onError: () => {
+        toast.error("Failed to update target language. Please try again.");
+      },
+    });
+  };
 
   if (loadingLearner) {
     return (
@@ -77,6 +101,13 @@ export default function ProfilePage({
         isEmailVerified={isEmailVerified}
         onOpenEmailModal={() => setIsEmailModalOpen(true)}
         onOpenNameModal={() => setIsNameModalOpen(true)}
+      />
+
+      {/* Minimal Target Language Selector */}
+      <TargetLanguageSelector
+        currentLang={currentPracticeLang}
+        onSelectLang={handleSelectPracticeLang}
+        isUpdating={updatePracticeLang.isPending}
       />
 
       {/* Real Learning Metrics Grid from /brick-memories/stats */}
