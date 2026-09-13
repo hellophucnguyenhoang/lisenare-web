@@ -17,7 +17,9 @@ import ProfilePage from "@/pages/ProfilePage";
 import AddBrickPage from "@/pages/AddBrickPage";
 import EditBrickPage from "@/pages/EditBrickPage";
 import AuthModal from "@/components/auth/AuthModal";
+import AppHeader from "@/components/layout/AppHeader";
 import BottomNavBar from "@/components/layout/BottomNavBar";
+import { HeaderProvider } from "@/context/HeaderContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,7 +44,6 @@ function AppContent() {
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
-  const [isPracticeTyping, setIsPracticeTyping] = useState(false);
   const [practiceBrickId, setPracticeBrickId] = useState<number | null>(null);
   const [practiceFinishedCount, setPracticeFinishedCount] = useState(0);
   const [practiceElapsedSeconds, setPracticeElapsedSeconds] = useState(0);
@@ -142,7 +143,6 @@ function AppContent() {
           <PracticePage
             targetBrickId={practiceBrickId}
             onClearTargetBrickId={() => setPracticeBrickId(null)}
-            onTypingModeChange={setIsPracticeTyping}
             onNavigateToAddBrick={() => setSubview({ type: "addBrick" })}
             onNavigateToEditBrick={(brick) =>
               setSubview({ type: "editBrick", brick })
@@ -166,34 +166,46 @@ function AppContent() {
     }
   };
 
-  const isTypingActive = isPracticeTyping && activeTab === "practice";
-
   return (
-    <div
-      className={`min-h-screen bg-surface ${
-        isTypingActive
-          ? "pb-2 max-h-[100dvh] overflow-y-auto overscroll-none"
-          : "pb-20"
-      }`}
-    >
-      {renderTab()}
+    <div className="min-h-screen bg-surface flex flex-col">
+      {/* Sticky Header Bar with Lisenare Logo and Dynamic Tab Content */}
+      <AppHeader
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          if (!learner && (tab === "practice" || tab === "bricks")) {
+            setAuthModalMode("login");
+            return;
+          }
+          if (tab === "practice") {
+            setPracticeBrickId(null);
+          }
+          setActiveTab(tab);
+        }}
+        clearSubviews={() => setSubview(null)}
+        isLoggedIn={Boolean(learner)}
+        onClearPracticeBrickId={() => setPracticeBrickId(null)}
+      />
 
-      {!isTypingActive && (
-        <BottomNavBar
-          activeTab={activeTab}
-          setActiveTab={(tab) => {
-            if (!learner && (tab === "practice" || tab === "bricks")) {
-              setAuthModalMode("login");
-              return;
-            }
-            if (tab === "practice") {
-              setPracticeBrickId(null);
-            }
-            setActiveTab(tab);
-          }}
-          clearSubviews={() => setSubview(null)}
-        />
-      )}
+      {/* Main screen area dedicated strictly to displaying the scrollable content */}
+      <main className="flex-1 w-full flex flex-col pt-14 sm:pt-16 pb-20">
+        {renderTab()}
+      </main>
+
+      {/* 4 buttons of the navigation bar at the bottom */}
+      <BottomNavBar
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          if (!learner && (tab === "practice" || tab === "bricks")) {
+            setAuthModalMode("login");
+            return;
+          }
+          if (tab === "practice") {
+            setPracticeBrickId(null);
+          }
+          setActiveTab(tab);
+        }}
+        clearSubviews={() => setSubview(null)}
+      />
 
       <AuthModal
         isOpen={Boolean(authModalMode)}
@@ -212,7 +224,9 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <HeaderProvider>
+        <AppContent />
+      </HeaderProvider>
     </QueryClientProvider>
   );
 }

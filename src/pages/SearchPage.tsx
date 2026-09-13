@@ -207,8 +207,8 @@ export default function SearchPage({
                         No Bricks Found
                       </h3>
                       <p className="text-xs text-on-surface-variant max-w-sm mx-auto mt-1">
-                        No vocabulary bricks matched "{activeQuery}". Try
-                        searching with related keywords or check the Videos tab.
+                        No bricks matched "{activeQuery}". Try searching with
+                        related keywords or check the Videos tab.
                       </p>
                     </div>
                   ) : (
@@ -326,7 +326,6 @@ export default function SearchPage({
                   )}
                 </div>
               )}
-
             </div>
           )}
         </>

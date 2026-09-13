@@ -23,35 +23,30 @@ export default function PracticeHeader({
   hasSubmittedThisTurn,
 }: PracticeHeaderProps) {
   return (
-    <div className="flex items-center justify-between px-2 py-1 text-xs text-on-surface-variant">
-      {/* Left: Finished count & Timer */}
-      <div className="flex items-baseline gap-2.5 sm:gap-3">
-        {/* Finished count */}
+    <div className="flex items-center gap-2 sm:gap-3 bg-surface-container/60 border border-outline-variant/40 rounded-xl px-2.5 py-1 text-xs text-on-surface-variant shadow-2xs">
+      {/* Finished count & Timer */}
+      <div className="flex items-baseline gap-1.5 sm:gap-2">
         <span
-          className="font-semibold text-on-surface tracking-wide text-sm"
+          className="font-bold text-primary tracking-wide text-xs sm:text-sm"
           title="Bricks completed this session"
         >
           {finishedCount}
         </span>
-
-        {/* Bullet separator */}
-        <span className="text-outline-variant/60 font-light select-none align-middle">
+        <span className="text-outline-variant/60 font-light select-none">
           •
         </span>
-
-        {/* Session Timer */}
         <span
-          className="text-outline font-mono text-xs leading-none"
+          className="text-on-surface-variant font-mono text-[11px] sm:text-xs leading-none"
           title="Session time"
         >
           {formatTimer(elapsedSeconds)}
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-2 border-l border-outline-variant/40 pl-2">
         {/* Reveal status: 🙈 when unrevealed, 🙉 when revealed */}
         <span
-          className="text-lg leading-none cursor-default select-none transition-transform hover:scale-110"
+          className="text-base sm:text-lg leading-none cursor-default select-none transition-transform hover:scale-110"
           title={
             isAnswerRevealed ? "Answer revealed (🙉)" : "Answer hidden (🙈)"
           }
@@ -62,7 +57,7 @@ export default function PracticeHeader({
 
         {/* Submission status: 🙊 when unsubmitted, 🐵 when submitted */}
         <span
-          className="text-lg leading-none cursor-default select-none transition-transform hover:scale-110"
+          className="text-base sm:text-lg leading-none cursor-default select-none transition-transform hover:scale-110"
           title={
             hasSubmittedThisTurn
               ? "Answer submitted (🐵)"

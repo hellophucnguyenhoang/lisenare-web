@@ -110,14 +110,11 @@ export default function PracticeActivityCard({
             No activity recorded for this period yet.
           </p>
           <p className="text-[11px] text-outline/70 mt-1">
-            Start practicing vocabulary bricks to see your progress here!
+            Start practicing bricks to see your progress here!
           </p>
         </div>
       ) : metric === "total_learning" ? (
-        <TotalLearningLineChart
-          points={points}
-          maxValue={maxTimeseriesValue}
-        />
+        <TotalLearningLineChart points={points} maxValue={maxTimeseriesValue} />
       ) : (
         <ReviewsBarChart points={points} maxValue={maxTimeseriesValue} />
       )}

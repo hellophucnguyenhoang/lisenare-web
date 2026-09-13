@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { type AuthMode, type PracticeLang } from "@/types";
 import { useLearnerMe, useUpdatePracticeLang } from "@/hooks/useLearner";
 import { useLearningStats, useLearningTimeseries } from "@/hooks/useStats";
+import { useHeader } from "@/context/HeaderContext";
 import EmailManagerModal from "@/components/profile/EmailManagerModal";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
 import ChangeNameModal from "@/components/profile/ChangeNameModal";
@@ -77,6 +78,36 @@ export default function ProfilePage({
       },
     });
   };
+
+  const { setHeaderContent } = useHeader();
+
+  // Dynamically update the fixed sticky header with target language info
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setHeaderContent(null);
+      return;
+    }
+    const flag =
+      currentPracticeLang === "ja"
+        ? "🇯🇵"
+        : currentPracticeLang === "vi"
+        ? "🇻🇳"
+        : "🇺🇸";
+    const name =
+      currentPracticeLang === "ja"
+        ? "Japanese"
+        : currentPracticeLang === "vi"
+        ? "Vietnam"
+        : "English";
+
+    setHeaderContent(
+      <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl">
+        <span>{flag}</span>
+        <span className="hidden sm:inline">{name}</span>
+      </div>,
+    );
+    return () => setHeaderContent(null);
+  }, [isLoggedIn, currentPracticeLang, setHeaderContent]);
 
   if (loadingLearner) {
     return (

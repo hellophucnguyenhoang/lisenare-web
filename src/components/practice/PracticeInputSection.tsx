@@ -80,14 +80,6 @@ export default function PracticeInputSection({
               onChange={onChangeTypedAnswer}
               disabled={isEvaluating}
               autoFocus
-              onFocus={() => {
-                requestAnimationFrame(() => {
-                  window.scrollTo({ top: 0, behavior: "instant" });
-                });
-                setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: "instant" });
-                }, 80);
-              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && typedAnswer.trim() && !isEvaluating) {
                   onSubmitTypedAnswer(e as unknown as React.SubmitEvent);

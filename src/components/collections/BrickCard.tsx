@@ -100,7 +100,7 @@ export default function BrickCard({
       </div>
 
       {/* Footer metadata & learned indicator */}
-      <div className="flex items-center justify-between pt-4 border-t border-outline-variant/30 min-h-[42px]">
+      <div className="flex items-center justify-between pt-4 border-t border-outline-variant/30 min-h-10.5">
         <div className="flex flex-wrap gap-1">
           {brick.tags.slice(0, 3).map((t) => (
             <span

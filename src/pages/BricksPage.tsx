@@ -21,6 +21,7 @@ import {
 import { useInfiniteBricks, useDeleteBrick } from "@/hooks/useBricks";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { type AuthMode } from "@/types";
+import { useHeader } from "@/context/HeaderContext";
 
 interface BricksPageProps {
   onNavigateToAddBrick: (collectionId?: number) => void;
@@ -78,39 +79,9 @@ export default function BricksPage({
     isLoggedIn,
   );
 
-  const allBricks =
-    bricksPages?.pages.flatMap((page) => page.items) ?? [];
+  const allBricks = bricksPages?.pages.flatMap((page) => page.items) ?? [];
   const totalBricks = bricksPages?.pages[0]?.total ?? 0;
   const hasActiveFilters = statusFilter !== null || sortBy !== "NEWEST";
-
-  if (!isLoggedIn) {
-    return (
-      <div className="max-w-md mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
-        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
-          <img
-            src="/favicon.svg"
-            alt="Lisenare Logo"
-            className="w-full h-full object-contain rounded-xl"
-          />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
-          Your Vocabulary Bricks
-        </h2>
-        <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Sign in to view, create, organize, and search your vocabulary collections.
-        </p>
-        {onOpenAuth && (
-          <button
-            type="button"
-            onClick={() => onOpenAuth("login")}
-            className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
-          >
-            Log In to View Bricks
-          </button>
-        )}
-      </div>
-    );
-  }
 
   const deleteCollection = useDeleteCollection();
   const updateCollection = useUpdateCollection();
@@ -180,9 +151,7 @@ export default function BricksPage({
 
   const handleDeleteCollection = (id: number) => {
     if (
-      confirm(
-        `Delete this collection? All bricks inside will also be deleted.`,
-      )
+      confirm(`Delete this collection? All bricks inside will also be deleted.`)
     ) {
       deleteCollection.mutate(id);
       if (selectedCollectionId === id) {
@@ -192,9 +161,66 @@ export default function BricksPage({
   };
 
   // Determine which collection to add brick to
-  const handleAddBrick = () => {
+  const handleAddBrick = useCallback(() => {
     onNavigateToAddBrick(selectedCollectionId ?? undefined);
-  };
+  }, [onNavigateToAddBrick, selectedCollectionId]);
+
+  const { setHeaderContent } = useHeader();
+
+  // Dynamically update the fixed sticky header with brick stats & Add Brick action
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setHeaderContent(null);
+      return;
+    }
+    setHeaderContent(
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-semibold text-on-surface-variant hidden sm:inline">
+          {totalBricks} brick{totalBricks !== 1 ? "s" : ""}
+        </span>
+        <button
+          type="button"
+          onClick={handleAddBrick}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-xs cursor-pointer"
+          title="Add new brick"
+        >
+          <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+          <span>Add Brick</span>
+        </button>
+      </div>,
+    );
+    return () => setHeaderContent(null);
+  }, [isLoggedIn, totalBricks, handleAddBrick, setHeaderContent]);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
+        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
+          <img
+            src="/favicon.svg"
+            alt="Lisenare Logo"
+            className="w-full h-full object-contain rounded-xl"
+          />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
+          Your Bricks
+        </h2>
+        <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
+          Sign in to view, create, organize, and search your vocabulary
+          collections.
+        </p>
+        {onOpenAuth && (
+          <button
+            type="button"
+            onClick={() => onOpenAuth("login")}
+            className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
+          >
+            Log In to View Bricks
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-28 animate-in fade-in duration-300">
@@ -202,26 +228,24 @@ export default function BricksPage({
       <section className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface">
-            Bricks
+            {totalBricks} Brick{totalBricks !== 1 ? "s" : ""}
           </h2>
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
-            {totalBricks} vocabulary brick{totalBricks !== 1 ? "s" : ""}
             {selectedCollection ? ` in "${selectedCollection.name}"` : ""}
             {statusFilter === "LEARNED"
               ? " • Learned"
               : statusFilter === "NOT_LEARNED"
                 ? " • Not Learned"
                 : ""}
+            {sortBy === "NEWEST"
+              ? " • newest"
+              : sortBy === "AZ"
+                ? " • a-z"
+                : sortBy === "ZA"
+                  ? "z-a"
+                  : ""}
           </p>
         </div>
-
-        <button
-          onClick={handleAddBrick}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm shrink-0 self-start sm:self-auto cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Brick</span>
-        </button>
       </section>
 
       {/* Filter Bar: Collection selector + Sort controls + Context Search Button */}
@@ -551,9 +575,7 @@ export default function BricksPage({
                 key={brick.id}
                 brick={brick}
                 onEditBrick={onNavigateToEditBrick}
-                onDeleteBrick={(brickId: number) =>
-                  deleteBrick.mutate(brickId)
-                }
+                onDeleteBrick={(brickId: number) => deleteBrick.mutate(brickId)}
                 onSelectBrick={() => onNavigateToPractice(brick.id)}
                 onStudyBrick={() => onNavigateToPractice(brick.id)}
               />
