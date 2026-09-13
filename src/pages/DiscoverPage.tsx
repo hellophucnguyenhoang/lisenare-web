@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, X, Video as VideoIcon, Sparkles } from "lucide-react";
 import { type DiscoverVideo } from "@/types";
 import { DUMMY_VIDEOS, DISCOVER_CATEGORIES } from "@/data/dummyVideos";
@@ -9,6 +9,7 @@ import PlainTextInput from "@/components/common/PlainTextInput";
 import { useCollections } from "@/hooks/useCollections";
 import { useCreateBrick } from "@/hooks/useBricks";
 import { useLearnerMe } from "@/hooks/useLearner";
+import { useHeader } from "@/context/HeaderContext";
 import { toast } from "sonner";
 
 export default function DiscoverPage() {
@@ -21,6 +22,19 @@ export default function DiscoverPage() {
 
   const { data: learner } = useLearnerMe();
   const isLoggedIn = Boolean(learner);
+
+  const { setHeaderContent } = useHeader();
+
+  // Dynamically update the fixed sticky header with discover clip indicator
+  useEffect(() => {
+    setHeaderContent(
+      <div className="flex items-center gap-1.5 text-xs text-primary font-bold bg-primary/10 px-2.5 py-1 rounded-xl">
+        <Sparkles className="w-3.5 h-3.5" />
+        <span>Clips</span>
+      </div>,
+    );
+    return () => setHeaderContent(null);
+  }, [setHeaderContent]);
 
   const { data: collections = [] } = useCollections(isLoggedIn);
   const createBrick = useCreateBrick();

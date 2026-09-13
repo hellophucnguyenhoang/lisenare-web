@@ -18,14 +18,6 @@ export default function GuestProfileView({
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 pt-10 pb-24 animate-in fade-in duration-300">
       <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-8 shadow-xs flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-2xl border border-primary/20 flex items-center justify-center mb-4 shadow-xs overflow-hidden">
-          <img
-            src="/favicon.svg"
-            alt="Lisenare Logo"
-            className="w-full h-full object-contain rounded-xl"
-          />
-        </div>
-
         <h2 className="text-xl font-bold font-display text-on-surface mb-2">
           Welcome to Lisenare
         </h2>

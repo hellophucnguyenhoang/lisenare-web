@@ -80,7 +80,7 @@ export default function LoginForm({
           Welcome Back
         </h2>
         <p className="text-xs text-on-surface-variant font-medium">
-          Continue building your vocabulary bricks
+          Continue building your bricks
         </p>
       </div>
 

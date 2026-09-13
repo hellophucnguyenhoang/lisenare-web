@@ -17,6 +17,7 @@ import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { type Brick, type AuthMode } from "@/types";
 import { useLearnerMe } from "@/hooks/useLearner";
+import { useHeader } from "@/context/HeaderContext";
 
 interface PracticePageProps {
   onTypingModeChange?: (isTyping: boolean) => void;
@@ -139,11 +140,35 @@ export default function PracticePage({
     setLearnerAudioUrl(null);
   }
 
-  // Ensure view stays pinned to top when keyboard/typing mode opens on mobile
+  const { setHeaderContent } = useHeader();
+
+  // Dynamically update the fixed sticky header with real-time practice stats
   useEffect(() => {
-    if (showTypeInput) {
-      window.scrollTo({ top: 0, behavior: "instant" });
+    if (!isLoggedIn || !activeBrick) {
+      setHeaderContent(null);
+      return;
     }
+    setHeaderContent(
+      <PracticeHeader
+        finishedCount={finishedCount}
+        elapsedSeconds={elapsedSeconds}
+        isAnswerRevealed={isAnswerRevealed}
+        hasSubmittedThisTurn={hasSubmittedThisTurn}
+      />,
+    );
+    return () => setHeaderContent(null);
+  }, [
+    isLoggedIn,
+    activeBrick,
+    finishedCount,
+    elapsedSeconds,
+    isAnswerRevealed,
+    hasSubmittedThisTurn,
+    setHeaderContent,
+  ]);
+
+  // Notify parent of typing mode change if needed
+  useEffect(() => {
     onTypingModeChange?.(showTypeInput);
     return () => {
       onTypingModeChange?.(false);
@@ -441,23 +466,9 @@ export default function PracticePage({
   }
 
   return (
-    <div
-      className={`grow flex flex-col items-center px-4 sm:px-6 max-w-lg mx-auto w-full animate-in fade-in duration-300 ${
-        showTypeInput
-          ? "justify-start pt-2 sm:pt-4 pb-2 sm:pb-4 min-h-0"
-          : "justify-center py-6 sm:py-8 min-h-[calc(100dvh-10rem)]"
-      }`}
-    >
+    <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-6 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-10rem)] animate-in fade-in duration-300">
       {/* Main Flashcard & Interactive Input section */}
       <div className="w-full max-w-full space-y-4 min-w-0">
-        {/* Minimal header with finished count and monkey status icons */}
-        <PracticeHeader
-          finishedCount={finishedCount}
-          elapsedSeconds={elapsedSeconds}
-          isAnswerRevealed={isAnswerRevealed}
-          hasSubmittedThisTurn={hasSubmittedThisTurn}
-        />
-
         <PracticeFlashcard
           activeBrick={activeBrick}
           isRevealed={isRevealed}
