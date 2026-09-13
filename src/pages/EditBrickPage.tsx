@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { type Brick } from "@/types";
+import { type Brick, type TargetLang } from "@/types";
 import { ArrowLeft, Trash2, Check } from "lucide-react";
 import {
   useUpdateBrick,
   useDeleteBrick,
   useCheckBrickExists,
 } from "@/hooks/useBricks";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { playShortAudio } from "@/utils/audio";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/collections/BrickTextInputs";
 import BrickAudioSection from "@/components/collections/BrickAudioSection";
@@ -24,12 +26,17 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
 
   const [nativeText, setNativeText] = useState(brick.nativeText);
   const [targetText, setTargetText] = useState(brick.targetText);
+  const [targetLang, setTargetLang] = useState<TargetLang>(
+    (brick.targetLang as TargetLang) || "en",
+  );
   const [pronunciation, setPronunciation] = useState(brick.targetPron || "");
+  const [context, setContext] = useState(brick.context || "");
   const [tags, setTags] = useState<string[]>(brick.tags || []);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const updateBrick = useUpdateBrick();
   const deleteBrick = useDeleteBrick();
+  const textToSpeechMutation = useTextToSpeech();
 
   const isTargetTextChanged =
     targetText.trim().toLowerCase() !==
@@ -38,6 +45,34 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
 
   const isTargetExists = isTargetTextChanged && checkExists.data === true;
   const isCheckingTargetExists = isTargetTextChanged && checkExists.isFetching;
+
+  const handleAutoGenerateAudio = async () => {
+    if (!targetText.trim()) {
+      toast.error("Please enter a target sentence first.");
+      return;
+    }
+
+    if (targetText.trim().length > 200) {
+      toast.error(
+        "Target text must be 200 characters or fewer for auto-generation.",
+      );
+      return;
+    }
+
+    try {
+      const { blob } = await textToSpeechMutation.mutateAsync({
+        text: targetText.trim(),
+        targetLang,
+      });
+      setAudioBlob(blob);
+      const audioUrl = URL.createObjectURL(blob);
+      playShortAudio(audioUrl);
+      toast.success("Audio generated successfully!");
+    } catch (err: unknown) {
+      console.error("Failed to generate audio:", err);
+      toast.error("Failed to generate audio. Please try again.");
+    }
+  };
 
   const handleSave = () => {
     if (!selectedCollectionId) {
@@ -56,7 +91,9 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       JSON.stringify({
         native_text: nativeText.trim(),
         target_text: targetText.trim(),
+        target_lang: targetLang,
         target_pron: pronunciation.trim() || null,
+        context: context.trim() || null,
         unit_type: brick.unitType || "sentence",
         collection_id: selectedCollectionId,
         is_private: brick.isPrivate ?? true,
@@ -130,10 +167,16 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           onNativeTextChange={setNativeText}
           targetText={targetText}
           onTargetTextChange={setTargetText}
+          targetLang={targetLang}
+          onTargetLangChange={setTargetLang}
           pronunciation={pronunciation}
           onPronunciationChange={setPronunciation}
+          context={context}
+          onContextChange={setContext}
           targetExists={isTargetExists}
           isCheckingTargetExists={isCheckingTargetExists}
+          onGenerateAudio={handleAutoGenerateAudio}
+          isGeneratingAudio={textToSpeechMutation.isPending}
         />
 
         {/* Pronunciation audio section */}

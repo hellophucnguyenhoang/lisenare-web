@@ -6,6 +6,7 @@ import {
   Check,
   Trash2,
   Loader2,
+  HelpCircle,
 } from "lucide-react";
 import AudioWaveform from "@/components/common/AudioWaveform";
 import PlainTextInput from "@/components/common/PlainTextInput";
@@ -24,6 +25,7 @@ interface PracticeInputSectionProps {
   onCancelRecording: () => void;
   showNextButton: boolean;
   onNext: () => void;
+  onOpenInstructions?: () => void;
 }
 
 export default function PracticeInputSection({
@@ -40,16 +42,28 @@ export default function PracticeInputSection({
   onCancelRecording,
   showNextButton,
   onNext,
+  onOpenInstructions,
 }: PracticeInputSectionProps) {
   return (
     <div className="w-full max-w-full space-y-4 min-w-0">
       {/* Practice Instruction Banner */}
-      <div className="text-center">
+      <div className="flex items-center justify-center gap-1.5">
         <p className="text-xs text-primary font-medium">
           {showTypeInput
             ? "Type the target sentence"
             : "Speak the target sentence"}
         </p>
+        {!showTypeInput && onOpenInstructions && (
+          <button
+            type="button"
+            onClick={onOpenInstructions}
+            className="text-primary/70 hover:text-primary transition-colors p-0.5 rounded-full hover:bg-primary/10 cursor-pointer inline-flex items-center justify-center"
+            title="How to practice"
+            aria-label="How to practice"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Keyboard Typing Mode Form */}

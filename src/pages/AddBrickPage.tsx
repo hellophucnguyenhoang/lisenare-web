@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Save } from "lucide-react";
 import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
 import { useCollections } from "@/hooks/useCollections";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { playShortAudio } from "@/utils/audio";
+import { type TargetLang } from "@/types";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/collections/BrickTextInputs";
 import BrickAudioSection from "@/components/collections/BrickAudioSection";
@@ -22,26 +25,57 @@ export default function AddBrickPage({
     number | null
   >(initialCollectionId ?? null);
 
+  const effectiveCollectionId =
+    selectedCollectionId ??
+    (collections.length > 0
+      ? (initialCollectionId ?? collections[0].id)
+      : null);
+
   const [nativeText, setNativeText] = useState("");
   const [targetText, setTargetText] = useState("");
+  const [targetLang, setTargetLang] = useState<TargetLang>("en");
   const [pronunciation, setPronunciation] = useState("");
+  const [context, setContext] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
-  useEffect(() => {
-    if (selectedCollectionId === null && collections.length > 0) {
-      setSelectedCollectionId(initialCollectionId ?? collections[0].id);
-    }
-  }, [collections, initialCollectionId, selectedCollectionId]);
-
   const createBrick = useCreateBrick();
   const checkExists = useCheckBrickExists(targetText);
+  const textToSpeechMutation = useTextToSpeech();
 
   const isTargetExists = checkExists.data === true;
   const isCheckingTargetExists = checkExists.isFetching;
 
+  const handleAutoGenerateAudio = async () => {
+    if (!targetText.trim()) {
+      toast.error("Please enter a target sentence first.");
+      return;
+    }
+
+    if (targetText.trim().length > 200) {
+      toast.error(
+        "Target text must be 200 characters or fewer for auto-generation.",
+      );
+      return;
+    }
+
+    try {
+      const { blob } = await textToSpeechMutation.mutateAsync({
+        text: targetText.trim(),
+        targetLang,
+      });
+      setAudioBlob(blob);
+      const audioUrl = URL.createObjectURL(blob);
+      playShortAudio(audioUrl);
+      toast.success("Audio generated successfully!");
+    } catch (err: unknown) {
+      console.error("Failed to generate audio:", err);
+      toast.error("Failed to generate audio. Please try again.");
+    }
+  };
+
   const handleSave = () => {
-    if (!selectedCollectionId) {
+    if (!effectiveCollectionId) {
       toast.error("Please choose or create a collection for this brick.");
       return;
     }
@@ -57,10 +91,12 @@ export default function AddBrickPage({
       JSON.stringify({
         native_text: nativeText.trim(),
         target_text: targetText.trim(),
+        target_lang: targetLang,
         target_pron: pronunciation.trim() || null,
+        context: context.trim() || null,
         unit_type: "sentence",
         is_private: true,
-        collection_id: selectedCollectionId,
+        collection_id: effectiveCollectionId,
         tags,
       }),
     );
@@ -71,7 +107,9 @@ export default function AddBrickPage({
         toast.success("Brick created successfully!");
         setNativeText("");
         setTargetText("");
+        setTargetLang("en");
         setPronunciation("");
+        setContext("");
         setTags([]);
         setAudioBlob(null);
       },
@@ -98,7 +136,7 @@ export default function AddBrickPage({
       <main className="max-w-lg mx-auto space-y-6">
         {/* Collection Selector: choose, create, or edit collection */}
         <BrickCollectionSelector
-          selectedCollectionId={selectedCollectionId}
+          selectedCollectionId={effectiveCollectionId}
           onSelectCollection={setSelectedCollectionId}
         />
 
@@ -108,10 +146,16 @@ export default function AddBrickPage({
           onNativeTextChange={setNativeText}
           targetText={targetText}
           onTargetTextChange={setTargetText}
+          targetLang={targetLang}
+          onTargetLangChange={setTargetLang}
           pronunciation={pronunciation}
           onPronunciationChange={setPronunciation}
+          context={context}
+          onContextChange={setContext}
           targetExists={isTargetExists}
           isCheckingTargetExists={isCheckingTargetExists}
+          onGenerateAudio={handleAutoGenerateAudio}
+          isGeneratingAudio={textToSpeechMutation.isPending}
         />
 
         {/* Pronunciation Recording / Preview section */}
