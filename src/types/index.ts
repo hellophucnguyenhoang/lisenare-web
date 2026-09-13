@@ -30,12 +30,16 @@ export interface Token {
   token_type: string;
 }
 
+export type PracticeLang = "en" | "ja" | "vi";
+
 export interface Learner {
   id: number;
   name: string;
   email?: string | null;
   isEmailVerified?: boolean;
   avatarUrl?: string;
+  practice_lang?: PracticeLang | string;
+  practiceLang?: PracticeLang | string;
 }
 
 export interface DiscoverVideo {

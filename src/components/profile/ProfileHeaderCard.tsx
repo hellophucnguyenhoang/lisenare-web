@@ -17,10 +17,10 @@ export default function ProfileHeaderCard({
   onOpenNameModal,
 }: ProfileHeaderCardProps) {
   return (
-    <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-6 shadow-xs">
-      <div className="flex items-center gap-5">
+    <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-xs">
+      <div className="flex items-center gap-4 sm:gap-5">
         {/* Profile Picture */}
-        <div className="w-16 h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
           <img
             src="https://placecats.com/300/300"
             alt={learnerName}
@@ -31,7 +31,7 @@ export default function ProfileHeaderCard({
         {/* Learner Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold font-display text-on-surface truncate">
+            <h2 className="text-lg sm:text-xl font-bold font-display text-on-surface truncate">
               {learnerName}
             </h2>
             <button
