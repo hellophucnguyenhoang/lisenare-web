@@ -7,10 +7,13 @@ export interface Collection {
   tags: string[];
 }
 
+export type TargetLang = "en" | "ja";
+
 export interface Brick {
   id: number;
   nativeText: string;
   targetText: string;
+  targetLang?: TargetLang | string;
   targetAudioPath: string;
   targetPron: string | null;
   context: string | null;

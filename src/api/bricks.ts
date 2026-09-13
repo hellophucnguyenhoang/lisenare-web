@@ -6,6 +6,7 @@ import type { Brick } from "@/types";
 export interface BrickCreateJsonData {
   native_text: string;
   target_text: string;
+  target_lang?: string;
   target_pron?: string | null;
   context?: string | null;
   unit_type?: string;
@@ -18,6 +19,7 @@ export interface BrickCreateJsonData {
 export interface BrickUpdateJsonData {
   native_text?: string | null;
   target_text?: string | null;
+  target_lang?: string | null;
   target_pron?: string | null;
   context?: string | null;
   unit_type?: string | null;
@@ -32,6 +34,7 @@ interface BrickReadApi {
   id: number;
   native_text: string;
   target_text: string;
+  target_lang?: string;
   target_pron: string | null;
   context: string | null;
   unit_type: string;
@@ -66,6 +69,7 @@ function toBrick(api: BrickReadApi): Brick {
     id: api.id,
     nativeText: api.native_text,
     targetText: api.target_text,
+    targetLang: api.target_lang || "en",
     targetAudioPath: api.target_audio_path,
     targetPron: api.target_pron,
     context: api.context,

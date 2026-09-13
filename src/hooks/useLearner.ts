@@ -25,6 +25,9 @@ export function useLearnerMe() {
       const api = await request<LearnerDetailApi>("/learners/me");
       return toLearner(api);
     },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 }
 

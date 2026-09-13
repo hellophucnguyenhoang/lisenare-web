@@ -1,11 +1,20 @@
-import { LogIn, UserPlus, Cloud, Layers, BarChart3, KeyRound } from "lucide-react";
+import {
+  LogIn,
+  UserPlus,
+  Cloud,
+  Layers,
+  BarChart3,
+  KeyRound,
+} from "lucide-react";
 import { type AuthMode } from "@/types";
 
 interface GuestProfileViewProps {
   onOpenAuth?: (mode: AuthMode) => void;
 }
 
-export default function GuestProfileView({ onOpenAuth }: GuestProfileViewProps) {
+export default function GuestProfileView({
+  onOpenAuth,
+}: GuestProfileViewProps) {
   return (
     <div className="max-w-md mx-auto px-4 sm:px-6 pt-10 pb-24 animate-in fade-in duration-300">
       <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-8 shadow-xs flex flex-col items-center text-center">
@@ -22,8 +31,7 @@ export default function GuestProfileView({ onOpenAuth }: GuestProfileViewProps) 
         </h2>
 
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Sign in to sync your vocabulary bricks, track pronunciation
-          accuracy, and maintain streaks across devices.
+          Simple and effective practice.
         </p>
 
         <div className="w-full flex flex-col gap-2.5 mb-6">

@@ -8,6 +8,7 @@ import SaveToCollectionModal from "@/components/collections/SaveToCollectionModa
 import PlainTextInput from "@/components/common/PlainTextInput";
 import { useCollections } from "@/hooks/useCollections";
 import { useCreateBrick } from "@/hooks/useBricks";
+import { useLearnerMe } from "@/hooks/useLearner";
 import { toast } from "sonner";
 
 export default function DiscoverPage() {
@@ -18,7 +19,10 @@ export default function DiscoverPage() {
   );
   const [videoToSave, setVideoToSave] = useState<DiscoverVideo | null>(null);
 
-  const { data: collections = [] } = useCollections();
+  const { data: learner } = useLearnerMe();
+  const isLoggedIn = Boolean(learner);
+
+  const { data: collections = [] } = useCollections(isLoggedIn);
   const createBrick = useCreateBrick();
 
   // Filter videos based on category and search query

@@ -25,18 +25,25 @@ export function useForcedAlignment(
   });
 }
 
-export function useBricks(params?: BrickListParams) {
+export function useBricks(params?: BrickListParams, enabled = true) {
   return useQuery({
     queryKey: ["bricks", params],
     queryFn: () => listBricks(params),
+    enabled,
+    staleTime: 60 * 1000,
   });
 }
 
-export function useInfiniteBricks(params?: Omit<BrickListParams, "page">) {
+export function useInfiniteBricks(
+  params?: Omit<BrickListParams, "page">,
+  enabled = true,
+) {
   return useInfiniteQuery({
     queryKey: ["bricks", "infinite", params],
     queryFn: ({ pageParam }) => listBricks({ ...params, page: pageParam }),
     initialPageParam: 1,
+    enabled,
+    staleTime: 60 * 1000,
     getNextPageParam: (lastPage, allPages) => {
       const totalFetched = allPages.reduce((sum, p) => sum + p.items.length, 0);
       if (totalFetched >= lastPage.total) return undefined;

@@ -15,7 +15,8 @@ import PracticeEvaluationModal from "@/components/practice/PracticeEvaluationMod
 import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
 import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
-import { type Brick } from "@/types";
+import { type Brick, type AuthMode } from "@/types";
+import { useLearnerMe } from "@/hooks/useLearner";
 
 interface PracticePageProps {
   onTypingModeChange?: (isTyping: boolean) => void;
@@ -27,6 +28,7 @@ interface PracticePageProps {
   onIncrementFinishedCount?: () => void;
   elapsedSeconds?: number;
   onTickTimer?: () => void;
+  onOpenAuth?: (mode: AuthMode) => void;
 }
 
 export default function PracticePage({
@@ -39,6 +41,7 @@ export default function PracticePage({
   onIncrementFinishedCount,
   elapsedSeconds: propElapsedSeconds,
   onTickTimer,
+  onOpenAuth,
 }: PracticePageProps) {
   const [localFinishedCount, setLocalFinishedCount] = useState(0);
   const [localElapsedSeconds, setLocalElapsedSeconds] = useState(0);
@@ -74,6 +77,7 @@ export default function PracticePage({
 
   // Turn state
   const [isRevealed, setIsRevealed] = useState(false);
+  const [hasRevealedAnswer, setHasRevealedAnswer] = useState(false);
   const [hasListenedTargetAudio, setHasListenedTargetAudio] = useState(false);
   const [hasSubmittedThisTurn, setHasSubmittedThisTurn] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -93,6 +97,9 @@ export default function PracticePage({
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
 
+  const { data: learner } = useLearnerMe();
+  const isLoggedIn = Boolean(learner);
+
   // Fetch the active brick via React Query (uses currentBrickId when learner selected a specific brick)
   const {
     data: activeBrick,
@@ -101,17 +108,30 @@ export default function PracticePage({
   } = useQuery({
     queryKey: ["bricks", "practice-next", currentBrickId],
     queryFn: () => getNextBrick({ brickId: currentBrickId }),
+    enabled: isLoggedIn,
     staleTime: 0,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
 
-  const isAnswerRevealed = isRevealed || hasListenedTargetAudio;
+  const isAnswerRevealed =
+    hasRevealedAnswer || isRevealed || hasListenedTargetAudio;
+
+  const handleToggleReveal = () => {
+    setIsRevealed((prev) => {
+      const next = !prev;
+      if (next) {
+        setHasRevealedAnswer(true);
+      }
+      return next;
+    });
+  };
 
   // Reset turn state whenever active brick changes
   if (activeBrick && activeBrick.id !== lastBrickId) {
     setLastBrickId(activeBrick.id);
     setIsRevealed(false);
+    setHasRevealedAnswer(false);
     setHasListenedTargetAudio(false);
     setHasSubmittedThisTurn(false);
     setTypedAnswer("");
@@ -237,6 +257,7 @@ export default function PracticePage({
         });
 
         setIsRevealed(true);
+        setHasRevealedAnswer(true);
         const passed = res.score >= (res.threshold ?? 0.7);
         setEvaluationResult({
           score: res.score,
@@ -279,6 +300,7 @@ export default function PracticePage({
       });
 
       setIsRevealed(true);
+      setHasRevealedAnswer(true);
       const passed = res.score >= (res.threshold ?? 0.7);
       setEvaluationResult({
         score: res.score,
@@ -302,6 +324,7 @@ export default function PracticePage({
       setLocalFinishedCount((prev) => prev + 1);
     }
     setIsRevealed(false);
+    setHasRevealedAnswer(false);
     setHasListenedTargetAudio(false);
     setHasSubmittedThisTurn(false);
     setTypedAnswer("");
@@ -320,6 +343,35 @@ export default function PracticePage({
     }
   };
 
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
+        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
+          <img
+            src="/favicon.svg"
+            alt="Lisenare Logo"
+            className="w-full h-full object-contain rounded-xl"
+          />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
+          Start Practicing Bricks
+        </h2>
+        <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
+          Sign in to your account to review vocabulary, practice pronunciation with speech evaluation, and build your memory stability.
+        </p>
+        {onOpenAuth && (
+          <button
+            type="button"
+            onClick={() => onOpenAuth("login")}
+            className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
+          >
+            Log In to Practice
+          </button>
+        )}
+      </div>
+    );
+  }
+
   if (isLoadingBrick) {
     return (
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-24 text-center animate-in fade-in duration-300">
@@ -328,16 +380,16 @@ export default function PracticePage({
     );
   }
 
-  if (!activeBrick) {
-    if (showInstructions) {
-      return (
-        <PracticeInstructionsPage
-          onBack={() => setShowInstructions(false)}
-          onNavigateToAddBrick={onNavigateToAddBrick}
-        />
-      );
-    }
+  if (showInstructions) {
+    return (
+      <PracticeInstructionsPage
+        onBack={() => setShowInstructions(false)}
+        onNavigateToAddBrick={onNavigateToAddBrick}
+      />
+    );
+  }
 
+  if (!activeBrick) {
     return (
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
         {/* App Logo */}
@@ -409,7 +461,7 @@ export default function PracticePage({
         <PracticeFlashcard
           activeBrick={activeBrick}
           isRevealed={isRevealed}
-          onToggleReveal={() => setIsRevealed(!isRevealed)}
+          onToggleReveal={handleToggleReveal}
           onPlayAudio={(startTimeSec?: number) => {
             setHasListenedTargetAudio(true);
             playShortAudio(activeBrick.targetAudioPath, startTimeSec);
@@ -435,6 +487,7 @@ export default function PracticePage({
           onCancelRecording={handleCancelRecording}
           showNextButton={Boolean(evaluationResult?.passed)}
           onNext={handleNext}
+          onOpenInstructions={() => setShowInstructions(true)}
         />
       </div>
 

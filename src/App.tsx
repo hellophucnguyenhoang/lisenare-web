@@ -132,6 +132,7 @@ function AppContent() {
               setActiveTab("practice");
             }}
             onNavigateToSearch={() => setSubview({ type: "search" })}
+            onOpenAuth={(mode) => setAuthModalMode(mode)}
           />
         );
       case "discover":
@@ -152,6 +153,7 @@ function AppContent() {
             }
             elapsedSeconds={practiceElapsedSeconds}
             onTickTimer={() => setPracticeElapsedSeconds((prev) => prev + 1)}
+            onOpenAuth={(mode) => setAuthModalMode(mode)}
           />
         );
       case "profile":
@@ -180,6 +182,10 @@ function AppContent() {
         <BottomNavBar
           activeTab={activeTab}
           setActiveTab={(tab) => {
+            if (!learner && (tab === "practice" || tab === "bricks")) {
+              setAuthModalMode("login");
+              return;
+            }
             if (tab === "practice") {
               setPracticeBrickId(null);
             }

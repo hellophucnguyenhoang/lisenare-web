@@ -19,12 +19,15 @@ import {
   useCreateCollection,
 } from "@/hooks/useCollections";
 import { useInfiniteBricks, useDeleteBrick } from "@/hooks/useBricks";
+import { useLearnerMe } from "@/hooks/useLearner";
+import { type AuthMode } from "@/types";
 
 interface BricksPageProps {
   onNavigateToAddBrick: (collectionId?: number) => void;
   onNavigateToEditBrick: (brick: Brick) => void;
   onNavigateToPractice: (brickId?: number) => void;
   onNavigateToSearch: () => void;
+  onOpenAuth?: (mode: AuthMode) => void;
 }
 
 export default function BricksPage({
@@ -32,7 +35,11 @@ export default function BricksPage({
   onNavigateToEditBrick,
   onNavigateToPractice,
   onNavigateToSearch,
+  onOpenAuth,
 }: BricksPageProps) {
+  const { data: learner } = useLearnerMe();
+  const isLoggedIn = Boolean(learner);
+
   // Collection filter state
   const [selectedCollectionId, setSelectedCollectionId] = useState<
     number | null
@@ -53,7 +60,7 @@ export default function BricksPage({
 
   // Hooks
   const { data: collections = [], isLoading: isLoadingCollections } =
-    useCollections();
+    useCollections(isLoggedIn);
 
   const {
     data: bricksPages,
@@ -61,17 +68,49 @@ export default function BricksPage({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteBricks({
-    collection_ids: selectedCollectionId ? [selectedCollectionId] : undefined,
-    status: statusFilter ?? undefined,
-    sort_by: sortBy,
-    limit: 20,
-  });
+  } = useInfiniteBricks(
+    {
+      collection_ids: selectedCollectionId ? [selectedCollectionId] : undefined,
+      status: statusFilter ?? undefined,
+      sort_by: sortBy,
+      limit: 20,
+    },
+    isLoggedIn,
+  );
 
   const allBricks =
     bricksPages?.pages.flatMap((page) => page.items) ?? [];
   const totalBricks = bricksPages?.pages[0]?.total ?? 0;
   const hasActiveFilters = statusFilter !== null || sortBy !== "NEWEST";
+
+  if (!isLoggedIn) {
+    return (
+      <div className="max-w-md mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
+        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
+          <img
+            src="/favicon.svg"
+            alt="Lisenare Logo"
+            className="w-full h-full object-contain rounded-xl"
+          />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
+          Your Vocabulary Bricks
+        </h2>
+        <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
+          Sign in to view, create, organize, and search your vocabulary collections.
+        </p>
+        {onOpenAuth && (
+          <button
+            type="button"
+            onClick={() => onOpenAuth("login")}
+            className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
+          >
+            Log In to View Bricks
+          </button>
+        )}
+      </div>
+    );
+  }
 
   const deleteCollection = useDeleteCollection();
   const updateCollection = useUpdateCollection();

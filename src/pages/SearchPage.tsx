@@ -11,6 +11,7 @@ import {
   useSearchContextBricks,
   useSearchContextVideos,
 } from "@/hooks/useContextSearch";
+import { useLearnerMe } from "@/hooks/useLearner";
 import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface SearchPageProps {
@@ -39,11 +40,14 @@ export default function SearchPage({
   onBack,
   onNavigateToPractice,
 }: SearchPageProps) {
+  const { data: learner } = useLearnerMe();
+  const isLoggedIn = Boolean(learner);
+
   const [searchInput, setSearchInput] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
   const [activeTab, setActiveTab] = useState<SearchTab>("bricks");
 
-  const bricksQuery = useSearchContextBricks(activeQuery);
+  const bricksQuery = useSearchContextBricks(activeQuery, isLoggedIn);
   const videosQuery = useSearchContextVideos(activeQuery);
 
   const handleSearchSubmit = (e?: React.SubmitEvent) => {

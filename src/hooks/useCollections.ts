@@ -6,10 +6,12 @@ import {
   updateCollection,
 } from "@/api/collections";
 
-export function useCollections() {
+export function useCollections(enabled = true) {
   return useQuery({
     queryKey: ["collections"],
     queryFn: listCollections,
+    enabled,
+    staleTime: 60 * 1000,
   });
 }
 
