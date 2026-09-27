@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getNextBrick } from "@/api/bricks";
 import {
   playShortAudio,
+  playBrickAudio,
   getAudioMediaStream,
   createMediaRecorder,
   getSupportedAudioMimeType,
@@ -475,7 +476,7 @@ export default function PracticePage({
           onToggleReveal={handleToggleReveal}
           onPlayAudio={(startTimeSec?: number) => {
             setHasListenedTargetAudio(true);
-            playShortAudio(activeBrick.targetAudioPath, startTimeSec);
+            playBrickAudio(activeBrick.id, startTimeSec);
           }}
           onEditBrick={
             onNavigateToEditBrick
@@ -513,7 +514,7 @@ export default function PracticePage({
           onNext={handleNext}
           onPlayTargetAudio={() => {
             setHasListenedTargetAudio(true);
-            playShortAudio(activeBrick.targetAudioPath);
+            playBrickAudio(activeBrick.id);
           }}
           onPlayLearnerAudio={() => playShortAudio(learnerAudioUrl)}
           hasLearnerAudio={Boolean(learnerAudioUrl)}

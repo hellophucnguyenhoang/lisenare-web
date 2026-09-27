@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, type ChangeEvent } from "react";
 import { Mic, Upload, Volume2 } from "lucide-react";
 import {
   playShortAudio,
+  playBrickAudio,
   getAudioMediaStream,
   createMediaRecorder,
   getSupportedAudioMimeType,
@@ -12,12 +13,14 @@ interface BrickAudioSectionProps {
   audioBlob: Blob | null;
   onAudioChange: (blob: Blob | null) => void;
   existingAudioPath?: string | null;
+  brickId?: number;
 }
 
 export default function BrickAudioSection({
   audioBlob,
   onAudioChange,
   existingAudioPath,
+  brickId,
 }: BrickAudioSectionProps) {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -78,17 +81,22 @@ export default function BrickAudioSection({
   };
 
   const handlePlayAudio = () => {
-    const audioToPlay = previewAudioUrl || existingAudioPath;
-    if (audioToPlay) {
-      playShortAudio(audioToPlay);
+    if (previewAudioUrl) {
+      playShortAudio(previewAudioUrl);
+    } else if (brickId !== undefined) {
+      void playBrickAudio(brickId);
+    } else if (existingAudioPath) {
+      playShortAudio(existingAudioPath);
     }
   };
 
-  const hasPlayableAudio = Boolean(previewAudioUrl || existingAudioPath);
+  const hasPlayableAudio = Boolean(
+    previewAudioUrl || brickId !== undefined || existingAudioPath,
+  );
 
   const statusTitle = audioBlob
     ? "Audio attached"
-    : existingAudioPath
+    : brickId !== undefined || existingAudioPath
       ? "Audio available"
       : "No audio";
 

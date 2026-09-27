@@ -184,6 +184,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           audioBlob={audioBlob}
           onAudioChange={setAudioBlob}
           existingAudioPath={brick.targetAudioPath}
+          brickId={brick.id}
         />
 
         {/* Tags Section */}

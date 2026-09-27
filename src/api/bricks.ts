@@ -87,7 +87,9 @@ function toBrick(api: BrickReadApi): Brick {
 export async function listBricks(params?: BrickListParams) {
   const q = new URLSearchParams();
   if (params?.collection_ids) {
-    params.collection_ids.forEach((id) => q.append("collection_ids", String(id)));
+    params.collection_ids.forEach((id) =>
+      q.append("collection_ids", String(id)),
+    );
   }
   if (params?.status) q.set("status", params.status);
   if (params?.sort_by) q.set("sort_by", params.sort_by);
@@ -158,4 +160,15 @@ export async function checkBrickExists(targetText: string): Promise<boolean> {
   const q = new URLSearchParams();
   q.set("target_text", targetText);
   return request<boolean>(`/bricks/exists?${q.toString()}`);
+}
+
+/**
+ * Retrieves the direct audio URL for a brick from the backend.
+ * Calls GET /api/bricks/{brick_id}/audio
+ *
+ * @param brickId - The unique ID of the brick
+ * @returns The complete URL to play the audio directly
+ */
+export async function getBrickAudioUrl(brickId: number): Promise<string> {
+  return request<string>(`/bricks/${brickId}/audio`);
 }
