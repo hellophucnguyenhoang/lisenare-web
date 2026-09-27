@@ -20,8 +20,8 @@ export default function PracticeFlashcard({
   onEditBrick,
 }: PracticeFlashcardProps) {
   const { data: alignmentSegments } = useForcedAlignment(
-    activeBrick.targetAudioPath,
-    Boolean(activeBrick.targetAudioPath),
+    activeBrick.id,
+    Boolean(activeBrick.id),
   );
 
   // Split targetText into words and match with forced alignment segments

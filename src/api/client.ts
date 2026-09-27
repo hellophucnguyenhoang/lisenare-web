@@ -94,7 +94,7 @@ export async function request<T>(
   // Initialize headers without a default Content-Type
   const finalHeaders = new Headers(headers);
 
-  let finalBody: any = null;
+  let finalBody: BodyInit | null = null;
 
   if (body) {
     if (body instanceof FormData) {
@@ -117,6 +117,12 @@ export async function request<T>(
     credentials: "include",
   };
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, options);
+  const base = API_BASE_URL ?? "";
+  const normalizedEndpoint =
+    base && endpoint.startsWith(base)
+      ? endpoint
+      : `${base}${endpoint}`;
+
+  const res = await fetch(normalizedEndpoint, options);
   return handleResponse<T>(res);
 }

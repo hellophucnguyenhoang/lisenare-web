@@ -13,14 +13,14 @@ import { getForcedAlignment, type WordSegmentSecond } from "@/api/evaluation";
 import { useDebounce } from "./useDebounce";
 
 export function useForcedAlignment(
-  audioPath: string | null | undefined,
+  brickId: number | null | undefined,
   enabled = true,
 ) {
   return useQuery<WordSegmentSecond[]>({
-    queryKey: ["audio", "forced-alignment", audioPath],
+    queryKey: ["audio", "forced-alignment", brickId],
     queryFn: () =>
-      audioPath ? getForcedAlignment(audioPath) : Promise.resolve([]),
-    enabled: Boolean(audioPath) && enabled,
+      brickId ? getForcedAlignment(brickId) : Promise.resolve([]),
+    enabled: Boolean(brickId) && enabled,
     staleTime: 5 * 60 * 1000,
   });
 }

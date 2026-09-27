@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import { textToSpeech } from "@/api/text";
-import { resolveAudioUrl } from "@/api/endpoints";
 import { type TargetLang } from "@/types";
 
 export interface GenerateAudioParams {
@@ -28,10 +27,9 @@ export function useTextToSpeech() {
         voice,
       });
 
-      const audioUrl = resolveAudioUrl(audioPath);
-      const res = await fetch(audioUrl);
+      const res = await fetch(audioPath);
       if (!res.ok) {
-        throw new Error(`Failed to download generated audio from ${audioUrl}`);
+        throw new Error(`Failed to download generated audio from ${audioPath}`);
       }
 
       const blob = await res.blob();

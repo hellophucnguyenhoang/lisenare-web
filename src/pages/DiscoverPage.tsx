@@ -1,218 +1,381 @@
-import { useState, useMemo, useEffect } from "react";
-import { Search, X, Video as VideoIcon, Sparkles } from "lucide-react";
-import { type DiscoverVideo } from "@/types";
-import { DUMMY_VIDEOS, DISCOVER_CATEGORIES } from "@/data/dummyVideos";
-import VideoCard from "@/components/discover/VideoCard";
-import VideoPlayerModal from "@/components/discover/VideoPlayerModal";
-import SaveToCollectionModal from "@/components/collections/SaveToCollectionModal";
-import PlainTextInput from "@/components/common/PlainTextInput";
-import { useCollections } from "@/hooks/useCollections";
-import { useCreateBrick } from "@/hooks/useBricks";
-import { useLearnerMe } from "@/hooks/useLearner";
+import { useState, useEffect } from "react";
+import {
+  Sparkles,
+  Play,
+  Pause,
+  Languages,
+  Volume2,
+  Construction,
+  MousePointerClick,
+  Check,
+  BookmarkPlus,
+  Tv,
+} from "lucide-react";
 import { useHeader } from "@/context/HeaderContext";
 import { toast } from "sonner";
 
+interface WordData {
+  text: string;
+  cleanWord: string;
+  pos: string;
+  pron: string;
+  translation: string;
+  explanation: string;
+}
+
+const TRANSCRIPT_WORDS: WordData[] = [
+  {
+    text: "In",
+    cleanWord: "In",
+    pos: "preposition",
+    pron: "/ɪn/",
+    translation: "trong, ở trong / 〜の中で",
+    explanation: "Expresses location, condition, or inclusion within limits.",
+  },
+  {
+    text: "everyday",
+    cleanWord: "everyday",
+    pos: "adjective",
+    pron: "/ˈev.ri.deɪ/",
+    translation: "hàng ngày, thông thường / 毎日の、日常の",
+    explanation: "Happening or used routinely; common and typical for normal life.",
+  },
+  {
+    text: "conversations,",
+    cleanWord: "conversations",
+    pos: "noun",
+    pron: "/ˌkɒn.vəˈseɪ.ʃənz/",
+    translation: "cuộc trò chuyện / 会話",
+    explanation: "Spoken exchanges between people sharing ideas, opinions, and thoughts.",
+  },
+  {
+    text: "learners",
+    cleanWord: "learners",
+    pos: "noun",
+    pron: "/ˈlɜː.nərz/",
+    translation: "người học / 学習者",
+    explanation: "People actively studying, acquiring skills, or practicing new knowledge.",
+  },
+  {
+    text: "deeply",
+    cleanWord: "deeply",
+    pos: "adverb",
+    pron: "/ˈdiːp.li/",
+    translation: "sâu sắc / 深く",
+    explanation: "To an intense, thorough, or profound extent.",
+  },
+  {
+    text: "appreciate",
+    cleanWord: "appreciate",
+    pos: "verb",
+    pron: "/əˈpriː.ʃi.eɪt/",
+    translation: "trân trọng, đánh giá cao / 感謝する、高く評価する",
+    explanation: "To recognize full value, importance, or to feel genuine gratitude.",
+  },
+  {
+    text: "when",
+    cleanWord: "when",
+    pos: "conjunction",
+    pron: "/wen/",
+    translation: "khi, vào lúc / 〜のとき",
+    explanation: "At or during the specific time or event that something occurs.",
+  },
+  {
+    text: "subtitles",
+    cleanWord: "subtitles",
+    pos: "noun",
+    pron: "/ˈsʌbˌtaɪ.təlz/",
+    translation: "phụ đề / 字幕",
+    explanation: "Captions displayed alongside speech translating or transcribing video audio.",
+  },
+  {
+    text: "explain",
+    cleanWord: "explain",
+    pos: "verb",
+    pron: "/ɪkˈspleɪn/",
+    translation: "giải thích / 説明する",
+    explanation: "To make an idea or situation clear by describing relevant details.",
+  },
+  {
+    text: "the",
+    cleanWord: "the",
+    pos: "definite article",
+    pron: "/ðə/",
+    translation: "cái, người đó / その",
+    explanation: "Specifies a particular noun already known or contextually identified.",
+  },
+  {
+    text: "real-world",
+    cleanWord: "real-world",
+    pos: "adjective",
+    pron: "/ˌrɪəlˈwɜːld/",
+    translation: "thực tế, đời thực / 実際の、現実の",
+    explanation: "Relating to authentic, practical situations rather than theoretical models.",
+  },
+  {
+    text: "context.",
+    cleanWord: "context",
+    pos: "noun",
+    pron: "/ˈkɒn.tekst/",
+    translation: "ngữ cảnh, bối cảnh / 文脈、状況",
+    explanation: "The surrounding circumstances or background that clarify authentic meaning.",
+  },
+];
+
 export default function DiscoverPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [activeWatchVideo, setActiveWatchVideo] = useState<DiscoverVideo | null>(
-    null,
-  );
-  const [videoToSave, setVideoToSave] = useState<DiscoverVideo | null>(null);
-
-  const { data: learner } = useLearnerMe();
-  const isLoggedIn = Boolean(learner);
-
   const { setHeaderContent } = useHeader();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedWord, setSelectedWord] = useState<WordData>(
+    TRANSCRIPT_WORDS[5], // 'appreciate' selected by default to showcase the lookup
+  );
+  const [isSavedDemo, setIsSavedDemo] = useState(false);
 
-  // Dynamically update the fixed sticky header with discover clip indicator
+  // Dynamically update the fixed sticky header with discover badge
   useEffect(() => {
     setHeaderContent(
       <div className="flex items-center gap-1.5 text-xs text-primary font-bold bg-primary/10 px-2.5 py-1 rounded-xl">
         <Sparkles className="w-3.5 h-3.5" />
-        <span>Clips</span>
+        <span>Coming Soon</span>
       </div>,
     );
     return () => setHeaderContent(null);
   }, [setHeaderContent]);
 
-  const { data: collections = [] } = useCollections(isLoggedIn);
-  const createBrick = useCreateBrick();
+  const handlePronounce = (word: string) => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = "en-US";
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
-  // Filter videos based on category and search query
-  const filteredVideos = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-
-    return DUMMY_VIDEOS.filter((v) => {
-      // Category filter
-      if (selectedCategory !== "All" && v.category !== selectedCategory) {
-        return false;
-      }
-
-      // Search query filter
-      if (!query) return true;
-
-      const inTranscript = v.transcript.toLowerCase().includes(query);
-      const inTranslation = v.translation.toLowerCase().includes(query);
-      const inTitle = v.title.toLowerCase().includes(query);
-      const inChannel = v.channel.toLowerCase().includes(query);
-      const inTags = v.tags.some((t) => t.toLowerCase().includes(query));
-
-      return inTranscript || inTranslation || inTitle || inChannel || inTags;
-    });
-  }, [searchQuery, selectedCategory]);
-
-  const handleSaveToCollection = (collectionId: string) => {
-    if (!videoToSave) return;
-
-    const collection = collections.find((c) => c.id.toString() === collectionId);
-    const collectionName = collection?.name || "Collection";
-
-    const formData = new FormData();
-    formData.append(
-      "json_data",
-      JSON.stringify({
-        native_text: videoToSave.translation || videoToSave.transcript,
-        target_text: videoToSave.transcript,
-        target_pron: null,
-        context: `From: "${videoToSave.title}" (${videoToSave.channel}) - https://www.youtube.com/watch?v=${videoToSave.ytbVideoId}&t=${Math.floor(videoToSave.start)}s`,
-        unit_type: "sentence",
-        collection_id: Number(collectionId),
-        tags: videoToSave.tags,
-      }),
-    );
-    formData.append("target_audio_file", new Blob());
-
-    createBrick.mutate(formData, {
-      onSuccess: () => {
-        toast.success(
-          `Added "${videoToSave.transcript}" to ${collectionName}!`,
-        );
-        setVideoToSave(null);
-      },
-      onError: () => {
-        toast.error("Failed to save brick to collection. Please try again.");
-      },
-    });
+  const handleSaveDemo = () => {
+    setIsSavedDemo(true);
+    toast.success(`"${selectedWord.cleanWord}" preview saved to vocabulary!`);
+    setTimeout(() => setIsSavedDemo(false), 2500);
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-32 animate-in fade-in duration-300">
-      {/* Header section */}
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="w-5 h-5 text-primary" />
-          <h1 className="text-2xl font-bold font-display text-on-surface">
-            Discover Real-World Clips
-          </h1>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-24 animate-in fade-in duration-300">
+      {/* Feature Under Development Notice */}
+      <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-xs">
+        <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-2xs">
+          <Construction className="w-5 h-5" />
         </div>
-        <p className="text-xs sm:text-sm text-on-surface-variant">
-          Watch short video clips, listen to native phrasing in context, and save
-          sentences directly into your brick collections.
-        </p>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-5">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-outline w-5 h-5" />
-          <PlainTextInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search transcripts, phrases, translations, or topics..."
-            className="w-full pl-12 pr-10 py-3 bg-surface-container-lowest border border-outline-variant/60 rounded-2xl focus:ring-2 focus:ring-primary text-sm font-medium transition-all shadow-xs outline-none"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface cursor-pointer p-1"
-              aria-label="Clear search"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Category Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
-        {DISCOVER_CATEGORIES.map((category) => {
-          const isSelected = selectedCategory === category;
-          return (
-            <button
-              key={category}
-              type="button"
-              onClick={() => setSelectedCategory(category)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                isSelected
-                  ? "bg-primary text-on-primary shadow-xs"
-                  : "bg-surface-container-lowest border border-outline-variant/60 text-on-surface-variant hover:border-primary/40 hover:text-on-surface"
-              }`}
-            >
-              {category}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Video Cards Grid */}
-      {filteredVideos.length === 0 ? (
-        <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-12 text-center bg-surface-container-lowest/50 my-4">
-          <VideoIcon className="w-10 h-10 text-outline mx-auto mb-3 opacity-40" />
-          <h3 className="text-base font-bold text-on-surface mb-1">
-            No Video Clips Found
-          </h3>
-          <p className="text-xs text-on-surface-variant max-w-sm mx-auto">
-            {searchQuery
-              ? `No clips matched "${searchQuery}". Try a different search term or category.`
-              : "No clips found in this category."}
+        <div className="grow">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+              In Active Development
+            </span>
+          </div>
+          <h2 className="text-base sm:text-lg font-bold font-display text-on-surface">
+            Discover: Video Immersion & Interactive Transcripts
+          </h2>
+          <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5 leading-relaxed max-w-2xl">
+            This feature is currently being crafted for learners. You will be
+            able to discover videos you love, watch with synchronized live
+            transcripts, and tap on any word to instantly inspect its
+            translation, pronunciation, and contextual explanation.
           </p>
-          {(searchQuery || selectedCategory !== "All") && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("All");
-              }}
-              className="mt-4 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl text-xs transition-colors cursor-pointer"
-            >
-              Reset Filters
-            </button>
-          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filteredVideos.map((video) => (
-            <VideoCard
-              key={video.id}
-              video={video}
-              onWatch={setActiveWatchVideo}
-              onSaveToCollection={setVideoToSave}
-            />
-          ))}
+      </div>
+
+      {/* Feature Pillars */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="p-4 bg-surface-container-lowest border border-outline-variant/50 rounded-2xl shadow-2xs flex flex-col gap-1.5">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-1">
+            <Tv className="w-4 h-4" />
+          </div>
+          <h3 className="text-xs sm:text-sm font-bold text-on-surface">
+            1. Watch Videos You Enjoy
+          </h3>
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            Choose engaging real-world clips from YouTube and native video
+            sources matching your interests.
+          </p>
         </div>
-      )}
 
-      {/* Watch Video Modal */}
-      <VideoPlayerModal
-        video={activeWatchVideo}
-        onClose={() => setActiveWatchVideo(null)}
-        onSaveToCollection={setVideoToSave}
-      />
+        <div className="p-4 bg-surface-container-lowest border border-outline-variant/50 rounded-2xl shadow-2xs flex flex-col gap-1.5">
+          <div className="w-8 h-8 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-1">
+            <Languages className="w-4 h-4" />
+          </div>
+          <h3 className="text-xs sm:text-sm font-bold text-on-surface">
+            2. Live Interactive Transcripts
+          </h3>
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            Follow synchronized speech in real time with line-by-line transcripts
+            timed directly to native speakers.
+          </p>
+        </div>
 
-      {/* Save to Collection Modal */}
-      <SaveToCollectionModal
-        isOpen={Boolean(videoToSave)}
-        brick={
-          videoToSave
-            ? { nativeText: videoToSave.translation || videoToSave.transcript }
-            : null
-        }
-        collections={collections}
-        onSave={handleSaveToCollection}
-        onClose={() => setVideoToSave(null)}
-      />
+        <div className="p-4 bg-surface-container-lowest border border-outline-variant/50 rounded-2xl shadow-2xs flex flex-col gap-1.5">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-1">
+            <MousePointerClick className="w-4 h-4" />
+          </div>
+          <h3 className="text-xs sm:text-sm font-bold text-on-surface">
+            3. Tap to Translate & Explain
+          </h3>
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            Click on any unfamiliar word in the transcript to reveal instant
+            translations, meanings, and save to your bricks.
+          </p>
+        </div>
+      </div>
+
+      {/* Interactive Dummy Preview Section */}
+      <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 sm:p-7 shadow-xs">
+        <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-outline-variant/30">
+          <div>
+            <h3 className="text-sm sm:text-base font-bold text-on-surface flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>Interactive Concept Preview</span>
+            </h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">
+              Experience how clicking transcript words provides instant explanations:
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-xl shrink-0">
+            Click any word below
+          </span>
+        </div>
+
+        {/* Video Mockup Player */}
+        <div className="relative aspect-video w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950 border border-outline-variant/40 shadow-md mb-5 flex flex-col items-center justify-center group select-none">
+          {/* Mock Background Imagery / Grid */}
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px]" />
+
+          {/* Central Play/Pause Button */}
+          <button
+            type="button"
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="relative z-10 w-16 h-16 rounded-full bg-primary/90 hover:bg-primary text-on-primary flex items-center justify-center shadow-lg transition-transform group-hover:scale-105 active:scale-95 cursor-pointer"
+            aria-label={isPlaying ? "Pause preview video" : "Play preview video"}
+          >
+            {isPlaying ? (
+              <Pause className="w-7 h-7 fill-current" />
+            ) : (
+              <Play className="w-7 h-7 fill-current ml-1" />
+            )}
+          </button>
+
+          {/* Video Mockup Overlay Details */}
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-white text-[11px] font-medium flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span>Sample Video Clip</span>
+          </div>
+
+          <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-mono">
+            01:45 / 03:20
+          </div>
+
+          <div className="absolute bottom-3 left-3 text-white text-xs font-semibold drop-shadow-md">
+            Natural English Phrasing & Context
+          </div>
+        </div>
+
+        {/* Live Transcript Box with Clickable Word Chips */}
+        <div className="bg-surface-container/60 border border-outline-variant/40 rounded-2xl p-4 mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              Live Transcript (Click any word)
+            </span>
+            <span className="text-[11px] text-outline">English (US)</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 leading-relaxed text-sm sm:text-base font-medium text-on-surface py-1">
+            {TRANSCRIPT_WORDS.map((w, idx) => {
+              const isSelected = selectedWord.cleanWord === w.cleanWord;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedWord(w)}
+                  className={`px-2 py-1 rounded-lg transition-all cursor-pointer text-sm sm:text-base ${
+                    isSelected
+                      ? "bg-primary text-on-primary font-bold shadow-xs scale-105"
+                      : "bg-surface-container-lowest hover:bg-primary/10 hover:text-primary border border-outline-variant/50"
+                  }`}
+                  title={`Click to inspect "${w.cleanWord}"`}
+                >
+                  {w.text}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Word Explanation & Translation Card */}
+        {selectedWord && (
+          <div className="bg-surface-container-lowest border-2 border-primary/30 rounded-2xl p-4 sm:p-5 animate-in slide-in-from-bottom-2 duration-200 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-outline-variant/30">
+              <div className="flex items-center gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-lg font-bold font-display text-primary">
+                      {selectedWord.cleanWord}
+                    </h4>
+                    <span className="text-[11px] font-medium text-outline bg-surface-container px-2 py-0.5 rounded-md italic">
+                      {selectedWord.pos}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-on-surface-variant mt-0.5">
+                    <span className="font-mono">{selectedWord.pron}</span>
+                    <button
+                      type="button"
+                      onClick={() => handlePronounce(selectedWord.cleanWord)}
+                      className="p-1 rounded-md text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                      title="Listen to pronunciation"
+                      aria-label="Listen to pronunciation"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveDemo}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all shadow-2xs self-start sm:self-auto cursor-pointer ${
+                  isSavedDemo
+                    ? "bg-emerald-600 text-white"
+                    : "bg-primary text-on-primary hover:bg-primary/95 active:scale-95"
+                }`}
+              >
+                {isSavedDemo ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Saved to Bricks!</span>
+                  </>
+                ) : (
+                  <>
+                    <BookmarkPlus className="w-3.5 h-3.5" />
+                    <span>Save Word to Bricks</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div>
+                <span className="font-bold text-on-surface">Translation: </span>
+                <span className="text-primary font-medium">
+                  {selectedWord.translation}
+                </span>
+              </div>
+              <div>
+                <span className="font-bold text-on-surface">Explanation: </span>
+                <span className="text-on-surface-variant leading-relaxed">
+                  {selectedWord.explanation}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

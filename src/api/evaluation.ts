@@ -54,9 +54,8 @@ export interface WordSegmentSecond {
 }
 
 export async function getForcedAlignment(
-  audioPath: string,
+  brickId: number,
 ): Promise<WordSegmentSecond[]> {
-  const encodedPath = encodeURIComponent(audioPath);
-  return request<WordSegmentSecond[]>(`/audio/forced-alignment/${encodedPath}`);
+  return request<WordSegmentSecond[]>(`/audio/forced-alignment/${brickId}`);
 }
 

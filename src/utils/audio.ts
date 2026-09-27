@@ -1,4 +1,4 @@
-import { resolveAudioUrl } from "@/api/endpoints";
+import { getBrickAudioUrl } from "@/api/bricks";
 
 // Global reference to the currently playing audio element
 let activeAudio: HTMLAudioElement | null = null;
@@ -20,26 +20,24 @@ export const stopShortAudio = (): void => {
 };
 
 /**
- * Instantiates and plays a short audio clip from a relative path or direct URL.
+ * Instantiates and plays a short audio clip from a direct URL, blob URL, or brick ID.
  * Automatically stops and cancels any previously playing audio to prevent audio overlap.
  */
 export const playShortAudio = (
-  relativePath: string | null | undefined,
+  audioUrlOrBrickId: string | number | null | undefined,
   startTimeSec?: number,
 ): void => {
-  if (!relativePath) return;
+  if (audioUrlOrBrickId === null || audioUrlOrBrickId === undefined) return;
+
+  if (typeof audioUrlOrBrickId === "number") {
+    void playBrickAudio(audioUrlOrBrickId, startTimeSec);
+    return;
+  }
 
   // Stop any previously playing audio instance immediately
   stopShortAudio();
 
-  const fullUrl =
-    relativePath.startsWith("blob:") ||
-    relativePath.startsWith("http://") ||
-    relativePath.startsWith("https://")
-      ? relativePath
-      : resolveAudioUrl(relativePath);
-
-  const audio = new Audio(fullUrl);
+  const audio = new Audio(audioUrlOrBrickId);
   activeAudio = audio;
 
   const startPlayback = () => {
@@ -77,6 +75,25 @@ export const playShortAudio = (
     }
   } else {
     startPlayback();
+  }
+};
+
+/**
+ * Retrieves the complete audio URL for a brick using its ID and plays it.
+ * Calls GET /api/bricks/{brick_id}/audio under the hood.
+ */
+export const playBrickAudio = async (
+  brickId: number | null | undefined,
+  startTimeSec?: number,
+): Promise<void> => {
+  if (brickId === null || brickId === undefined) return;
+  try {
+    const url = await getBrickAudioUrl(brickId);
+    if (url) {
+      playShortAudio(url, startTimeSec);
+    }
+  } catch (error) {
+    console.error(`Failed to play audio for brick ${brickId}:`, error);
   }
 };
 
