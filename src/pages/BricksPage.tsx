@@ -248,7 +248,7 @@ export default function BricksPage({
         </div>
       </section>
 
-      {/* Filter Bar: Collection selector + Sort controls + Context Search Button */}
+      {/* Filter Bar: Collection selector + Sort controls + Search Button */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         {/* Collection Filter Dropdown */}
         <div className="relative" ref={dropdownRef}>
@@ -271,14 +271,15 @@ export default function BricksPage({
           </button>
 
           {showCollectionDropdown && (
-            <div className="absolute left-0 top-full mt-1.5 z-30 w-72 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-80 overflow-y-auto">
+            <div className="absolute left-0 top-full mt-1.5 z-30 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-80 overflow-y-auto">
               {/* "All Collections" option */}
               <button
+                type="button"
                 onClick={() => {
                   setSelectedCollectionId(null);
                   setShowCollectionDropdown(false);
                 }}
-                className={`w-full px-4 py-2.5 text-left text-xs font-semibold flex items-center justify-between hover:bg-surface-container transition-colors ${
+                className={`w-full px-4 py-2.5 text-left text-xs font-semibold flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
                   !selectedCollectionId
                     ? "text-primary bg-primary/5"
                     : "text-on-surface"
@@ -286,7 +287,7 @@ export default function BricksPage({
               >
                 <span>All Collections</span>
                 {!selectedCollectionId && (
-                  <Check className="w-4 h-4 text-primary" />
+                  <Check className="w-4 h-4 text-primary shrink-0" />
                 )}
               </button>
 
@@ -298,53 +299,63 @@ export default function BricksPage({
                 </div>
               ) : (
                 collections.map((col) => (
-                  <div key={col.id} className="relative group">
+                  <div
+                    key={col.id}
+                    className={`w-full px-3.5 py-1.5 flex items-center justify-between transition-colors hover:bg-surface-container/60 ${
+                      selectedCollectionId === col.id
+                        ? "text-primary bg-primary/5 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    {/* Collection selection button */}
                     <button
+                      type="button"
                       onClick={() => {
                         setSelectedCollectionId(col.id);
                         setShowCollectionDropdown(false);
                       }}
-                      className={`w-full px-4 py-2.5 text-left text-xs font-medium flex items-center justify-between hover:bg-surface-container transition-colors ${
-                        selectedCollectionId === col.id
-                          ? "text-primary bg-primary/5 font-semibold"
-                          : "text-on-surface"
-                      }`}
+                      className="flex-1 flex flex-col min-w-0 pr-2 py-1 text-left cursor-pointer"
                     >
-                      <div className="flex flex-col min-w-0">
-                        <span className="truncate">{col.name}</span>
-                        <span className="text-[10px] text-outline font-normal">
-                          {col.brickCount ?? 0} bricks
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        {selectedCollectionId === col.id && (
-                          <Check className="w-4 h-4 text-primary" />
-                        )}
-                        {/* Inline edit/delete on hover */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingCollection(col);
-                            setShowCollectionDropdown(false);
-                          }}
-                          className="p-1 rounded-md text-outline hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                          title="Edit collection"
-                        >
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowCollectionDropdown(false);
-                            handleDeleteCollection(col.id);
-                          }}
-                          className="p-1 rounded-md text-outline hover:text-error hover:bg-error/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                          title="Delete collection"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
+                      <span className="truncate text-xs font-medium">
+                        {col.name}
+                      </span>
+                      <span className="text-[10px] text-outline font-normal">
+                        {col.brickCount ?? 0} bricks
+                      </span>
                     </button>
+
+                    {/* Actions: check indicator, edit, delete - always visible for mobile & desktop */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      {selectedCollectionId === col.id && (
+                        <Check className="w-4 h-4 text-primary shrink-0 mr-0.5" />
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCollection(col);
+                          setShowCollectionDropdown(false);
+                        }}
+                        className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
+                        title="Edit collection"
+                        aria-label={`Edit ${col.name}`}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCollectionDropdown(false);
+                          handleDeleteCollection(col.id);
+                        }}
+                        className="p-1.5 rounded-lg text-outline hover:text-error hover:bg-error/10 active:scale-95 transition-all cursor-pointer"
+                        title="Delete collection"
+                        aria-label={`Delete ${col.name}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -353,6 +364,7 @@ export default function BricksPage({
 
               {/* Create new collection inline */}
               <button
+                type="button"
                 onClick={() => {
                   setShowCollectionDropdown(false);
                   setShowCollectionModal(true);
@@ -521,13 +533,13 @@ export default function BricksPage({
             )}
           </div>
 
-          {/* Context Search Button */}
+          {/* Search Bricks Button */}
           <button
             type="button"
-            id="btn-open-context-search"
+            id="btn-open-search"
             onClick={onNavigateToSearch}
             className="flex items-center gap-2 px-3.5 py-2.5 bg-surface-container-lowest hover:bg-surface-container-high border border-outline-variant/60 hover:border-primary/40 text-on-surface font-semibold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-            title="Search Bricks & Videos by Context"
+            title="Search Bricks"
           >
             <Search className="w-4 h-4 text-primary" />
             <span className="hidden sm:inline">Search</span>

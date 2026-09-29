@@ -1,4 +1,4 @@
-import { Volume2, Play, ArrowRight, X, RotateCcw } from "lucide-react";
+import { Volume2, Play, ArrowRight, X, RotateCcw, Loader2 } from "lucide-react";
 
 interface PracticeEvaluationModalProps {
   score: number;
@@ -10,6 +10,7 @@ interface PracticeEvaluationModalProps {
   onPlayTargetAudio: () => void;
   onPlayLearnerAudio?: () => void;
   hasLearnerAudio?: boolean;
+  isLoadingTargetAudio?: boolean;
 }
 
 export default function PracticeEvaluationModal({
@@ -22,6 +23,7 @@ export default function PracticeEvaluationModal({
   onPlayTargetAudio,
   onPlayLearnerAudio,
   hasLearnerAudio = false,
+  isLoadingTargetAudio = false,
 }: PracticeEvaluationModalProps) {
   const percentage = Math.round(score * 100);
 
@@ -71,11 +73,16 @@ export default function PracticeEvaluationModal({
               type="button"
               id="btn-eval-target-audio"
               onClick={onPlayTargetAudio}
-              className="p-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all active:scale-90 cursor-pointer shrink-0"
-              title="Listen to Target Audio"
+              disabled={isLoadingTargetAudio}
+              className="p-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all active:scale-90 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+              title={isLoadingTargetAudio ? "Loading audio..." : "Listen to Target Audio"}
               aria-label="Listen to Target Audio"
             >
-              <Volume2 className="w-4 h-4" />
+              {isLoadingTargetAudio ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
             </button>
           </div>
 

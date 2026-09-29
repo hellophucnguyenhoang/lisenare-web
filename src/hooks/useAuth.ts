@@ -42,6 +42,7 @@ export function useAuth() {
     mutationFn: apiLogout,
     onSuccess: () => {
       qc.clear();
+      qc.setQueryData(["learner", "me"], null);
     },
   });
 

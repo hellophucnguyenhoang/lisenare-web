@@ -28,6 +28,19 @@ export interface BrickUpdateJsonData {
   tags?: string[] | null;
 }
 
+export interface AddBrickRequest {
+  collection_id: number;
+}
+
+export interface AddCollectionRequest {
+  target_collection_id: number;
+}
+
+export interface AddCollectionResult {
+  added: number;
+  skipped: number;
+}
+
 // ── API response types (snake_case from server) ─────────
 
 interface BrickReadApi {
@@ -45,6 +58,25 @@ interface BrickReadApi {
   collection_id: number;
   tags: string[];
   learned?: boolean;
+}
+
+export interface BrickCreator {
+  id: number;
+  name: string;
+  practice_lang?: string;
+}
+
+export interface BrickDetail extends Brick {
+  collectionName: string;
+  creatorId: number;
+  creator: BrickCreator;
+  reaction: string | null;
+}
+
+interface BrickDetailApi extends BrickReadApi {
+  collection_name?: string;
+  creator: BrickCreator;
+  reaction?: string | null;
 }
 
 interface BrickPageApi {
@@ -79,6 +111,16 @@ function toBrick(api: BrickReadApi): Brick {
     tags: api.tags,
     collectionId: api.collection_id,
     learned: api.learned ?? false,
+  };
+}
+
+function toBrickDetail(api: BrickDetailApi): BrickDetail {
+  return {
+    ...toBrick(api),
+    collectionName: api.collection_name || "",
+    creatorId: api.creator_id,
+    creator: api.creator,
+    reaction: api.reaction || null,
   };
 }
 
@@ -172,3 +214,46 @@ export async function checkBrickExists(targetText: string): Promise<boolean> {
 export async function getBrickAudioUrl(brickId: number): Promise<string> {
   return request<string>(`/bricks/${brickId}/audio`);
 }
+
+/**
+ * Copies a brick into the learner's collection.
+ * Calls POST /api/bricks/add-from/{brick_id}
+ */
+export async function addBrickFrom(
+  brickId: number,
+  collectionId: number,
+): Promise<Brick> {
+  const api = await request<BrickReadApi>(`/bricks/add-from/${brickId}`, {
+    method: "POST",
+    body: { collection_id: collectionId },
+  });
+  return toBrick(api);
+}
+
+/**
+ * Copies all public bricks from a collection into the learner's target collection.
+ * Calls POST /api/bricks/add-from-collection/{collection_id}
+ */
+export async function addBricksFromCollection(
+  collectionId: number,
+  targetCollectionId: number,
+): Promise<AddCollectionResult> {
+  return request<AddCollectionResult>(
+    `/bricks/add-from-collection/${collectionId}`,
+    {
+      method: "POST",
+      body: { target_collection_id: targetCollectionId },
+    },
+  );
+}
+
+/**
+ * Retrieves full details of a brick including creator and collection info.
+ * Calls GET /api/bricks/{brick_id}
+ */
+export async function getBrickDetail(brickId: number): Promise<BrickDetail> {
+  const api = await request<BrickDetailApi>(`/bricks/${brickId}`);
+  return toBrickDetail(api);
+}
+
+

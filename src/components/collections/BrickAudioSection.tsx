@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, type ChangeEvent } from "react";
-import { Mic, Upload, Volume2 } from "lucide-react";
+import { Mic, Upload, Volume2, Loader2 } from "lucide-react";
 import {
   playShortAudio,
   playBrickAudio,
@@ -23,6 +23,7 @@ export default function BrickAudioSection({
   brickId,
 }: BrickAudioSectionProps) {
   const [isRecording, setIsRecording] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<BlobPart[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -80,11 +81,17 @@ export default function BrickAudioSection({
     }
   };
 
-  const handlePlayAudio = () => {
+  const handlePlayAudio = async () => {
+    if (isLoadingAudio) return;
     if (previewAudioUrl) {
       playShortAudio(previewAudioUrl);
     } else if (brickId !== undefined) {
-      void playBrickAudio(brickId);
+      setIsLoadingAudio(true);
+      try {
+        await playBrickAudio(brickId);
+      } finally {
+        setIsLoadingAudio(false);
+      }
     } else if (existingAudioPath) {
       playShortAudio(existingAudioPath);
     }
@@ -100,9 +107,11 @@ export default function BrickAudioSection({
       ? "Audio available"
       : "No audio";
 
-  const statusSubtitle = hasPlayableAudio
-    ? "Click play icon to listen"
-    : "Record or upload audio below";
+  const statusSubtitle = isLoadingAudio
+    ? "Loading audio..."
+    : hasPlayableAudio
+      ? "Click play icon to listen"
+      : "Record or upload audio below";
 
   return (
     <section className="space-y-3">
@@ -124,12 +133,16 @@ export default function BrickAudioSection({
             <button
               type="button"
               onClick={handlePlayAudio}
-              disabled={!hasPlayableAudio}
-              className="w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer bg-primary text-on-primary active:scale-90 hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Play pronunciation"
+              disabled={!hasPlayableAudio || isLoadingAudio}
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-all cursor-pointer bg-primary text-on-primary active:scale-90 hover:brightness-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+              title={isLoadingAudio ? "Loading audio..." : "Play pronunciation"}
               aria-label="Play pronunciation"
             >
-              <Volume2 className="w-5 h-5" />
+              {isLoadingAudio ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
             </button>
             <div>
               <div className="text-xs font-bold">{statusTitle}</div>
