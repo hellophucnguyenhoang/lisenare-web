@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Volume2, Eye, EyeOff, Edit3 } from "lucide-react";
+import { Volume2, Eye, EyeOff, Edit3, Loader2 } from "lucide-react";
 import { type Brick } from "@/types";
 import { useForcedAlignment } from "@/hooks/useBricks";
 import { type WordSegmentSecond } from "@/api/evaluation";
@@ -7,6 +7,7 @@ import { type WordSegmentSecond } from "@/api/evaluation";
 interface PracticeFlashcardProps {
   activeBrick: Brick;
   isRevealed: boolean;
+  isLoadingAudio?: boolean;
   onToggleReveal: () => void;
   onPlayAudio: (startTimeSec?: number) => void;
   onEditBrick?: () => void;
@@ -15,6 +16,7 @@ interface PracticeFlashcardProps {
 export default function PracticeFlashcard({
   activeBrick,
   isRevealed,
+  isLoadingAudio = false,
   onToggleReveal,
   onPlayAudio,
   onEditBrick,
@@ -90,11 +92,16 @@ export default function PracticeFlashcard({
           type="button"
           id="btn-practice-listen-audio"
           onClick={() => onPlayAudio()}
-          className="p-3.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-full active:scale-90 transition-all shadow-xs cursor-pointer"
-          title="Listen to target pronunciation"
+          disabled={isLoadingAudio}
+          className="p-3.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-full active:scale-90 transition-all shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+          title={isLoadingAudio ? "Loading audio..." : "Listen to target pronunciation"}
           aria-label="Listen to target pronunciation"
         >
-          <Volume2 className="w-5 h-5" />
+          {isLoadingAudio ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Volume2 className="w-5 h-5" />
+          )}
         </button>
 
         <button
@@ -131,9 +138,14 @@ export default function PracticeFlashcard({
                 key={idx}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (isLoadingAudio) return;
                   onPlayAudio(segment?.start_sec);
                 }}
-                className="cursor-pointer hover:underline hover:opacity-80 active:opacity-60 transition-all select-text"
+                className={`transition-all select-text ${
+                  isLoadingAudio
+                    ? "opacity-60 cursor-not-allowed pointer-events-none"
+                    : "cursor-pointer hover:underline hover:opacity-80 active:opacity-60"
+                }`}
                 title={
                   segment
                     ? `Play from ${segment.start_sec.toFixed(2)}s`

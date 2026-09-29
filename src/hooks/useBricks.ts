@@ -6,6 +6,10 @@ import {
   deleteBrick,
   checkBrickExists,
   getNextBrick,
+  addBrickFrom,
+  addBricksFromCollection,
+  getBrickDetail,
+  type BrickDetail,
   type BrickListParams,
   type NextBrickParams,
 } from "@/api/bricks";
@@ -64,13 +68,18 @@ export function useNextBrick(
   });
 }
 
-export function useCheckBrickExists(targetText: string, enabled = true) {
-  const debouncedText = useDebounce(targetText.trim(), 400);
+export function useCheckBrickExists(
+  targetText: string,
+  enabled = true,
+  debounceMs = 400,
+) {
+  const debouncedText = useDebounce(targetText.trim(), debounceMs);
+  const textToCheck = debounceMs === 0 ? targetText.trim() : debouncedText;
 
   return useQuery({
-    queryKey: ["bricks", "exists", debouncedText],
-    queryFn: () => checkBrickExists(debouncedText),
-    enabled: enabled && debouncedText.length > 0,
+    queryKey: ["bricks", "exists", textToCheck],
+    queryFn: () => checkBrickExists(textToCheck),
+    enabled: enabled && textToCheck.length > 0,
     staleTime: 30_000,
   });
 }
@@ -104,3 +113,55 @@ export function useDeleteBrick() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["bricks"] }),
   });
 }
+
+export function useAddBrickFrom() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      brickId,
+      collectionId,
+    }: {
+      brickId: number;
+      collectionId: number;
+    }) => addBrickFrom(brickId, collectionId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+      qc.invalidateQueries({ queryKey: ["collections"] });
+    },
+  });
+}
+
+export function useAddBricksFromCollection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      collectionId,
+      targetCollectionId,
+    }: {
+      collectionId: number;
+      targetCollectionId: number;
+    }) => addBricksFromCollection(collectionId, targetCollectionId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+      qc.invalidateQueries({ queryKey: ["collections"] });
+    },
+  });
+}
+
+export function useBrickDetail(
+  brickId: number | null | undefined,
+  enabled = true,
+) {
+  return useQuery<BrickDetail>({
+    queryKey: ["bricks", "detail", brickId],
+    queryFn: () =>
+      brickId
+        ? getBrickDetail(brickId)
+        : Promise.reject(new Error("No brick ID provided")),
+    enabled: Boolean(brickId) && enabled,
+    staleTime: 30 * 1000,
+  });
+}
+
+
+

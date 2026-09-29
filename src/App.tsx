@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster, toast } from "sonner";
-import { request, RequestError } from "@/api/client";
+import { RequestError } from "@/api/client";
+import { apiLogout } from "@/api/auth";
 import { useLearnerMe } from "@/hooks/useLearner";
-import {
-  type ActiveTab,
-  type AuthMode,
-  type Subview,
-} from "@/types";
+import { type ActiveTab, type AuthMode, type Subview } from "@/types";
 
 import BricksPage from "@/pages/BricksPage";
 import SearchPage from "@/pages/SearchPage";
@@ -19,7 +16,7 @@ import EditBrickPage from "@/pages/EditBrickPage";
 import AuthModal from "@/components/auth/AuthModal";
 import AppHeader from "@/components/layout/AppHeader";
 import BottomNavBar from "@/components/layout/BottomNavBar";
-import { HeaderProvider } from "@/context/HeaderContext";
+import { HeaderProvider, useHeader } from "@/context/HeaderContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +37,7 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const { data: learner, isLoading: isCheckingAuth } = useLearnerMe();
+  const { setHeaderContent } = useHeader();
   const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [subview, setSubview] = useState<Subview>(null);
@@ -62,13 +60,20 @@ function AppContent() {
 
   const handleLogout = async () => {
     try {
-      await request("/auth/logout", { method: "POST" });
-    } catch {
-      // ignore
+      await apiLogout();
+    } catch (err) {
+      console.warn("Logout request failed:", err);
+    } finally {
+      queryClient.clear();
+      queryClient.setQueryData(["learner", "me"], null);
+      setHeaderContent(null);
+      setPracticeBrickId(null);
+      setPracticeFinishedCount(0);
+      setPracticeElapsedSeconds(0);
+      setSubview(null);
+      setActiveTab("profile");
+      toast.success("Logged out successfully");
     }
-    queryClient.clear();
-    setActiveTab("profile");
-    toast.success("Logged out successfully");
   };
 
   if (isCheckingAuth && !hasInitializedTab) {
@@ -111,6 +116,10 @@ function AppContent() {
             setSubview(null);
             setActiveTab("practice");
           }}
+          onNavigateToEditBrick={(brick) => {
+            setSubview({ type: "editBrick", brick });
+          }}
+          onOpenAuth={(mode) => setAuthModalMode(mode)}
         />
         <Toaster position="top-center" richColors />
       </>

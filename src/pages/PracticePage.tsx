@@ -87,6 +87,7 @@ export default function PracticePage({
   const [typedAnswer, setTypedAnswer] = useState("");
   const [showTypeInput, setShowTypeInput] = useState(false);
   const [learnerAudioUrl, setLearnerAudioUrl] = useState<string | null>(null);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
   const [evaluationResult, setEvaluationResult] = useState<{
     score: number;
@@ -139,6 +140,7 @@ export default function PracticePage({
     setTypedAnswer("");
     setEvaluationResult(null);
     setLearnerAudioUrl(null);
+    setIsLoadingAudio(false);
   }
 
   const { setHeaderContent } = useHeader();
@@ -383,7 +385,8 @@ export default function PracticePage({
           Start Practicing Bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Sign in to your account to review vocabulary, practice pronunciation with speech evaluation, and build your memory stability.
+          Sign in to your account to review vocabulary, practice pronunciation
+          with speech evaluation, and build your memory stability.
         </p>
         {onOpenAuth && (
           <button
@@ -418,23 +421,14 @@ export default function PracticePage({
   if (!activeBrick) {
     return (
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
-        {/* App Logo */}
-        <div className="w-20 h-20 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-6 overflow-hidden p-3.5">
-          <img
-            src="/favicon.svg"
-            alt="Lisenare Logo"
-            className="w-full h-full object-contain rounded-xl"
-          />
-        </div>
-
         {/* Title */}
         <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface tracking-tight mb-2">
-          Ready for your next brick?
+          Next brick?
         </h2>
 
         {/* Subtitle */}
         <p className="text-sm text-on-surface-variant max-w-xs mx-auto mb-8 leading-relaxed">
-          Add a new language brick to expand your collection and start practicing.
+          Add a new brick and start practicing.
         </p>
 
         {/* Add Brick Button */}
@@ -466,6 +460,17 @@ export default function PracticePage({
     );
   }
 
+  const handlePlayAudio = async (startTimeSec?: number) => {
+    if (isLoadingAudio || !activeBrick) return;
+    setIsLoadingAudio(true);
+    try {
+      setHasListenedTargetAudio(true);
+      await playBrickAudio(activeBrick.id, startTimeSec);
+    } finally {
+      setIsLoadingAudio(false);
+    }
+  };
+
   return (
     <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-6 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-10rem)] animate-in fade-in duration-300">
       {/* Main Flashcard & Interactive Input section */}
@@ -473,11 +478,9 @@ export default function PracticePage({
         <PracticeFlashcard
           activeBrick={activeBrick}
           isRevealed={isRevealed}
+          isLoadingAudio={isLoadingAudio}
           onToggleReveal={handleToggleReveal}
-          onPlayAudio={(startTimeSec?: number) => {
-            setHasListenedTargetAudio(true);
-            playBrickAudio(activeBrick.id, startTimeSec);
-          }}
+          onPlayAudio={handlePlayAudio}
           onEditBrick={
             onNavigateToEditBrick
               ? () => onNavigateToEditBrick(activeBrick)
@@ -512,10 +515,8 @@ export default function PracticePage({
           learnerText={evaluationResult.learnerText}
           onClose={() => setEvaluationResult(null)}
           onNext={handleNext}
-          onPlayTargetAudio={() => {
-            setHasListenedTargetAudio(true);
-            playBrickAudio(activeBrick.id);
-          }}
+          isLoadingTargetAudio={isLoadingAudio}
+          onPlayTargetAudio={() => handlePlayAudio()}
           onPlayLearnerAudio={() => playShortAudio(learnerAudioUrl)}
           hasLearnerAudio={Boolean(learnerAudioUrl)}
         />

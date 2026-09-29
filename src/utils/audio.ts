@@ -26,6 +26,7 @@ export const stopShortAudio = (): void => {
 export const playShortAudio = (
   audioUrlOrBrickId: string | number | null | undefined,
   startTimeSec?: number,
+  onEnded?: () => void,
 ): void => {
   if (audioUrlOrBrickId === null || audioUrlOrBrickId === undefined) return;
 
@@ -57,6 +58,7 @@ export const playShortAudio = (
       if (error?.name !== "AbortError") {
         console.error("Audio playback failed:", error);
       }
+      onEnded?.();
     });
   };
 
@@ -64,6 +66,7 @@ export const playShortAudio = (
     if (activeAudio === audio) {
       activeAudio = null;
     }
+    onEnded?.();
   };
 
   if (typeof startTimeSec === "number" && startTimeSec > 0) {
