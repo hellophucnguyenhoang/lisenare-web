@@ -50,7 +50,7 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
     introTitle: "How to Practice",
     introDescription:
       "Follow these 5 simple steps for every sentence (brick) to build real fluency.",
-    addBrickButton: "Add Your First Brick",
+    addBrickButton: "Add Brick",
     backButton: "Back to Practice",
     steps: [
       {
@@ -285,14 +285,7 @@ export default function PracticeInstructionsPage({
 
         {/* Intro Banner */}
         <section className="bg-white p-5 rounded-2xl border border-outline-variant/60 shadow-xs text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto overflow-hidden p-2 mb-1">
-            <img
-              src="/favicon.svg"
-              alt="Lisenare Logo"
-              className="w-full h-full object-contain"
-            />
-          </div>
-          <h2 className="text-base font-bold font-display text-on-surface">
+          <h2 className="text-xl font-bold font-display text-on-surface">
             {t.introTitle}
           </h2>
           <p className="text-xs text-on-surface-variant leading-relaxed">

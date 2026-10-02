@@ -6,6 +6,7 @@ import path from "path";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  base: "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -14,9 +15,12 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://192.168.1.105:8000",
+        target: "http://192.168.2.56:8000",
         changeOrigin: true,
       },
     },
+  },
+  build: {
+    emptyOutDir: true,
   },
 });

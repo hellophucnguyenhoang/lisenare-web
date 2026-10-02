@@ -575,7 +575,7 @@ export default function BricksPage({
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Your First Brick</span>
+              <span>Add Brick</span>
             </button>
           )}
         </div>

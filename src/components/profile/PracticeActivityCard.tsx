@@ -68,7 +68,7 @@ export default function PracticeActivityCard({
                   : "text-outline hover:text-on-surface"
               }`}
             >
-              In Learning
+              Learned
             </button>
           </div>
 
