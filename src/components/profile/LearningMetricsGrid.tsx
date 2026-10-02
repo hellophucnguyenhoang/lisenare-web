@@ -24,14 +24,14 @@ export default function LearningMetricsGrid({
           </span>
         </div>
 
-        {/* In Learning */}
+        {/* Total Learning */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-xs">
           <Layers className="w-6 h-6 text-primary mb-1.5" />
           <span className="text-xl font-bold font-display text-on-surface">
             {isLoading ? "..." : (stats?.total_learning ?? 0)}
           </span>
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            In Learning
+            Total Learning
           </span>
         </div>
 

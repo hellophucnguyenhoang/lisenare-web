@@ -69,8 +69,8 @@ export default function BrickTextInputs({
                 title="Select target language"
                 aria-label="Target language"
               >
-                <option value="en">English (en)</option>
-                <option value="ja">Japanese (ja)</option>
+                <option value="en">English</option>
+                <option value="ja">Japanese</option>
               </select>
               <ChevronDown className="w-3 h-3 text-primary pointer-events-none absolute right-1.5" />
             </div>
@@ -134,9 +134,6 @@ export default function BrickTextInputs({
                 </>
               )}
             </button>
-            <span className="text-[11px] text-outline font-medium">
-              {targetLang === "ja" ? "Kokoro Japanese" : "Kokoro English"}
-            </span>
           </div>
         )}
       </div>

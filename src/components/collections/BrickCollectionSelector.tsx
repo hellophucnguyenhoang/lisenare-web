@@ -61,7 +61,7 @@ export default function BrickCollectionSelector({
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-        Collection <span className="text-error">*</span>
+        To Collection <span className="text-error">*</span>
       </label>
 
       <div className="flex items-center gap-2">

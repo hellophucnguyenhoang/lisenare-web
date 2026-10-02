@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type TimeSeriesPoint } from "@/api/stats";
 import { formatBarDate, formatTooltipDate } from "./chartUtils";
 
@@ -14,6 +14,10 @@ export default function TotalLearningLineChart({
   const [hoveredPointIndex, setHoveredPointIndex] = useState<number | null>(
     null,
   );
+
+  useEffect(() => {
+    setHoveredPointIndex(null);
+  }, [points]);
 
   const vbWidth = 600;
   const vbHeight = 150;
@@ -157,6 +161,9 @@ export default function TotalLearningLineChart({
                 className="cursor-pointer"
                 onMouseEnter={() => setHoveredPointIndex(i)}
                 onMouseLeave={() => setHoveredPointIndex(null)}
+                onClick={() =>
+                  setHoveredPointIndex(hoveredPointIndex === i ? null : i)
+                }
               />
             </g>
           );

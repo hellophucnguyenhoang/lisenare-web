@@ -7,6 +7,7 @@ import {
   X,
   Volume2,
   Folder,
+  FolderPlus,
   Tag,
   Play,
   Plus,
@@ -30,6 +31,10 @@ interface BrickDetailModalProps {
     target_text: string;
     native_text: string;
   }) => void;
+  onAddCollection?: (collection: {
+    collection_id: number;
+    collection_name: string;
+  }) => void;
   isLoggedIn?: boolean;
   currentLearnerId?: number;
   onOpenAuth?: (mode: AuthMode) => void;
@@ -42,6 +47,7 @@ export default function BrickDetailModal({
   onPractice,
   onEdit,
   onAddToCollection,
+  onAddCollection,
   isLoggedIn = false,
   currentLearnerId,
   onOpenAuth,
@@ -154,7 +160,8 @@ export default function BrickDetailModal({
               Sign In Required
             </h3>
             <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
-              Please sign in to view the complete details and creator information of this brick.
+              Please sign in to view the complete details and creator
+              information of this brick.
             </p>
             <button
               type="button"
@@ -179,7 +186,9 @@ export default function BrickDetailModal({
           /* Error State */
           <div className="py-10 text-center space-y-3">
             <p className="text-sm font-semibold text-error">
-              {error instanceof Error ? error.message : "Failed to load brick details."}
+              {error instanceof Error
+                ? error.message
+                : "Failed to load brick details."}
             </p>
             <button
               type="button"
@@ -192,39 +201,48 @@ export default function BrickDetailModal({
         ) : (
           /* Loaded Detail Content */
           <div className="space-y-6 pt-5">
-            {/* Target sentence with Audio button */}
-            <div className="bg-surface-container/30 border border-outline-variant/40 rounded-2xl p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5 grow">
-                  <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-                    Target Sentence
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-bold font-display text-primary leading-snug">
-                    {detail.targetText}
-                  </h2>
-                  {detail.targetPron && (
-                    <p className="text-xs font-mono text-on-surface-variant pt-0.5">
-                      /{detail.targetPron}/
-                    </p>
-                  )}
-                </div>
+            {/* Target sentence with Audio button below text */}
+            <div className="bg-surface-container/30 border border-outline-variant/40 rounded-2xl p-5 space-y-3">
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
+                  Target Sentence
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold font-display text-primary leading-snug">
+                  {detail.targetText}
+                </h2>
+                {detail.targetPron && (
+                  <p className="text-xs font-mono text-on-surface-variant pt-0.5">
+                    /{detail.targetPron}/
+                  </p>
+                )}
+              </div>
 
+              <div>
                 <button
                   type="button"
                   id="btn-play-detail-audio"
                   onClick={handlePlayAudio}
                   disabled={isLoadingAudio}
-                  className="p-3 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title={isLoadingAudio ? "Loading audio..." : "Play pronunciation"}
+                  className="px-3.5 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary transition-all active:scale-95 cursor-pointer inline-flex items-center gap-2 text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={
+                    isLoadingAudio ? "Loading audio..." : "Play pronunciation"
+                  }
                   aria-label="Play pronunciation"
                 >
                   {isLoadingAudio ? (
-                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <Volume2
-                      className={`w-5 h-5 ${isPlayingAudio ? "animate-pulse text-primary" : ""}`}
+                      className={`w-4 h-4 ${isPlayingAudio ? "animate-pulse text-primary" : ""}`}
                     />
                   )}
+                  <span>
+                    {isLoadingAudio
+                      ? "Loading audio..."
+                      : isPlayingAudio
+                        ? "Playing..."
+                        : "Listen"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -254,20 +272,46 @@ export default function BrickDetailModal({
               </div>
             )}
 
-            {/* Metadata Badges (Collection, Language, Tags) */}
-            <div className="space-y-2 pt-2 border-t border-outline-variant/30">
-              <div className="flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
-                {detail.collectionName && (
-                  <div className="flex items-center gap-1.5 font-medium">
-                    <Folder className="w-3.5 h-3.5 text-outline" />
-                    <span>
-                      Collection:{" "}
-                      <strong className="text-on-surface">
-                        {detail.collectionName}
-                      </strong>
+            {/* Collection Info Box with "Add this collection" button */}
+            {detail.collectionName && (
+              <div className="p-4 bg-surface-container/30 border border-outline-variant/60 rounded-2xl space-y-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Folder className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold text-outline block">
+                      Collection
+                    </span>
+                    <span className="text-sm font-bold text-on-surface truncate block">
+                      {detail.collectionName}
                     </span>
                   </div>
+                </div>
+
+                {!isOwner && detail.collectionId && onAddCollection && (
+                  <button
+                    type="button"
+                    id="btn-detail-add-this-collection"
+                    onClick={() => {
+                      onAddCollection({
+                        collection_id: detail.collectionId,
+                        collection_name: detail.collectionName,
+                      });
+                    }}
+                    className="w-full py-2.5 px-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
+                    title={`Add "${detail.collectionName}" to your collection`}
+                  >
+                    <FolderPlus className="w-4 h-4" />
+                    <span>Add this Collection</span>
+                  </button>
                 )}
+              </div>
+            )}
+
+            {/* Metadata Badges (Language, Tags) */}
+            <div className="space-y-2 pt-2 border-t border-outline-variant/30">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
                 {detail.targetLang && (
                   <div className="flex items-center gap-1 font-medium">
                     <Languages className="w-3.5 h-3.5 text-outline" />
@@ -295,30 +339,24 @@ export default function BrickDetailModal({
             </div>
 
             {/* Action Buttons Footer */}
-            <div className="pt-4 border-t border-outline-variant/40 flex items-center justify-between gap-3">
-              {/* Practice button: Learners can ONLY practice bricks they own */}
-              {isOwner && onPractice ? (
-                <button
-                  type="button"
-                  id="btn-detail-practice"
-                  onClick={() => {
-                    handleClose();
-                    onPractice(detail.id);
-                  }}
-                  className="px-4 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
-                >
-                  <Play className="w-4 h-4 text-on-primary" />
-                  <span>Practice</span>
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {/* Primary action based on ownership and exists */}
-              <div>
-                {isOwner ? (
-                  /* Own brick: Edit action */
-                  onEdit && (
+            <div className="pt-4 border-t border-outline-variant/40">
+              {isOwner ? (
+                <div className="flex items-center justify-between gap-3">
+                  {onPractice && (
+                    <button
+                      type="button"
+                      id="btn-detail-practice"
+                      onClick={() => {
+                        handleClose();
+                        onPractice(detail.id);
+                      }}
+                      className="flex-1 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
+                    >
+                      <Play className="w-4 h-4 text-on-primary" />
+                      <span>Practice</span>
+                    </button>
+                  )}
+                  {onEdit && (
                     <button
                       type="button"
                       id="btn-detail-edit"
@@ -326,44 +364,40 @@ export default function BrickDetailModal({
                         handleClose();
                         onEdit(detail);
                       }}
-                      className="px-4 py-2.5 bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/60 font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                      className="flex-1 py-2.5 bg-surface-container hover:bg-surface-container-high text-on-surface border border-outline-variant/60 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                     >
                       <Edit3 className="w-4 h-4 text-primary" />
                       <span>Edit</span>
                     </button>
-                  )
-                ) : isCheckingExists ? (
-                  /* Checking exists state */
-                  <div className="flex items-center gap-2 px-3.5 py-2 text-xs text-on-surface-variant font-medium">
-                    <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <span>Checking library...</span>
-                  </div>
-                ) : alreadyExists ? (
-                  /* Already exists: friendly message */
-                  <span className="px-3.5 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-xl flex items-center gap-1.5">
-                    <Check className="w-4 h-4" />
-                    <span>You already have this brick in your collection</span>
-                  </span>
-                ) : (
-                  /* Does not exist: Add to Collection */
-                  <button
-                    type="button"
-                    id="btn-detail-add-collection"
-                    onClick={() => {
-                      handleClose();
-                      onAddToCollection?.({
-                        brick_id: detail.id,
-                        target_text: detail.targetText,
-                        native_text: detail.nativeText,
-                      });
-                    }}
-                    className="px-4 py-2.5 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl transition-all flex items-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add to Collection</span>
-                  </button>
-                )}
-              </div>
+                  )}
+                </div>
+              ) : isCheckingExists ? (
+                <div className="w-full py-2.5 px-4 text-xs text-on-surface-variant font-medium flex items-center justify-center gap-2 bg-surface-container/30 rounded-xl">
+                  <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span>Checking library...</span>
+                </div>
+              ) : alreadyExists ? (
+                <div className="w-full py-2.5 px-4 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-xl flex items-center justify-center gap-1.5">
+                  <Check className="w-4 h-4" />
+                  <span>In your collection</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  id="btn-detail-add-this-brick"
+                  onClick={() => {
+                    onAddToCollection?.({
+                      brick_id: detail.id,
+                      target_text: detail.targetText,
+                      native_text: detail.nativeText,
+                    });
+                  }}
+                  className="w-full py-3 px-4 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add this brick</span>
+                </button>
+              )}
             </div>
           </div>
         )}
