@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { type Brick, type TargetLang } from "@/types";
-import { ArrowLeft, Trash2, Check } from "lucide-react";
+import { ArrowLeft, Trash2, Check, HelpCircle } from "lucide-react";
 import {
   useUpdateBrick,
   useDeleteBrick,
   useCheckBrickExists,
 } from "@/hooks/useBricks";
+import { useLearnerMe } from "@/hooks/useLearner";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio } from "@/utils/audio";
 import { toast } from "sonner";
-import BrickTextInputs from "@/components/collections/BrickTextInputs";
-import BrickAudioSection from "@/components/collections/BrickAudioSection";
-import BrickTagsSection from "@/components/collections/BrickTagsSection";
-import BrickCollectionSelector from "@/components/collections/BrickCollectionSelector";
+import BrickTextInputs from "@/components/bricks/BrickTextInputs";
+import BrickAudioSection from "@/components/bricks/BrickAudioSection";
+import BrickTagsSection from "@/components/bricks/BrickTagsSection";
+import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
+import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
 
 interface EditBrickPageProps {
   brick: Brick;
@@ -20,6 +22,16 @@ interface EditBrickPageProps {
 }
 
 export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
+  const { data: learner } = useLearnerMe();
+  const learnerLang = (learner?.practice_lang || learner?.practiceLang) as
+    | string
+    | undefined;
+  const fallbackLang: TargetLang =
+    learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en"
+      ? learnerLang
+      : "en";
+
+  const [showInstructions, setShowInstructions] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<
     number | null
   >(brick.collectionId);
@@ -27,7 +39,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   const [nativeText, setNativeText] = useState(brick.nativeText);
   const [targetText, setTargetText] = useState(brick.targetText);
   const [targetLang, setTargetLang] = useState<TargetLang>(
-    (brick.targetLang as TargetLang) || "en",
+    (brick.targetLang as TargetLang) || fallbackLang,
   );
   const [pronunciation, setPronunciation] = useState(brick.targetPron || "");
   const [context, setContext] = useState(brick.context || "");
@@ -73,6 +85,10 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       toast.error("Failed to generate audio. Please try again.");
     }
   };
+
+  const isFormValid = Boolean(
+    nativeText.trim() && targetText.trim() && selectedCollectionId,
+  );
 
   const handleSave = () => {
     if (!selectedCollectionId) {
@@ -123,6 +139,15 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
     }
   };
 
+  if (showInstructions) {
+    return (
+      <PracticeInstructionsPage
+        onBack={() => setShowInstructions(false)}
+        backButtonLabel="Back to Edit Brick"
+      />
+    );
+  }
+
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 pt-6 pb-32 animate-in fade-in duration-300">
       {/* Top Header App Bar */}
@@ -140,18 +165,30 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           </h1>
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={updateBrick.isPending}
-          className="px-6 py-2 bg-primary hover:bg-primary/95 text-on-primary rounded-full text-xs font-bold active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-        >
-          {updateBrick.isPending ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <Check className="w-4 h-4" />
-          )}
-          <span>Save</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowInstructions(true)}
+            className="p-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
+            aria-label="5 Steps to Practice"
+            title="5 Steps to Practice"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={!isFormValid || updateBrick.isPending}
+            className="px-5 py-2 bg-primary hover:bg-primary/95 text-on-primary rounded-full text-xs font-bold active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none"
+          >
+            {updateBrick.isPending ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Check className="w-4 h-4" />
+            )}
+            <span>Save</span>
+          </button>
+        </div>
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">

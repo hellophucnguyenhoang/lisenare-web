@@ -7,7 +7,7 @@ export interface Collection {
   tags: string[];
 }
 
-export type TargetLang = "en" | "ja";
+export type TargetLang = "en" | "ja" | "vi";
 
 export interface Brick {
   id: number;

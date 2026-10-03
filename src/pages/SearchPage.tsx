@@ -6,8 +6,8 @@ import { useCollections, useCreateCollection } from "@/hooks/useCollections";
 import { useAddBrickFrom, useAddBricksFromCollection } from "@/hooks/useBricks";
 import { type Brick, type AuthMode } from "@/types";
 import PlainTextInput from "@/components/common/PlainTextInput";
-import SaveToCollectionModal from "@/components/collections/SaveToCollectionModal";
-import BrickDetailModal from "@/components/collections/BrickDetailModal";
+import SaveToCollectionModal from "@/components/bricks/SaveToCollectionModal";
+import BrickDetailModal from "@/components/bricks/BrickDetailModal";
 import { toast } from "sonner";
 
 interface SearchPageProps {
