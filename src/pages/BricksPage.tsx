@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { type Collection, type Brick } from "@/types";
-import BrickCard from "@/components/collections/BrickCard";
-import AddCollectionModal from "@/components/collections/AddCollectionModal";
+import BrickCard from "@/components/bricks/BrickCard";
+import AddCollectionModal from "@/components/bricks/AddCollectionModal";
 import {
   Plus,
   Search,
@@ -254,7 +254,7 @@ export default function BricksPage({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
-            className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-all cursor-pointer min-w-[180px] justify-between ${
+            className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-all cursor-pointer min-w-45 justify-between ${
               selectedCollectionId
                 ? "bg-primary/5 border-primary/30 text-primary"
                 : "bg-surface-container-lowest border-outline-variant/60 text-on-surface-variant"

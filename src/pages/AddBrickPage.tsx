@@ -1,15 +1,17 @@
-import { useState } from "react";
-import { ArrowLeft, Save } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ArrowLeft, Save, HelpCircle } from "lucide-react";
 import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
 import { useCollections } from "@/hooks/useCollections";
+import { useLearnerMe } from "@/hooks/useLearner";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio } from "@/utils/audio";
 import { type TargetLang } from "@/types";
 import { toast } from "sonner";
-import BrickTextInputs from "@/components/collections/BrickTextInputs";
-import BrickAudioSection from "@/components/collections/BrickAudioSection";
-import BrickTagsSection from "@/components/collections/BrickTagsSection";
-import BrickCollectionSelector from "@/components/collections/BrickCollectionSelector";
+import BrickTextInputs from "@/components/bricks/BrickTextInputs";
+import BrickAudioSection from "@/components/bricks/BrickAudioSection";
+import BrickTagsSection from "@/components/bricks/BrickTagsSection";
+import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
+import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
 
 interface AddBrickPageProps {
   collectionId?: number;
@@ -20,6 +22,15 @@ export default function AddBrickPage({
   collectionId: initialCollectionId,
   onBack,
 }: AddBrickPageProps) {
+  const { data: learner } = useLearnerMe();
+  const learnerLang = (learner?.practice_lang || learner?.practiceLang) as
+    | string
+    | undefined;
+  const preferredLang: TargetLang =
+    learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en"
+      ? learnerLang
+      : "en";
+
   const { data: collections = [] } = useCollections();
   const [selectedCollectionId, setSelectedCollectionId] = useState<
     number | null
@@ -31,9 +42,25 @@ export default function AddBrickPage({
       ? (initialCollectionId ?? collections[0].id)
       : null);
 
+  const [showInstructions, setShowInstructions] = useState(false);
   const [nativeText, setNativeText] = useState("");
   const [targetText, setTargetText] = useState("");
-  const [targetLang, setTargetLang] = useState<TargetLang>("en");
+  const [targetLang, setTargetLang] = useState<TargetLang>(preferredLang);
+  const userChangedLangRef = useRef(false);
+
+  useEffect(() => {
+    if (learnerLang && !userChangedLangRef.current) {
+      if (learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en") {
+        setTargetLang(learnerLang);
+      }
+    }
+  }, [learnerLang]);
+
+  const handleTargetLangChange = (newLang: TargetLang) => {
+    userChangedLangRef.current = true;
+    setTargetLang(newLang);
+  };
+
   const [pronunciation, setPronunciation] = useState("");
   const [context, setContext] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -74,6 +101,10 @@ export default function AddBrickPage({
     }
   };
 
+  const isFormValid = Boolean(
+    nativeText.trim() && targetText.trim() && effectiveCollectionId,
+  );
+
   const handleSave = () => {
     if (!effectiveCollectionId) {
       toast.error("Please choose or create a collection for this brick.");
@@ -107,7 +138,6 @@ export default function AddBrickPage({
         toast.success("Brick created successfully!");
         setNativeText("");
         setTargetText("");
-        setTargetLang("en");
         setPronunciation("");
         setContext("");
         setTags([]);
@@ -115,6 +145,15 @@ export default function AddBrickPage({
       },
     });
   };
+
+  if (showInstructions) {
+    return (
+      <PracticeInstructionsPage
+        onBack={() => setShowInstructions(false)}
+        backButtonLabel="Back to Add Brick"
+      />
+    );
+  }
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 pt-6 pb-32 animate-in fade-in duration-300">
@@ -130,7 +169,15 @@ export default function AddBrickPage({
         <h1 className="text-xl font-bold font-display text-primary">
           Add New Brick
         </h1>
-        <div className="w-10"></div>
+        <button
+          type="button"
+          onClick={() => setShowInstructions(true)}
+          className="p-2 -mr-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
+          aria-label="5 Steps to Practice"
+          title="5 Steps to Practice"
+        >
+          <HelpCircle className="w-6 h-6" />
+        </button>
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
@@ -147,7 +194,7 @@ export default function AddBrickPage({
           targetText={targetText}
           onTargetTextChange={setTargetText}
           targetLang={targetLang}
-          onTargetLangChange={setTargetLang}
+          onTargetLangChange={handleTargetLangChange}
           pronunciation={pronunciation}
           onPronunciationChange={setPronunciation}
           context={context}
@@ -159,10 +206,7 @@ export default function AddBrickPage({
         />
 
         {/* Pronunciation Recording / Preview section */}
-        <BrickAudioSection
-          audioBlob={audioBlob}
-          onAudioChange={setAudioBlob}
-        />
+        <BrickAudioSection audioBlob={audioBlob} onAudioChange={setAudioBlob} />
 
         {/* Tags Section */}
         <BrickTagsSection tags={tags} onChange={setTags} />
@@ -175,8 +219,8 @@ export default function AddBrickPage({
         <div className="max-w-lg mx-auto flex flex-col">
           <button
             onClick={handleSave}
-            disabled={createBrick.isPending}
-            className="w-full h-14 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-md shadow-primary/10 hover:shadow-lg active:scale-99 transition-all flex items-center justify-center gap-2.5 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+            disabled={!isFormValid || createBrick.isPending}
+            className="w-full h-14 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-md shadow-primary/10 hover:shadow-lg active:scale-99 transition-all flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none cursor-pointer"
           >
             {createBrick.isPending ? (
               <>

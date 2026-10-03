@@ -37,10 +37,8 @@ export default function ReviewsBarChart({
           return (
             <div
               key={point.date || index}
-              onClick={() =>
-                setSelectedColumnIndex(isSelected ? null : index)
-              }
-              className="flex flex-col items-center group flex-1 h-full justify-end relative min-w-[10px] cursor-pointer"
+              onClick={() => setSelectedColumnIndex(isSelected ? null : index)}
+              className="flex flex-col items-center group flex-1 h-full justify-end relative min-w-2.5 cursor-pointer"
             >
               {/* Tooltip value */}
               <div
@@ -55,7 +53,7 @@ export default function ReviewsBarChart({
 
               <div className="h-24 w-full flex items-end justify-center">
                 <div
-                  className={`w-full max-w-[28px] rounded-t-md transition-all duration-300 shadow-xs cursor-pointer ${
+                  className={`w-full max-w-7 rounded-t-md transition-all duration-300 shadow-xs cursor-pointer ${
                     hasValue
                       ? isSelected
                         ? "bg-primary ring-2 ring-primary ring-offset-2 ring-offset-surface-container-lowest scale-105"
@@ -65,7 +63,9 @@ export default function ReviewsBarChart({
                         : "bg-surface-container-high/60 hover:bg-surface-container-highest"
                   }`}
                   style={{
-                    height: hasValue ? `${Math.max(heightPercent, 10)}%` : "4px",
+                    height: hasValue
+                      ? `${Math.max(heightPercent, 10)}%`
+                      : "4px",
                   }}
                   title={`${point.value} reviews on ${formatTooltipDate(point.date)}`}
                 />

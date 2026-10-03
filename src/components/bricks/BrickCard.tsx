@@ -94,8 +94,10 @@ export default function BrickCard({
         <p className="text-sm font-medium text-on-surface-variant italic">
           {brick.nativeText}
         </p>
-        {brick.targetPron && (
-          <p className="text-xs text-outline font-mono">{brick.targetPron}</p>
+        {brick.context && (
+          <p className="text-xs text-outline line-clamp-2 leading-relaxed">
+            {brick.context}
+          </p>
         )}
       </div>
 

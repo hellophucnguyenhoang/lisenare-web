@@ -220,11 +220,13 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
 interface PracticeInstructionsPageProps {
   onBack: () => void;
   onNavigateToAddBrick?: () => void;
+  backButtonLabel?: string;
 }
 
 export default function PracticeInstructionsPage({
   onBack,
   onNavigateToAddBrick,
+  backButtonLabel,
 }: PracticeInstructionsPageProps) {
   const [lang, setLang] = useState<InstructionLang>(() => {
     const saved = localStorage.getItem("lisenare_instruction_lang");
@@ -331,8 +333,8 @@ export default function PracticeInstructionsPage({
         })}
 
         {/* Call to Action */}
-        {onNavigateToAddBrick && (
-          <section className="pt-3 text-center space-y-3">
+        <section className="pt-3 text-center space-y-3">
+          {onNavigateToAddBrick && (
             <button
               type="button"
               onClick={onNavigateToAddBrick}
@@ -341,15 +343,15 @@ export default function PracticeInstructionsPage({
               <Plus className="w-5 h-5 stroke-[2.5]" />
               <span>{t.addBrickButton}</span>
             </button>
-            <button
-              type="button"
-              onClick={onBack}
-              className="text-xs text-outline hover:text-on-surface transition-colors cursor-pointer py-1"
-            >
-              {t.backButton}
-            </button>
-          </section>
-        )}
+          )}
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-xs text-outline hover:text-on-surface transition-colors cursor-pointer py-1"
+          >
+            {backButtonLabel || t.backButton}
+          </button>
+        </section>
       </main>
     </div>
   );

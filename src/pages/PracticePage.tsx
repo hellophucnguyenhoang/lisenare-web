@@ -85,7 +85,25 @@ export default function PracticePage({
   const [isRecording, setIsRecording] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState("");
-  const [showTypeInput, setShowTypeInput] = useState(false);
+  const [showTypeInput, setShowTypeInput] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("preferred_practice_mode") === "keyboard";
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleTypeInput = (isKeyboard: boolean) => {
+    setShowTypeInput(isKeyboard);
+    try {
+      localStorage.setItem(
+        "preferred_practice_mode",
+        isKeyboard ? "keyboard" : "mic",
+      );
+    } catch {
+      // Ignore localStorage errors
+    }
+  };
   const [learnerAudioUrl, setLearnerAudioUrl] = useState<string | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
@@ -356,7 +374,6 @@ export default function PracticePage({
     setHasListenedTargetAudio(false);
     setHasSubmittedThisTurn(false);
     setTypedAnswer("");
-    setShowTypeInput(false);
     setLearnerAudioUrl(null);
 
     if (currentBrickId != null) {
@@ -423,7 +440,7 @@ export default function PracticePage({
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
         {/* Title */}
         <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface tracking-tight mb-2">
-          Next brick?
+          Next Brick?
         </h2>
 
         {/* Subtitle */}
@@ -490,11 +507,11 @@ export default function PracticePage({
 
         <PracticeInputSection
           showTypeInput={showTypeInput}
-          onToggleTypeInput={() => setShowTypeInput(!showTypeInput)}
+          onToggleTypeInput={() => handleToggleTypeInput(!showTypeInput)}
           typedAnswer={typedAnswer}
           onChangeTypedAnswer={setTypedAnswer}
           onSubmitTypedAnswer={handleTypedSubmit}
-          onCancelTypeInput={() => setShowTypeInput(false)}
+          onCancelTypeInput={() => handleToggleTypeInput(false)}
           isRecording={isRecording}
           isEvaluating={isEvaluating}
           onStartRecording={handleStartRecording}

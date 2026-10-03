@@ -31,7 +31,7 @@ export const playShortAudio = (
   if (audioUrlOrBrickId === null || audioUrlOrBrickId === undefined) return;
 
   if (typeof audioUrlOrBrickId === "number") {
-    void playBrickAudio(audioUrlOrBrickId, startTimeSec);
+    void playBrickAudio(audioUrlOrBrickId, startTimeSec, onEnded);
     return;
   }
 
@@ -88,15 +88,22 @@ export const playShortAudio = (
 export const playBrickAudio = async (
   brickId: number | null | undefined,
   startTimeSec?: number,
+  onEnded?: () => void,
 ): Promise<void> => {
-  if (brickId === null || brickId === undefined) return;
+  if (brickId === null || brickId === undefined) {
+    onEnded?.();
+    return;
+  }
   try {
     const url = await getBrickAudioUrl(brickId);
     if (url) {
-      playShortAudio(url, startTimeSec);
+      playShortAudio(url, startTimeSec, onEnded);
+    } else {
+      onEnded?.();
     }
   } catch (error) {
     console.error(`Failed to play audio for brick ${brickId}:`, error);
+    onEnded?.();
   }
 };
 
