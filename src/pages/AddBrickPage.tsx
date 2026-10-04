@@ -11,6 +11,7 @@ import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
 import BrickTagsSection from "@/components/bricks/BrickTagsSection";
 import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
+import BrickPrivacyToggle from "@/components/bricks/BrickPrivacyToggle";
 import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
 
 interface AddBrickPageProps {
@@ -64,6 +65,7 @@ export default function AddBrickPage({
   const [pronunciation, setPronunciation] = useState("");
   const [context, setContext] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [isPrivate, setIsPrivate] = useState(true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const createBrick = useCreateBrick();
@@ -126,7 +128,7 @@ export default function AddBrickPage({
         target_pron: pronunciation.trim() || null,
         context: context.trim() || null,
         unit_type: "sentence",
-        is_private: true,
+        is_private: isPrivate,
         collection_id: effectiveCollectionId,
         tags,
       }),
@@ -141,6 +143,7 @@ export default function AddBrickPage({
         setPronunciation("");
         setContext("");
         setTags([]);
+        setIsPrivate(true);
         setAudioBlob(null);
       },
     });
@@ -207,6 +210,9 @@ export default function AddBrickPage({
 
         {/* Pronunciation Recording / Preview section */}
         <BrickAudioSection audioBlob={audioBlob} onAudioChange={setAudioBlob} />
+
+        {/* Privacy Section */}
+        <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
 
         {/* Tags Section */}
         <BrickTagsSection tags={tags} onChange={setTags} />

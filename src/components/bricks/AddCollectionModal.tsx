@@ -1,5 +1,13 @@
 import { useState, type KeyboardEvent } from "react";
-import { FolderPlus, FolderEdit, X, Check, Plus, Tag } from "lucide-react";
+import {
+  FolderPlus,
+  FolderEdit,
+  X,
+  Check,
+  Plus,
+  Tag,
+  Upload,
+} from "lucide-react";
 import { type Collection } from "@/types";
 import PlainTextInput from "@/components/common/PlainTextInput";
 
@@ -18,6 +26,7 @@ interface AddCollectionModalProps {
       tags: string[];
     },
   ) => void;
+  onExportCollection?: (collection: Collection) => void;
   collectionToEdit?: Collection;
 }
 
@@ -25,6 +34,7 @@ export default function AddCollectionModal({
   onClose,
   onAddCollection,
   onEditCollection,
+  onExportCollection,
   collectionToEdit,
 }: AddCollectionModalProps) {
   const [name, setName] = useState(collectionToEdit?.name || "");
@@ -208,6 +218,17 @@ export default function AddCollectionModal({
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2 border-t border-outline-variant/30">
+            {collectionToEdit && onExportCollection && (
+              <button
+                type="button"
+                onClick={() => onExportCollection(collectionToEdit)}
+                className="py-2.5 px-3 bg-surface hover:bg-surface-container border border-outline-variant/60 text-primary font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                title="Export this collection as JSON"
+              >
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={onClose}
