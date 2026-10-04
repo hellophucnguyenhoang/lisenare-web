@@ -70,3 +70,41 @@ export async function deleteCollection(collectionId: number) {
     method: "DELETE",
   });
 }
+
+// ── Export / Import Collection ──────────────────────────
+
+export interface BrickExport {
+  native_text: string;
+  target_text: string;
+  target_audio_path: string;
+  target_lang?: string;
+  target_pron?: string | null;
+  context?: string | null;
+  unit_type?: string;
+  tags?: string[];
+  is_private?: boolean;
+}
+
+export interface AddCollectionResult {
+  added: number;
+  skipped: number;
+}
+
+export async function exportCollection(
+  collectionId: number,
+): Promise<BrickExport[]> {
+  return request<BrickExport[]>(`/collections/${collectionId}/export`);
+}
+
+export async function importCollection(
+  collectionId: number,
+  file: File | Blob,
+): Promise<AddCollectionResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return request<AddCollectionResult>(`/collections/${collectionId}/import`, {
+    method: "POST",
+    body: formData,
+  });
+}
+

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { type Collection, type Brick } from "@/types";
 import BrickCard from "@/components/bricks/BrickCard";
 import AddCollectionModal from "@/components/bricks/AddCollectionModal";
+import ImportCollectionModal from "@/components/bricks/ImportCollectionModal";
 import {
   Plus,
   Search,
@@ -11,17 +12,21 @@ import {
   Pencil,
   Trash2,
   SlidersHorizontal,
+  Download,
+  Upload,
 } from "lucide-react";
 import {
   useCollections,
   useDeleteCollection,
   useUpdateCollection,
   useCreateCollection,
+  useExportCollection,
 } from "@/hooks/useCollections";
 import { useInfiniteBricks, useDeleteBrick } from "@/hooks/useBricks";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { type AuthMode } from "@/types";
 import { useHeader } from "@/context/HeaderContext";
+import { toast } from "sonner";
 
 interface BricksPageProps {
   onNavigateToAddBrick: (collectionId?: number) => void;
@@ -87,6 +92,33 @@ export default function BricksPage({
   const updateCollection = useUpdateCollection();
   const createCollection = useCreateCollection();
   const deleteBrick = useDeleteBrick();
+  const exportCollection = useExportCollection();
+
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importTargetCollectionId, setImportTargetCollectionId] = useState<
+    number | null
+  >(null);
+
+  const handleExportCollection = async (col: Collection) => {
+    try {
+      toast.info(`Exporting "${col.name}"...`);
+      const { data } = await exportCollection.mutateAsync({
+        collectionId: col.id,
+        collectionName: col.name,
+      });
+      toast.success(`Exported "${col.name}" (${data.length} bricks)`);
+    } catch (err: unknown) {
+      console.error("Failed to export collection:", err);
+      toast.error(`Failed to export "${col.name}". Please try again.`);
+    }
+  };
+
+  const handleOpenImportModal = (targetCollectionId?: number | null) => {
+    setImportTargetCollectionId(
+      targetCollectionId ?? selectedCollectionId ?? null,
+    );
+    setShowImportModal(true);
+  };
 
   // Refs for click-outside
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -246,6 +278,31 @@ export default function BricksPage({
                   : ""}
           </p>
         </div>
+
+        {selectedCollection && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleExportCollection(selectedCollection)}
+              disabled={exportCollection.isPending}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
+              title={`Export "${selectedCollection.name}" to JSON`}
+            >
+              <Upload className="w-3.5 h-3.5 text-primary" />
+              <span>Export</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOpenImportModal(selectedCollection.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
+              title={`Import JSON into "${selectedCollection.name}"`}
+            >
+              <Download className="w-3.5 h-3.5 text-primary" />
+              <span>Import</span>
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Filter Bar: Collection selector + Sort controls + Search Button */}
@@ -324,8 +381,8 @@ export default function BricksPage({
                       </span>
                     </button>
 
-                    {/* Actions: check indicator, edit, delete - always visible for mobile & desktop */}
-                    <div className="flex items-center gap-1 shrink-0">
+                    {/* Actions: check indicator, edit, export, import, delete - always visible for mobile & desktop */}
+                    <div className="flex items-center gap-0.5 shrink-0">
                       {selectedCollectionId === col.id && (
                         <Check className="w-4 h-4 text-primary shrink-0 mr-0.5" />
                       )}
@@ -341,6 +398,31 @@ export default function BricksPage({
                         aria-label={`Edit ${col.name}`}
                       >
                         <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleExportCollection(col);
+                        }}
+                        className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
+                        title={`Export "${col.name}" to JSON`}
+                        aria-label={`Export ${col.name}`}
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCollectionDropdown(false);
+                          handleOpenImportModal(col.id);
+                        }}
+                        className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
+                        title={`Import JSON into "${col.name}"`}
+                        aria-label={`Import into ${col.name}`}
+                      >
+                        <Download className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
@@ -369,10 +451,23 @@ export default function BricksPage({
                   setShowCollectionDropdown(false);
                   setShowCollectionModal(true);
                 }}
-                className="w-full px-4 py-2.5 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4" />
                 <span>New Collection</span>
+              </button>
+
+              {/* Import collection inline */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCollectionDropdown(false);
+                  handleOpenImportModal(null);
+                }}
+                className="w-full px-4 py-2 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer border-t border-outline-variant/20"
+              >
+                <Download className="w-4 h-4" />
+                <span>Import Collection (JSON)</span>
               </button>
             </div>
           )}
@@ -616,7 +711,24 @@ export default function BricksPage({
           }}
           onAddCollection={handleAddCollection}
           onEditCollection={handleEditCollection}
+          onExportCollection={handleExportCollection}
           collectionToEdit={editingCollection || undefined}
+        />
+      )}
+
+      {/* Import Collection Modal */}
+      {showImportModal && (
+        <ImportCollectionModal
+          isOpen={showImportModal}
+          onClose={() => {
+            setShowImportModal(false);
+            setImportTargetCollectionId(null);
+          }}
+          collections={collections}
+          defaultCollectionId={importTargetCollectionId}
+          onSuccess={(targetColId) => {
+            setSelectedCollectionId(targetColId);
+          }}
         />
       )}
     </div>

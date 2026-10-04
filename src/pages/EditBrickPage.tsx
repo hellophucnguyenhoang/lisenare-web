@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { type Brick, type TargetLang } from "@/types";
-import { ArrowLeft, Trash2, Check, HelpCircle } from "lucide-react";
+import { ArrowLeft, Trash2, Save, HelpCircle } from "lucide-react";
 import {
   useUpdateBrick,
   useDeleteBrick,
@@ -14,6 +14,7 @@ import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
 import BrickTagsSection from "@/components/bricks/BrickTagsSection";
 import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
+import BrickPrivacyToggle from "@/components/bricks/BrickPrivacyToggle";
 import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
 
 interface EditBrickPageProps {
@@ -44,6 +45,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   const [pronunciation, setPronunciation] = useState(brick.targetPron || "");
   const [context, setContext] = useState(brick.context || "");
   const [tags, setTags] = useState<string[]>(brick.tags || []);
+  const [isPrivate, setIsPrivate] = useState<boolean>(brick.isPrivate ?? true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const updateBrick = useUpdateBrick();
@@ -112,7 +114,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         context: context.trim() || null,
         unit_type: brick.unitType || "sentence",
         collection_id: selectedCollectionId,
-        is_private: brick.isPrivate ?? true,
+        is_private: isPrivate,
         tags,
       }),
     );
@@ -165,30 +167,15 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowInstructions(true)}
-            className="p-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
-            aria-label="5 Steps to Practice"
-            title="5 Steps to Practice"
-          >
-            <HelpCircle className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={handleSave}
-            disabled={!isFormValid || updateBrick.isPending}
-            className="px-5 py-2 bg-primary hover:bg-primary/95 text-on-primary rounded-full text-xs font-bold active:scale-95 transition-all shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none"
-          >
-            {updateBrick.isPending ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <Check className="w-4 h-4" />
-            )}
-            <span>Save</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowInstructions(true)}
+          className="p-2 -mr-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
+          aria-label="5 Steps to Practice"
+          title="5 Steps to Practice"
+        >
+          <HelpCircle className="w-6 h-6" />
+        </button>
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
@@ -224,11 +211,33 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           brickId={brick.id}
         />
 
+        {/* Privacy Section */}
+        <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
+
         {/* Tags Section */}
         <BrickTagsSection tags={tags} onChange={setTags} />
 
-        {/* Delete Action button block */}
+        {/* Action buttons block */}
         <section className="pt-6 pb-12 text-center space-y-3">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!isFormValid || updateBrick.isPending}
+            className="w-full h-14 bg-primary text-on-primary rounded-2xl font-bold text-sm shadow-md shadow-primary/10 hover:shadow-lg active:scale-99 transition-all flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none cursor-pointer"
+          >
+            {updateBrick.isPending ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Saving Brick...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" />
+                <span>Save Brick</span>
+              </>
+            )}
+          </button>
+
           <button
             type="button"
             onClick={handleDelete}
