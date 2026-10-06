@@ -8,6 +8,7 @@ interface BrickCardProps {
   onDeleteBrick: (brickId: number) => void;
   onSelectBrick?: (brick: Brick) => void;
   onStudyBrick?: (brick: Brick) => void;
+  onSelectTag?: (tag: string) => void;
 }
 
 export default function BrickCard({
@@ -16,6 +17,7 @@ export default function BrickCard({
   onDeleteBrick,
   onSelectBrick,
   onStudyBrick,
+  onSelectTag,
 }: BrickCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -105,12 +107,26 @@ export default function BrickCard({
       <div className="flex items-center justify-between pt-4 border-t border-outline-variant/30 min-h-10.5">
         <div className="flex flex-wrap gap-1">
           {brick.tags.slice(0, 3).map((t) => (
-            <span
+            <button
               key={t}
-              className="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[10px] font-medium rounded-md"
+              type="button"
+              onClick={(e) => {
+                if (onSelectTag) {
+                  e.stopPropagation();
+                  onSelectTag(t);
+                }
+              }}
+              className={`px-2 py-0.5 text-[10px] font-medium rounded-md transition-colors ${
+                onSelectTag
+                  ? "bg-surface-container hover:bg-surface-container-high text-on-surface-variant cursor-pointer active:scale-95"
+                  : "bg-surface-container text-on-surface-variant cursor-default"
+              }`}
+              title={
+                onSelectTag ? `Filter by #${t.replace(/^#/, "")}` : undefined
+              }
             >
               #{t.replace(/^#/, "")}
-            </span>
+            </button>
           ))}
         </div>
 
