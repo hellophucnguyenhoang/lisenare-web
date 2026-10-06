@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Search, X, User, Globe, Play } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  X,
+  User,
+  Globe,
+  Play,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { useSearchContextBricks } from "@/hooks/useContextSearch";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useCollections, useCreateCollection } from "@/hooks/useCollections";
@@ -18,6 +27,8 @@ interface SearchPageProps {
 }
 
 type SearchTab = "yours" | "public";
+type UnitTypeFilter = "word" | "sentence" | null;
+const PAGE_SIZE = 30;
 
 const POPULAR_SUGGESTIONS = [
   "food",
@@ -42,6 +53,9 @@ export default function SearchPage({
   const [activeTab, setActiveTab] = useState<SearchTab>(
     isLoggedIn ? "yours" : "public",
   );
+  const [unitType, setUnitType] = useState<UnitTypeFilter>(null);
+  const [page, setPage] = useState(1);
+  const offset = (page - 1) * PAGE_SIZE;
 
   const lastAutoSwitchedQueryRef = useRef<string>("");
 
@@ -66,7 +80,15 @@ export default function SearchPage({
   const addBricksFromCollectionMutation = useAddBricksFromCollection();
   const createCollectionMutation = useCreateCollection();
 
-  const bricksQuery = useSearchContextBricks(activeQuery, true);
+  const bricksQuery = useSearchContextBricks(
+    {
+      query: activeQuery,
+      unit_type: unitType ?? undefined,
+      limit: PAGE_SIZE,
+      offset,
+    },
+    true,
+  );
 
   const bricks = bricksQuery.data ?? [];
   const yoursBricks = bricks.filter((b) => b.is_own);
@@ -101,12 +123,14 @@ export default function SearchPage({
     const trimmed = searchInput.trim();
     if (trimmed) {
       setActiveQuery(trimmed);
+      setPage(1);
     }
   };
 
   const handleSelectSuggestion = (suggestion: string) => {
     setSearchInput(suggestion);
     setActiveQuery(suggestion);
+    setPage(1);
   };
 
   const handleCardClick = (brickId: number) => {
@@ -278,6 +302,7 @@ export default function SearchPage({
                 onClick={() => {
                   setSearchInput("");
                   setActiveQuery("");
+                  setPage(1);
                 }}
                 className="p-1.5 text-outline hover:text-on-surface rounded-full transition-colors cursor-pointer"
                 aria-label="Clear search"
@@ -322,51 +347,102 @@ export default function SearchPage({
       {/* Results Section */}
       {activeQuery && (
         <div className="space-y-6">
-          {/* Tabs: Yours vs Public */}
-          <div className="flex items-center gap-2 border-b border-outline-variant/60 pb-1">
-            <button
-              type="button"
-              onClick={() => setActiveTab("yours")}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "yours"
-                  ? "bg-primary text-on-primary shadow-xs"
-                  : "text-on-surface-variant hover:bg-surface-container"
-              }`}
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Yours</span>
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+          {/* Tabs: Yours vs Public & Unit Type Selector */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/60 pb-2">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("yours")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "yours"
-                    ? "bg-white/20 text-on-primary"
-                    : "bg-surface-container-high text-on-surface-variant"
+                    ? "bg-primary text-on-primary shadow-xs"
+                    : "text-on-surface-variant hover:bg-surface-container"
                 }`}
               >
-                {bricksQuery.isLoading ? "..." : yoursBricks.length}
-              </span>
-            </button>
+                <User className="w-3.5 h-3.5" />
+                <span>Yours</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                    activeTab === "yours"
+                      ? "bg-white/20 text-on-primary"
+                      : "bg-surface-container-high text-on-surface-variant"
+                  }`}
+                >
+                  {bricksQuery.isLoading ? "..." : yoursBricks.length}
+                </span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab("public")}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "public"
-                  ? "bg-primary text-on-primary shadow-xs"
-                  : "text-on-surface-variant hover:bg-surface-container"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Public</span>
-              <span
-                className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+              <button
+                type="button"
+                onClick={() => setActiveTab("public")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "public"
-                    ? "bg-white/20 text-on-primary"
-                    : "bg-surface-container-high text-on-surface-variant"
+                    ? "bg-primary text-on-primary shadow-xs"
+                    : "text-on-surface-variant hover:bg-surface-container"
                 }`}
               >
-                {bricksQuery.isLoading ? "..." : publicBricks.length}
+                <Globe className="w-3.5 h-3.5" />
+                <span>Public</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                    activeTab === "public"
+                      ? "bg-white/20 text-on-primary"
+                      : "bg-surface-container-high text-on-surface-variant"
+                  }`}
+                >
+                  {bricksQuery.isLoading ? "..." : publicBricks.length}
+                </span>
+              </button>
+            </div>
+
+            {/* Unit Type Filter Pills */}
+            <div className="flex items-center gap-1 self-start sm:self-auto bg-surface-container-lowest border border-outline-variant/60 p-1 rounded-xl">
+              <span className="text-[10px] font-bold text-outline uppercase tracking-wider px-2 hidden sm:inline">
+                Type
               </span>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUnitType(null);
+                  setPage(1);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  unitType === null
+                    ? "bg-primary text-on-primary shadow-2xs font-bold"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                }`}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUnitType("word");
+                  setPage(1);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  unitType === "word"
+                    ? "bg-primary text-on-primary shadow-2xs font-bold"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                }`}
+              >
+                Words
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUnitType("sentence");
+                  setPage(1);
+                }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  unitType === "sentence"
+                    ? "bg-primary text-on-primary shadow-2xs font-bold"
+                    : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                }`}
+              >
+                Sentences
+              </button>
+            </div>
           </div>
 
           {/* Tab Content: Bricks */}
@@ -389,64 +465,127 @@ export default function SearchPage({
                   ? `You haven't saved any bricks for "${activeQuery}" yet.`
                   : `No community bricks matched "${activeQuery}".`}
               </p>
-              {activeTab === "yours" && publicBricks.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("public")}
-                  className="mt-4 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>View {publicBricks.length} in Public</span>
-                </button>
-              )}
-              {activeTab === "public" && yoursBricks.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("yours")}
-                  className="mt-4 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  <span>View {yoursBricks.length} in Yours</span>
-                </button>
-              )}
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+                {activeTab === "yours" && publicBricks.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("public")}
+                    className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>View {publicBricks.length} in Public</span>
+                  </button>
+                )}
+                {activeTab === "public" && yoursBricks.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("yours")}
+                    className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>View {yoursBricks.length} in Yours</span>
+                  </button>
+                )}
+                {page > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="px-4 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer border border-outline-variant/60"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Previous Page</span>
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {currentTabBricks.map((brick) => {
-                return (
-                  <div
-                    key={brick.brick_id}
-                    onClick={() => handleCardClick(brick.brick_id)}
-                    className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-primary/40 hover:shadow-md transition-all group cursor-pointer"
-                  >
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-bold font-display text-primary leading-snug group-hover:text-primary/90 transition-colors">
-                        {brick.target_text}
-                      </h3>
-                      <p className="text-xs text-on-surface-variant italic">
-                        {brick.native_text}
-                      </p>
-                    </div>
-
-                    {brick.is_own && onNavigateToPractice && (
-                      <div className="pt-3 mt-4 border-t border-outline-variant/30 flex items-center justify-end">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNavigateToPractice(brick.brick_id);
-                          }}
-                          className="px-3.5 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
-                        >
-                          <Play className="w-3.5 h-3.5 text-primary" />
-                          <span>Practice</span>
-                        </button>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {currentTabBricks.map((brick) => {
+                  return (
+                    <div
+                      key={brick.brick_id}
+                      onClick={() => handleCardClick(brick.brick_id)}
+                      className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-primary/40 hover:shadow-md transition-all group cursor-pointer"
+                    >
+                      <div className="space-y-1">
+                        <h3 className="text-lg font-bold font-display text-primary leading-snug group-hover:text-primary/90 transition-colors">
+                          {brick.target_text}
+                        </h3>
+                        <p className="text-xs text-on-surface-variant italic">
+                          {brick.native_text}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+
+                      {brick.is_own && onNavigateToPractice && (
+                        <div className="pt-3 mt-4 border-t border-outline-variant/30 flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNavigateToPractice(brick.brick_id);
+                            }}
+                            className="px-3.5 py-1.5 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                          >
+                            <Play className="w-3.5 h-3.5 text-primary" />
+                            <span>Practice</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-outline-variant/40 mt-6">
+                <div className="text-xs text-on-surface-variant font-medium">
+                  Showing results {bricks.length > 0 ? offset + 1 : 0}–
+                  {offset + bricks.length}
+                  <span className="text-outline mx-1.5">•</span>
+                  Page {page}
+                  <span className="text-outline mx-1.5">•</span>
+                  Offset {offset}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    id="btn-prev-search-page"
+                    onClick={() => {
+                      setPage((p) => Math.max(1, p - 1));
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    disabled={page <= 1 || bricksQuery.isLoading}
+                    className="flex items-center gap-1 px-3.5 py-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer shadow-2xs"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </button>
+
+                  <span className="px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/60 text-xs font-bold font-mono text-primary shadow-2xs">
+                    {page}
+                  </span>
+
+                  <button
+                    type="button"
+                    id="btn-next-search-page"
+                    onClick={() => {
+                      setPage((p) => p + 1);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    disabled={bricks.length < PAGE_SIZE || bricksQuery.isLoading}
+                    className="flex items-center gap-1 px-3.5 py-2 bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer shadow-2xs"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}

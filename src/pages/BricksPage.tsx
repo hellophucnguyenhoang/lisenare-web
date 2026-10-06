@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { type Collection, type Brick } from "@/types";
 import BrickCard from "@/components/bricks/BrickCard";
 import AddCollectionModal from "@/components/bricks/AddCollectionModal";
@@ -14,6 +14,8 @@ import {
   SlidersHorizontal,
   Download,
   Upload,
+  X,
+  Tag,
 } from "lucide-react";
 import {
   useCollections,
@@ -59,9 +61,13 @@ export default function BricksPage({
   // Sort and filter state
   type BrickSortType = "NEWEST" | "AZ" | "ZA";
   type BrickStatusFilter = "LEARNED" | "NOT_LEARNED" | null;
+  type UnitTypeFilter = "word" | "sentence" | null;
 
   const [sortBy, setSortBy] = useState<BrickSortType>("NEWEST");
   const [statusFilter, setStatusFilter] = useState<BrickStatusFilter>(null);
+  const [unitTypeFilter, setUnitTypeFilter] = useState<UnitTypeFilter>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagInputText, setTagInputText] = useState("");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   // Hooks
@@ -78,15 +84,59 @@ export default function BricksPage({
     {
       collection_ids: selectedCollectionId ? [selectedCollectionId] : undefined,
       status: statusFilter ?? undefined,
+      unit_type: unitTypeFilter ?? undefined,
+      tags: selectedTags.length > 0 ? selectedTags : undefined,
       sort_by: sortBy,
       limit: 20,
     },
     isLoggedIn,
   );
 
-  const allBricks = bricksPages?.pages.flatMap((page) => page.items) ?? [];
+  const allBricks = useMemo(
+    () => bricksPages?.pages.flatMap((page) => page.items) ?? [],
+    [bricksPages],
+  );
   const totalBricks = bricksPages?.pages[0]?.total ?? 0;
-  const hasActiveFilters = statusFilter !== null || sortBy !== "NEWEST";
+  const hasActiveFilters =
+    statusFilter !== null ||
+    unitTypeFilter !== null ||
+    selectedTags.length > 0 ||
+    sortBy !== "NEWEST";
+
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    collections.forEach((c) => c.tags?.forEach((t) => tagSet.add(t.trim())));
+    allBricks.forEach((b) => b.tags?.forEach((t) => tagSet.add(t.trim())));
+    return Array.from(tagSet).filter(Boolean).sort();
+  }, [collections, allBricks]);
+
+  const handleToggleTag = (tag: string) => {
+    const clean = tag.replace(/^#/, "").trim();
+    if (!clean) return;
+    setSelectedTags((prev) =>
+      prev.includes(clean) ? prev.filter((t) => t !== clean) : [...prev, clean],
+    );
+  };
+
+  const handleAddCustomTag = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = tagInputText.replace(/^#/, "").trim();
+    if (clean && !selectedTags.includes(clean)) {
+      setSelectedTags((prev) => [...prev, clean]);
+      setTagInputText("");
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    setSelectedTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  const handleResetFilters = () => {
+    setStatusFilter(null);
+    setUnitTypeFilter(null);
+    setSelectedTags([]);
+    setSortBy("NEWEST");
+  };
 
   const deleteCollection = useDeleteCollection();
   const updateCollection = useUpdateCollection();
@@ -264,18 +314,24 @@ export default function BricksPage({
           </h2>
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
             {selectedCollection ? ` in "${selectedCollection.name}"` : ""}
+            {unitTypeFilter === "word"
+              ? " • Words"
+              : unitTypeFilter === "sentence"
+                ? " • Sentences"
+                : ""}
             {statusFilter === "LEARNED"
               ? " • Learned"
               : statusFilter === "NOT_LEARNED"
                 ? " • Not Learned"
                 : ""}
+            {selectedTags.length > 0
+              ? ` • ${selectedTags.map((t) => `#${t}`).join(", ")}`
+              : ""}
             {sortBy === "NEWEST"
               ? " • newest"
               : sortBy === "AZ"
                 ? " • a-z"
-                : sortBy === "ZA"
-                  ? "z-a"
-                  : ""}
+                : " • z-a"}
           </p>
         </div>
 
@@ -496,7 +552,58 @@ export default function BricksPage({
             </button>
 
             {showFilterDropdown && (
-              <div className="absolute right-0 top-full mt-1.5 z-30 w-56 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-3 space-y-3 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 top-full mt-1.5 z-30 w-64 sm:w-72 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-3 space-y-3 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
+                {/* Unit Type Filter */}
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
+                    Unit Type
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setUnitTypeFilter(null)}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      unitTypeFilter === null
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>All</span>
+                    {unitTypeFilter === null && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUnitTypeFilter("word")}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      unitTypeFilter === "word"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>Words</span>
+                    {unitTypeFilter === "word" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUnitTypeFilter("sentence")}
+                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
+                      unitTypeFilter === "sentence"
+                        ? "text-primary bg-primary/10 font-semibold"
+                        : "text-on-surface"
+                    }`}
+                  >
+                    <span>Sentences</span>
+                    {unitTypeFilter === "sentence" && (
+                      <Check className="w-3.5 h-3.5 text-primary" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="h-px bg-outline-variant/30" />
+
                 {/* Status Filter */}
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
@@ -609,18 +716,77 @@ export default function BricksPage({
                   </button>
                 </div>
 
+                <div className="h-px bg-outline-variant/30" />
+
+                {/* Tags Filter */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-outline flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      <span>Tags</span>
+                    </span>
+                    {selectedTags.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedTags([])}
+                        className="text-[10px] text-primary hover:underline cursor-pointer"
+                      >
+                        Clear tags
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Add custom tag input */}
+                  <form onSubmit={handleAddCustomTag} className="flex gap-1 px-1">
+                    <input
+                      type="text"
+                      value={tagInputText}
+                      onChange={(e) => setTagInputText(e.target.value)}
+                      placeholder="Add tag filter..."
+                      className="grow px-2 py-1 text-xs bg-surface-container border border-outline-variant/60 rounded-lg outline-none focus:border-primary text-on-surface"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!tagInputText.trim()}
+                      className="px-2 py-1 bg-primary text-on-primary text-xs font-bold rounded-lg disabled:opacity-40 cursor-pointer"
+                    >
+                      +
+                    </button>
+                  </form>
+
+                  {/* Available tags chips */}
+                  {availableTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto px-1 pt-1">
+                      {availableTags.map((tag) => {
+                        const isSelected = selectedTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => handleToggleTag(tag)}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors cursor-pointer ${
+                              isSelected
+                                ? "bg-primary text-on-primary font-bold shadow-2xs"
+                                : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant"
+                            }`}
+                          >
+                            #{tag}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 {hasActiveFilters && (
                   <>
                     <div className="h-px bg-outline-variant/30" />
                     <button
                       type="button"
-                      onClick={() => {
-                        setStatusFilter(null);
-                        setSortBy("NEWEST");
-                      }}
+                      onClick={handleResetFilters}
                       className="w-full text-center py-1 text-xs text-primary font-semibold hover:underline cursor-pointer"
                     >
-                      Reset filters
+                      Reset all filters
                     </button>
                   </>
                 )}
@@ -642,6 +808,77 @@ export default function BricksPage({
         </div>
       </div>
 
+      {/* Active Filter Chips Bar */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-5 p-2.5 bg-surface-container-low/60 border border-outline-variant/40 rounded-xl animate-in fade-in duration-150">
+          <span className="text-[11px] font-semibold text-on-surface-variant mr-1">
+            Active filters:
+          </span>
+          {unitTypeFilter && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium">
+              <span>Type: {unitTypeFilter === "word" ? "Words" : "Sentences"}</span>
+              <button
+                type="button"
+                onClick={() => setUnitTypeFilter(null)}
+                className="hover:bg-primary/20 rounded-full p-0.5 cursor-pointer"
+                aria-label="Remove unit type filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {statusFilter && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium">
+              <span>Status: {statusFilter === "LEARNED" ? "Learned" : "Not Learned"}</span>
+              <button
+                type="button"
+                onClick={() => setStatusFilter(null)}
+                className="hover:bg-primary/20 rounded-full p-0.5 cursor-pointer"
+                aria-label="Remove status filter"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {selectedTags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium"
+            >
+              <span>#{tag}</span>
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                className="hover:bg-primary/20 rounded-full p-0.5 cursor-pointer"
+                aria-label={`Remove #${tag} filter`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+          {sortBy !== "NEWEST" && (
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-surface-container text-on-surface border border-outline-variant/60 rounded-lg text-xs font-medium">
+              <span>Sort: {sortBy === "AZ" ? "A to Z" : "Z to A"}</span>
+              <button
+                type="button"
+                onClick={() => setSortBy("NEWEST")}
+                className="hover:bg-surface-container-high rounded-full p-0.5 cursor-pointer"
+                aria-label="Reset sort"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="text-xs text-primary hover:underline font-semibold ml-auto cursor-pointer"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+
       {/* Bricks Grid */}
       {isLoadingBricks ? (
         <div className="flex justify-center p-12">
@@ -650,19 +887,19 @@ export default function BricksPage({
       ) : allBricks.length === 0 ? (
         <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-10 text-center bg-surface-container-lowest/50">
           <h3 className="text-base font-bold text-on-surface">
-            {statusFilter !== null ? "No Bricks Found" : "No Bricks Yet"}
+            {hasActiveFilters ? "No Bricks Found" : "No Bricks Yet"}
           </h3>
           <p className="text-xs text-on-surface-variant max-w-sm mx-auto mt-1 mb-4">
-            {statusFilter !== null
-              ? `No ${statusFilter === "LEARNED" ? "learned" : "unlearned"} bricks found with the current filter.`
+            {hasActiveFilters
+              ? "No bricks match the selected filters. Try adjusting or clearing your filters."
               : "Start building your vocabulary by adding your first brick."}
           </p>
-          {statusFilter !== null ? (
+          {hasActiveFilters ? (
             <button
-              onClick={() => setStatusFilter(null)}
+              onClick={handleResetFilters}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
             >
-              <span>Clear Filter</span>
+              <span>Clear All Filters</span>
             </button>
           ) : (
             <button
@@ -685,6 +922,7 @@ export default function BricksPage({
                 onDeleteBrick={(brickId: number) => deleteBrick.mutate(brickId)}
                 onSelectBrick={() => onNavigateToPractice(brick.id)}
                 onStudyBrick={() => onNavigateToPractice(brick.id)}
+                onSelectTag={handleToggleTag}
               />
             ))}
           </div>

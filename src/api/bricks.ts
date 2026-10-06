@@ -89,6 +89,8 @@ interface BrickPageApi {
 export interface BrickListParams {
   collection_ids?: number[];
   status?: "LEARNED" | "NOT_LEARNED";
+  unit_type?: "word" | "sentence";
+  tags?: string[];
   sort_by?: "NEWEST" | "AZ" | "ZA";
   limit?: number;
   page?: number;
@@ -134,6 +136,10 @@ export async function listBricks(params?: BrickListParams) {
     );
   }
   if (params?.status) q.set("status", params.status);
+  if (params?.unit_type) q.set("unit_type", params.unit_type);
+  if (params?.tags && params.tags.length > 0) {
+    params.tags.forEach((tag) => q.append("tags", tag));
+  }
   if (params?.sort_by) q.set("sort_by", params.sort_by);
   if (params?.limit) q.set("limit", String(params.limit));
   if (params?.page) q.set("page", String(params.page));

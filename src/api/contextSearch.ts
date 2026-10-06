@@ -7,11 +7,49 @@ export interface BrickContextSearch {
   is_own: boolean;
 }
 
+export interface ContextSearchParams {
+  query: string;
+  unit_type?: "word" | "sentence" | null;
+  limit?: number;
+  offset?: number;
+  page?: number;
+}
+
 export async function searchContextBricks(
-  query: string,
+  params: string | ContextSearchParams,
 ): Promise<BrickContextSearch[]> {
+  if (typeof params === "string") {
+    return request<BrickContextSearch[]>("/context-search/bricks-search", {
+      method: "POST",
+      body: { query: params },
+    });
+  }
+
+  const { query, unit_type, limit = 30, page } = params;
+  let offset = params.offset;
+  if (offset === undefined && page !== undefined && page > 1) {
+    offset = (page - 1) * limit;
+  } else if (offset === undefined) {
+    offset = 0;
+  }
+
+  const body: {
+    query: string;
+    unit_type?: "word" | "sentence" | null;
+    limit: number;
+    offset: number;
+  } = {
+    query,
+    limit,
+    offset,
+  };
+
+  if (unit_type) {
+    body.unit_type = unit_type;
+  }
+
   return request<BrickContextSearch[]>("/context-search/bricks-search", {
     method: "POST",
-    body: { query },
+    body,
   });
 }
