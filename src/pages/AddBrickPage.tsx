@@ -9,6 +9,9 @@ import { type TargetLang } from "@/types";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
+import BrickUnitTypeSelector, {
+  type UnitType,
+} from "@/components/bricks/BrickUnitTypeSelector";
 import BrickTagsSection from "@/components/bricks/BrickTagsSection";
 import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
 import BrickPrivacyToggle from "@/components/bricks/BrickPrivacyToggle";
@@ -64,6 +67,7 @@ export default function AddBrickPage({
 
   const [pronunciation, setPronunciation] = useState("");
   const [context, setContext] = useState("");
+  const [unitType, setUnitType] = useState<UnitType>("sentence");
   const [tags, setTags] = useState<string[]>([]);
   const [isPrivate, setIsPrivate] = useState(true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -127,7 +131,7 @@ export default function AddBrickPage({
         target_lang: targetLang,
         target_pron: pronunciation.trim() || null,
         context: context.trim() || null,
-        unit_type: "sentence",
+        unit_type: unitType,
         is_private: isPrivate,
         collection_id: effectiveCollectionId,
         tags,
@@ -142,6 +146,7 @@ export default function AddBrickPage({
         setTargetText("");
         setPronunciation("");
         setContext("");
+        setUnitType("sentence");
         setTags([]);
         setIsPrivate(true);
         setAudioBlob(null);
@@ -210,6 +215,9 @@ export default function AddBrickPage({
 
         {/* Pronunciation Recording / Preview section */}
         <BrickAudioSection audioBlob={audioBlob} onAudioChange={setAudioBlob} />
+
+        {/* Unit Type Section: Word or Sentence */}
+        <BrickUnitTypeSelector unitType={unitType} onChange={setUnitType} />
 
         {/* Privacy Section */}
         <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />

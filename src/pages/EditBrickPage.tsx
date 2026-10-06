@@ -12,6 +12,9 @@ import { playShortAudio } from "@/utils/audio";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
+import BrickUnitTypeSelector, {
+  type UnitType,
+} from "@/components/bricks/BrickUnitTypeSelector";
 import BrickTagsSection from "@/components/bricks/BrickTagsSection";
 import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
 import BrickPrivacyToggle from "@/components/bricks/BrickPrivacyToggle";
@@ -44,6 +47,9 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   );
   const [pronunciation, setPronunciation] = useState(brick.targetPron || "");
   const [context, setContext] = useState(brick.context || "");
+  const [unitType, setUnitType] = useState<UnitType>(
+    brick.unitType === "word" ? "word" : "sentence",
+  );
   const [tags, setTags] = useState<string[]>(brick.tags || []);
   const [isPrivate, setIsPrivate] = useState<boolean>(brick.isPrivate ?? true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -112,7 +118,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         target_lang: targetLang,
         target_pron: pronunciation.trim() || null,
         context: context.trim() || null,
-        unit_type: brick.unitType || "sentence",
+        unit_type: unitType,
         collection_id: selectedCollectionId,
         is_private: isPrivate,
         tags,
@@ -210,6 +216,9 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           existingAudioPath={brick.targetAudioPath}
           brickId={brick.id}
         />
+
+        {/* Unit Type Section: Word or Sentence */}
+        <BrickUnitTypeSelector unitType={unitType} onChange={setUnitType} />
 
         {/* Privacy Section */}
         <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
