@@ -39,9 +39,7 @@ export default function ChangePasswordModal({
   }, [isOpen, onClose]);
 
   // Reset form state on open
-  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
-  if (isOpen !== prevIsOpen) {
-    setPrevIsOpen(isOpen);
+  useEffect(() => {
     if (isOpen) {
       setOldPassword("");
       setNewPassword("");
@@ -49,7 +47,7 @@ export default function ChangePasswordModal({
       setShowNewPassword(true);
       setErrorMessage(null);
     }
-  }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

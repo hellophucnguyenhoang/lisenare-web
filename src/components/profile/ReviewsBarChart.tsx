@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type TimeSeriesPoint } from "@/api/stats";
 import { formatBarDate, formatTooltipDate } from "./chartUtils";
 
@@ -15,11 +15,9 @@ export default function ReviewsBarChart({
     null,
   );
 
-  const [prevPoints, setPrevPoints] = useState(points);
-  if (points !== prevPoints) {
-    setPrevPoints(points);
+  useEffect(() => {
     setSelectedColumnIndex(null);
-  }
+  }, [points]);
 
   return (
     <div className="overflow-x-auto pb-1">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Save, HelpCircle } from "lucide-react";
 import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
 import { useCollections } from "@/hooks/useCollections";
@@ -50,20 +50,18 @@ export default function AddBrickPage({
   const [nativeText, setNativeText] = useState("");
   const [targetText, setTargetText] = useState("");
   const [targetLang, setTargetLang] = useState<TargetLang>(preferredLang);
-  const [userChangedLang, setUserChangedLang] = useState(false);
+  const userChangedLangRef = useRef(false);
 
-  const [prevLearnerLang, setPrevLearnerLang] = useState(learnerLang);
-  if (learnerLang !== prevLearnerLang) {
-    setPrevLearnerLang(learnerLang);
-    if (learnerLang && !userChangedLang) {
+  useEffect(() => {
+    if (learnerLang && !userChangedLangRef.current) {
       if (learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en") {
         setTargetLang(learnerLang);
       }
     }
-  }
+  }, [learnerLang]);
 
   const handleTargetLangChange = (newLang: TargetLang) => {
-    setUserChangedLang(true);
+    userChangedLangRef.current = true;
     setTargetLang(newLang);
   };
 

@@ -22,30 +22,5 @@ export default defineConfig({
   },
   build: {
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (
-              id.includes("react-dom") ||
-              id.includes("react/") ||
-              id.includes("scheduler")
-            ) {
-              return "vendor-react";
-            }
-            if (id.includes("@tanstack/react-query")) {
-              return "vendor-query";
-            }
-            if (id.includes("lucide-react")) {
-              return "vendor-icons";
-            }
-            if (id.includes("sonner")) {
-              return "vendor-ui";
-            }
-            return "vendor";
-          }
-        },
-      },
-    },
   },
 });
