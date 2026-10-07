@@ -15,7 +15,6 @@ import AddBrickPage from "@/pages/AddBrickPage";
 import EditBrickPage from "@/pages/EditBrickPage";
 import AuthModal from "@/components/auth/AuthModal";
 import AppHeader from "@/components/layout/AppHeader";
-import BottomNavBar from "@/components/layout/BottomNavBar";
 import { HeaderProvider, useHeader } from "@/context/HeaderContext";
 
 const queryClient = new QueryClient({
@@ -196,25 +195,9 @@ function AppContent() {
       />
 
       {/* Main screen area dedicated strictly to displaying the scrollable content */}
-      <main className="flex-1 w-full flex flex-col pt-14 sm:pt-16 pb-20">
+      <main className="flex-1 w-full flex flex-col pt-14 sm:pt-16 pb-6 sm:pb-8">
         {renderTab()}
       </main>
-
-      {/* 4 buttons of the navigation bar at the bottom */}
-      <BottomNavBar
-        activeTab={activeTab}
-        setActiveTab={(tab) => {
-          if (!learner && (tab === "practice" || tab === "bricks")) {
-            setAuthModalMode("login");
-            return;
-          }
-          if (tab === "practice") {
-            setPracticeBrickId(null);
-          }
-          setActiveTab(tab);
-        }}
-        clearSubviews={() => setSubview(null)}
-      />
 
       <AuthModal
         isOpen={Boolean(authModalMode)}
