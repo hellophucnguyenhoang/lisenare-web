@@ -31,12 +31,14 @@ export default function ChangeNameModal({
   }, [isOpen, onClose]);
 
   // Sync state with currentName when modal opens
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setName(currentName);
       setErrorMessage(null);
     }
-  }, [isOpen, currentName]);
+  }
 
   if (!isOpen) return null;
 
