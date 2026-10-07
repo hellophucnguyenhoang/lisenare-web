@@ -51,7 +51,9 @@ export default function EmailManagerModal({
     sendEmailOtpMutation.isPending || changeEmailMutation.isPending;
 
   // Reset state when opening modal
-  useEffect(() => {
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setErrorMessage(null);
       setOtpDigits(["", "", "", "", "", ""]);
@@ -65,16 +67,20 @@ export default function EmailManagerModal({
         setStep("overview");
       }
     }
-  }, [isOpen, currentEmail, currentUsername]);
+  }
 
   // Countdown timer for OTP resend
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    if (isCounting && countdown > 0) {
-      timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
-    } else if (countdown === 0) {
-      setIsCounting(false);
-    }
+    if (!isCounting || countdown <= 0) return;
+    const timer = setTimeout(() => {
+      setCountdown((c) => {
+        if (c <= 1) {
+          setIsCounting(false);
+          return 0;
+        }
+        return c - 1;
+      });
+    }, 1000);
     return () => clearTimeout(timer);
   }, [isCounting, countdown]);
 
