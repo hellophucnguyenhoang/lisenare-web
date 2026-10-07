@@ -108,7 +108,10 @@ export default function AddBrickPage({
   };
 
   const isFormValid = Boolean(
-    nativeText.trim() && targetText.trim() && effectiveCollectionId,
+    nativeText.trim() &&
+      targetText.trim() &&
+      effectiveCollectionId &&
+      audioBlob,
   );
 
   const handleSave = () => {
@@ -118,7 +121,12 @@ export default function AddBrickPage({
     }
 
     if (!nativeText.trim() || !targetText.trim()) {
-      alert("Please fill out both native and target text fields.");
+      toast.error("Please fill out both native and target text fields.");
+      return;
+    }
+
+    if (!audioBlob) {
+      toast.error("Please record, generate, or upload audio for this brick.");
       return;
     }
 
@@ -137,7 +145,7 @@ export default function AddBrickPage({
         tags,
       }),
     );
-    formData.append("target_audio_file", audioBlob || new Blob(), "audio.wav");
+    formData.append("target_audio_file", audioBlob, "audio.wav");
 
     createBrick.mutate(formData, {
       onSuccess: () => {

@@ -91,7 +91,7 @@ function AppContent() {
           collectionId={subview.collectionId}
           onBack={() => setSubview(null)}
         />
-        <Toaster position="top-center" richColors />
+        <Toaster position="bottom-center" richColors />
       </>
     );
   }
@@ -100,7 +100,7 @@ function AppContent() {
     return (
       <>
         <EditBrickPage brick={subview.brick} onBack={() => setSubview(null)} />
-        <Toaster position="top-center" richColors />
+        <Toaster position="bottom-center" richColors />
       </>
     );
   }
@@ -120,7 +120,7 @@ function AppContent() {
           }}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
         />
-        <Toaster position="top-center" richColors />
+        <Toaster position="bottom-center" richColors />
       </>
     );
   }
@@ -208,7 +208,7 @@ function AppContent() {
         }}
       />
 
-      <Toaster position="top-center" richColors />
+      <Toaster position="bottom-center" richColors />
     </div>
   );
 }
