@@ -9,7 +9,7 @@ interface NavigationDrawerProps {
   onSelectTab: (tab: ActiveTab) => void;
 }
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { id: "practice" as const, label: "Practice", icon: Mic },
   { id: "bricks" as const, label: "Bricks", icon: Blocks },
   { id: "discover" as const, label: "Discover", icon: Compass },

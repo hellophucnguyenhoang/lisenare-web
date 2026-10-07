@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster, toast } from "sonner";
 import { RequestError } from "@/api/client";
@@ -6,18 +6,16 @@ import { apiLogout } from "@/api/auth";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { type ActiveTab, type AuthMode, type Subview } from "@/types";
 
+import BricksPage from "@/pages/BricksPage";
+import SearchPage from "@/pages/SearchPage";
+import DiscoverPage from "@/pages/DiscoverPage";
+import PracticePage from "@/pages/PracticePage";
+import ProfilePage from "@/pages/ProfilePage";
+import AddBrickPage from "@/pages/AddBrickPage";
+import EditBrickPage from "@/pages/EditBrickPage";
+import AuthModal from "@/components/auth/AuthModal";
 import AppHeader from "@/components/layout/AppHeader";
 import { HeaderProvider, useHeader } from "@/context/HeaderContext";
-
-// Lazy-loaded pages and heavy modals for code-splitting
-const BricksPage = lazy(() => import("@/pages/BricksPage"));
-const SearchPage = lazy(() => import("@/pages/SearchPage"));
-const DiscoverPage = lazy(() => import("@/pages/DiscoverPage"));
-const PracticePage = lazy(() => import("@/pages/PracticePage"));
-const ProfilePage = lazy(() => import("@/pages/ProfilePage"));
-const AddBrickPage = lazy(() => import("@/pages/AddBrickPage"));
-const EditBrickPage = lazy(() => import("@/pages/EditBrickPage"));
-const AuthModal = lazy(() => import("@/components/auth/AuthModal"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,43 +34,30 @@ const queryClient = new QueryClient({
   },
 });
 
-function PageLoadingFallback() {
-  return (
-    <div className="flex-1 w-full min-h-[50vh] flex items-center justify-center p-8 animate-in fade-in duration-200">
-      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-}
-
 function AppContent() {
   const { data: learner, isLoading: isCheckingAuth } = useLearnerMe();
   const { setHeaderContent } = useHeader();
-  const [selectedTab, setSelectedTab] = useState<ActiveTab | null>(null);
+  const [activeTab, setActiveTab] = useState<ActiveTab>("profile");
+  const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
   const [practiceBrickId, setPracticeBrickId] = useState<number | null>(null);
   const [practiceFinishedCount, setPracticeFinishedCount] = useState(0);
   const [practiceElapsedSeconds, setPracticeElapsedSeconds] = useState(0);
 
-  // Derive active tab cleanly without cascading effect setState
-  const activeTab: ActiveTab =
-    selectedTab ?? (learner ? "practice" : "profile");
-
-  const handleSelectTab = useCallback(
-    (tab: ActiveTab) => {
-      if (!learner && (tab === "practice" || tab === "bricks")) {
-        setAuthModalMode("login");
-        return;
+  // Set initial tab on load/reload based on authentication state
+  useEffect(() => {
+    if (!hasInitializedTab && !isCheckingAuth) {
+      if (learner) {
+        setActiveTab("practice");
+      } else {
+        setActiveTab("profile");
       }
-      if (tab === "practice") {
-        setPracticeBrickId(null);
-      }
-      setSelectedTab(tab);
-    },
-    [learner],
-  );
+      setHasInitializedTab(true);
+    }
+  }, [hasInitializedTab, isCheckingAuth, learner]);
 
-  const handleLogout = useCallback(async () => {
+  const handleLogout = async () => {
     try {
       await apiLogout();
     } catch (err) {
@@ -85,12 +70,12 @@ function AppContent() {
       setPracticeFinishedCount(0);
       setPracticeElapsedSeconds(0);
       setSubview(null);
-      setSelectedTab("profile");
+      setActiveTab("profile");
       toast.success("Logged out successfully");
     }
-  }, [setHeaderContent]);
+  };
 
-  if (isCheckingAuth && selectedTab === null) {
+  if (isCheckingAuth && !hasInitializedTab) {
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -101,34 +86,34 @@ function AppContent() {
   // Render subview pages (overlays on top of tabs)
   if (subview?.type === "addBrick") {
     return (
-      <Suspense fallback={<PageLoadingFallback />}>
+      <>
         <AddBrickPage
           collectionId={subview.collectionId}
           onBack={() => setSubview(null)}
         />
         <Toaster position="top-center" richColors />
-      </Suspense>
+      </>
     );
   }
 
   if (subview?.type === "editBrick") {
     return (
-      <Suspense fallback={<PageLoadingFallback />}>
+      <>
         <EditBrickPage brick={subview.brick} onBack={() => setSubview(null)} />
         <Toaster position="top-center" richColors />
-      </Suspense>
+      </>
     );
   }
 
   if (subview?.type === "search") {
     return (
-      <Suspense fallback={<PageLoadingFallback />}>
+      <>
         <SearchPage
           onBack={() => setSubview(null)}
           onNavigateToPractice={(brickId) => {
             setPracticeBrickId(brickId ?? null);
             setSubview(null);
-            setSelectedTab("practice");
+            setActiveTab("practice");
           }}
           onNavigateToEditBrick={(brick) => {
             setSubview({ type: "editBrick", brick });
@@ -136,7 +121,7 @@ function AppContent() {
           onOpenAuth={(mode) => setAuthModalMode(mode)}
         />
         <Toaster position="top-center" richColors />
-      </Suspense>
+      </>
     );
   }
 
@@ -153,7 +138,7 @@ function AppContent() {
             }}
             onNavigateToPractice={(brickId) => {
               setPracticeBrickId(brickId ?? null);
-              setSelectedTab("practice");
+              setActiveTab("practice");
             }}
             onNavigateToSearch={() => setSubview({ type: "search" })}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
@@ -194,7 +179,16 @@ function AppContent() {
       {/* Sticky Header Bar with Lisenare Logo and Dynamic Tab Content */}
       <AppHeader
         activeTab={activeTab}
-        setActiveTab={handleSelectTab}
+        setActiveTab={(tab) => {
+          if (!learner && (tab === "practice" || tab === "bricks")) {
+            setAuthModalMode("login");
+            return;
+          }
+          if (tab === "practice") {
+            setPracticeBrickId(null);
+          }
+          setActiveTab(tab);
+        }}
         clearSubviews={() => setSubview(null)}
         isLoggedIn={Boolean(learner)}
         onClearPracticeBrickId={() => setPracticeBrickId(null)}
@@ -202,23 +196,17 @@ function AppContent() {
 
       {/* Main screen area dedicated strictly to displaying the scrollable content */}
       <main className="flex-1 w-full flex flex-col pt-14 sm:pt-16 pb-6 sm:pb-8">
-        <Suspense fallback={<PageLoadingFallback />}>
-          {renderTab()}
-        </Suspense>
+        {renderTab()}
       </main>
 
-      {authModalMode && (
-        <Suspense fallback={null}>
-          <AuthModal
-            isOpen={Boolean(authModalMode)}
-            initialMode={authModalMode || "login"}
-            onClose={() => setAuthModalMode(null)}
-            onSuccess={() => {
-              setSelectedTab("practice");
-            }}
-          />
-        </Suspense>
-      )}
+      <AuthModal
+        isOpen={Boolean(authModalMode)}
+        initialMode={authModalMode || "login"}
+        onClose={() => setAuthModalMode(null)}
+        onSuccess={() => {
+          setActiveTab("practice");
+        }}
+      />
 
       <Toaster position="top-center" richColors />
     </div>

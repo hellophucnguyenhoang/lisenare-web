@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type TimeSeriesPoint } from "@/api/stats";
 import { formatBarDate, formatTooltipDate } from "./chartUtils";
 
@@ -15,11 +15,9 @@ export default function TotalLearningLineChart({
     null,
   );
 
-  const [prevPoints, setPrevPoints] = useState(points);
-  if (points !== prevPoints) {
-    setPrevPoints(points);
+  useEffect(() => {
     setHoveredPointIndex(null);
-  }
+  }, [points]);
 
   const vbWidth = 600;
   const vbHeight = 150;

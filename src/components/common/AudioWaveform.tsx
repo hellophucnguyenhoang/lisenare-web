@@ -1,20 +1,18 @@
-import { memo } from "react";
-
 interface AudioWaveformProps {
   isRecording: boolean;
   audioLevels?: number[];
 }
 
-const DEFAULT_LEVELS = [40, 65, 85, 45, 90, 70, 50, 80, 60, 30];
-
-function AudioWaveformComponent({
+export default function AudioWaveform({
   isRecording,
-  audioLevels = DEFAULT_LEVELS,
+  audioLevels = [40, 65, 85, 45, 90, 70, 50, 80, 60, 30],
 }: AudioWaveformProps) {
   return (
     <div className="flex items-center justify-center gap-1 h-6 my-2">
       {audioLevels.map((level, idx) => {
-        const heightPercent = isRecording ? Math.max(15, Math.min(100, level)) : 20;
+        const heightPercent = isRecording
+          ? Math.max(15, level + Math.sin(Date.now() / 200 + idx) * 20)
+          : 20;
 
         return (
           <div
@@ -31,6 +29,3 @@ function AudioWaveformComponent({
     </div>
   );
 }
-
-const AudioWaveform = memo(AudioWaveformComponent);
-export default AudioWaveform;

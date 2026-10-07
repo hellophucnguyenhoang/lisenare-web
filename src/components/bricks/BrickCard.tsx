@@ -1,4 +1,4 @@
-import { useState, memo } from "react";
+import { useState } from "react";
 import { type Brick } from "@/types";
 import { MoreVertical, Edit3, Trash2, CheckCircle2 } from "lucide-react";
 
@@ -11,7 +11,7 @@ interface BrickCardProps {
   onSelectTag?: (tag: string) => void;
 }
 
-function BrickCardComponent({
+export default function BrickCard({
   brick,
   onEditBrick,
   onDeleteBrick,
@@ -142,6 +142,3 @@ function BrickCardComponent({
     </div>
   );
 }
-
-const BrickCard = memo(BrickCardComponent);
-export default BrickCard;
