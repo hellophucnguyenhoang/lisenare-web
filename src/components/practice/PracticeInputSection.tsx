@@ -7,6 +7,7 @@ import {
   Trash2,
   Loader2,
   HelpCircle,
+  X,
 } from "lucide-react";
 import AudioWaveform from "@/components/common/AudioWaveform";
 import PlainTextInput from "@/components/common/PlainTextInput";
@@ -73,7 +74,7 @@ export default function PracticeInputSection({
           autoComplete="none"
           className="w-full max-w-full flex flex-col gap-2.5 animate-in slide-in-from-bottom-2 duration-200 min-w-0"
         >
-          <div className="w-full min-w-0">
+          <div className="relative w-full min-w-0 flex items-center">
             <PlainTextInput
               placeholder="Type target sentence..."
               value={typedAnswer}
@@ -85,8 +86,20 @@ export default function PracticeInputSection({
                   onSubmitTypedAnswer(e as unknown as React.SubmitEvent);
                 }
               }}
-              className="w-full px-4 py-3 bg-surface-container-lowest border border-outline-variant/70 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm font-medium text-on-surface transition-all shadow-xs outline-none"
+              className="w-full pl-4 pr-10 py-3 bg-surface-container-lowest border border-outline-variant/70 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm font-medium text-on-surface transition-all shadow-xs outline-none"
             />
+            {typedAnswer && !isEvaluating && (
+              <button
+                type="button"
+                id="btn-clear-typed-answer"
+                onClick={() => onChangeTypedAnswer("")}
+                className="absolute right-2.5 p-1 text-outline hover:text-on-surface rounded-full hover:bg-surface-container transition-colors cursor-pointer active:scale-90 flex items-center justify-center"
+                title="Clear text"
+                aria-label="Clear text"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2 w-full">
             <button
