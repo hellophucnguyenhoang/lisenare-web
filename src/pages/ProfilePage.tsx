@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { type AuthMode, type PracticeLang } from "@/types";
 import { useLearnerMe, useUpdatePracticeLang } from "@/hooks/useLearner";
@@ -23,7 +24,12 @@ export default function ProfilePage({
   onOpenAuth,
   onLogout,
 }: ProfilePageProps) {
-  const { data: learner, isLoading: loadingLearner } = useLearnerMe();
+  const {
+    data: learner,
+    isLoading: loadingLearner,
+    refetch: refetchLearner,
+    isFetching: fetchingLearner,
+  } = useLearnerMe();
   const updatePracticeLang = useUpdatePracticeLang();
   const isLoggedIn = Boolean(learner);
 
@@ -38,20 +44,45 @@ export default function ProfilePage({
   const [timeseriesDays, setTimeseriesDays] = useState<number | null>(7);
 
   // Real statistical data from /brick-memories/stats
-  const { data: stats, isLoading: loadingStats } = useLearningStats(
-    undefined,
+  const {
+    data: stats,
+    isLoading: loadingStats,
+    refetch: refetchStats,
+    isFetching: fetchingStats,
+  } = useLearningStats(undefined, isLoggedIn);
+
+  // Real timeseries data from /brick-memories/stats/timeseries
+  const {
+    data: timeseriesData,
+    isLoading: loadingTimeseries,
+    refetch: refetchTimeseries,
+    isFetching: fetchingTimeseries,
+  } = useLearningTimeseries(
+    {
+      metric: timeseriesMetric,
+      days: timeseriesDays,
+    },
     isLoggedIn,
   );
 
-  // Real timeseries data from /brick-memories/stats/timeseries
-  const { data: timeseriesData, isLoading: loadingTimeseries } =
-    useLearningTimeseries(
-      {
-        metric: timeseriesMetric,
-        days: timeseriesDays,
-      },
-      isLoggedIn,
-    );
+  const queryClient = useQueryClient();
+  const isReloading = fetchingLearner || fetchingStats || fetchingTimeseries;
+
+  const handleReload = async () => {
+    try {
+      await Promise.all([
+        refetchLearner(),
+        refetchStats(),
+        refetchTimeseries(),
+        queryClient.invalidateQueries({ queryKey: ["learner"] }),
+        queryClient.invalidateQueries({ queryKey: ["learning-stats"] }),
+        queryClient.invalidateQueries({ queryKey: ["learning-timeseries"] }),
+      ]);
+      toast.success("Profile reloaded.");
+    } catch {
+      toast.error("Failed to reload profile.");
+    }
+  };
 
   const timeseriesPoints = timeseriesData?.data ?? [];
   const learnerName = learner?.name || "Learner";
@@ -132,6 +163,8 @@ export default function ProfilePage({
         isEmailVerified={isEmailVerified}
         onOpenEmailModal={() => setIsEmailModalOpen(true)}
         onOpenNameModal={() => setIsNameModalOpen(true)}
+        onReload={handleReload}
+        isReloading={isReloading}
       />
 
       {/* Minimal Target Language Selector */}

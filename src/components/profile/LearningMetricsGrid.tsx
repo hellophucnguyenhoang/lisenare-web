@@ -108,14 +108,14 @@ export default function LearningMetricsGrid({
         {/* Average Stability (Replaced estimated_recalled) */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-xs relative">
           <div className="absolute top-2.5 right-2.5">
-            <InfoTooltip text="Average number of days you remember a card" />
+            <InfoTooltip text="Shortest estimated time you can remember a card" />
           </div>
           <Clock className="w-6 h-6 text-emerald-600 mb-1.5" />
           <span className="text-xl font-bold font-display text-on-surface">
             {isLoading
               ? "..."
-              : stats?.average_stability != null
-                ? `${stats.average_stability.toFixed(1)} days`
+              : stats?.min_stability != null
+                ? `${stats.min_stability.toFixed(1)} days`
                 : "0 days"}
           </span>
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">

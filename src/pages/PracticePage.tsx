@@ -512,6 +512,8 @@ export default function PracticePage({
         />
 
         <PracticeInputSection
+          activeBrickId={activeBrick?.id}
+          finishedCount={finishedCount}
           showTypeInput={showTypeInput}
           onToggleTypeInput={() => handleToggleTypeInput(!showTypeInput)}
           typedAnswer={typedAnswer}
