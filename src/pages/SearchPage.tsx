@@ -727,7 +727,6 @@ export default function SearchPage({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {currentTabBricks.map((brick) => {
                   const isPlaying = playingBrickId === brick.brick_id;
-                  const isLiked = likedMap[brick.brick_id] ?? false;
 
                   return (
                     <div
@@ -766,24 +765,6 @@ export default function SearchPage({
                         >
                           <Volume2
                             className={`w-4 h-4 ${isPlaying ? "animate-pulse" : ""}`}
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) =>
-                            handleToggleLike(brick.brick_id, undefined, e)
-                          }
-                          className={`p-2 rounded-xl transition-all active:scale-95 cursor-pointer ${
-                            isLiked
-                              ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40"
-                              : "bg-surface-container hover:bg-surface-container-high text-outline hover:text-rose-500"
-                          }`}
-                          title={isLiked ? "Unlike" : "Like"}
-                          aria-label={isLiked ? "Unlike" : "Like"}
-                        >
-                          <Heart
-                            className={`w-4 h-4 ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
                           />
                         </button>
 
