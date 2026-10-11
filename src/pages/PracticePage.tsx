@@ -489,7 +489,13 @@ export default function PracticePage({
   };
 
   return (
-    <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-6 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] animate-in fade-in duration-300">
+    <div
+      className={`grow flex flex-col items-center px-4 sm:px-6 py-4 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] animate-in fade-in duration-300 ${
+        showTypeInput
+          ? "justify-start pt-2 sm:justify-center sm:pt-6"
+          : "justify-center"
+      }`}
+    >
       {/* Main Flashcard & Interactive Input section */}
       <div className="w-full max-w-full space-y-4 min-w-0">
         <PracticeFlashcard
