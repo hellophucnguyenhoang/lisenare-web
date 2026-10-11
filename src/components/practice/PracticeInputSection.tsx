@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
   Mic,
   ArrowRight,
@@ -45,6 +45,23 @@ export default function PracticeInputSection({
   onNext,
   onOpenInstructions,
 }: PracticeInputSectionProps) {
+  const inputRef = useRef<HTMLDivElement>(null);
+
+  const handleClearTypedAnswer = () => {
+    onChangeTypedAnswer("");
+    if (inputRef.current) {
+      inputRef.current.focus({ preventScroll: true });
+      const sel = window.getSelection();
+      if (sel) {
+        const range = document.createRange();
+        range.selectNodeContents(inputRef.current);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-full space-y-4 min-w-0">
       {/* Practice Instruction Banner */}
@@ -76,6 +93,7 @@ export default function PracticeInputSection({
         >
           <div className="relative w-full min-w-0 flex items-center">
             <PlainTextInput
+              inputRef={inputRef}
               placeholder="Type target sentence..."
               value={typedAnswer}
               onChange={onChangeTypedAnswer}
@@ -92,7 +110,10 @@ export default function PracticeInputSection({
               <button
                 type="button"
                 id="btn-clear-typed-answer"
-                onClick={() => onChangeTypedAnswer("")}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                }}
+                onClick={handleClearTypedAnswer}
                 className="absolute right-2.5 p-1 text-outline hover:text-on-surface rounded-full hover:bg-surface-container transition-colors cursor-pointer active:scale-90 flex items-center justify-center"
                 title="Clear text"
                 aria-label="Clear text"

@@ -11,6 +11,7 @@ export interface PlainTextInputProps {
   onFocus?: (e: React.FocusEvent<HTMLElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLElement>) => void;
   id?: string;
+  inputRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function PlainTextInput({
@@ -24,8 +25,10 @@ export default function PlainTextInput({
   onFocus,
   onBlur,
   id,
+  inputRef,
 }: PlainTextInputProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
+  const ref = inputRef || internalRef;
   const isComposingRef = useRef(false);
 
   useEffect(() => {

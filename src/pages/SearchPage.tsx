@@ -18,7 +18,10 @@ import {
 import { useSearchContextBricks } from "@/hooks/useContextSearch";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useCollections, useCreateCollection } from "@/hooks/useCollections";
-import { useAddBrickFrom } from "@/hooks/useBricks";
+import {
+  useAddBrickFrom,
+  useAddBricksFromCollection,
+} from "@/hooks/useBricks";
 import { getRecommendedBricks, createBrickInteraction } from "@/api/bricks";
 import { playShortAudio } from "@/utils/audio";
 import { type Brick, type AuthMode } from "@/types";
@@ -85,9 +88,14 @@ export default function SearchPage({
     target_text: string;
     native_text: string;
   } | null>(null);
+  const [savingCollection, setSavingCollection] = useState<{
+    collection_id: number;
+    collection_name: string;
+  } | null>(null);
 
   const { data: collections = [] } = useCollections(isLoggedIn);
   const addBrickMutation = useAddBrickFrom();
+  const addBricksFromCollectionMutation = useAddBricksFromCollection();
   const createCollectionMutation = useCreateCollection();
 
   // Scroll listener for floating scroll-to-top button
@@ -210,6 +218,18 @@ export default function SearchPage({
     setPage(1);
   };
 
+  const handleOpenAddCollection = (collection: {
+    collection_id: number;
+    collection_name: string;
+  }) => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in to add collections.");
+      onOpenAuth?.("login");
+      return;
+    }
+    setSavingCollection(collection);
+  };
+
   const handleSaveToCollection = (collectionId: number) => {
     if (!savingBrick) return;
     addBrickMutation.mutate(
@@ -237,6 +257,45 @@ export default function SearchPage({
     );
   };
 
+  const handleSaveCollectionToTarget = (targetCollectionId: number) => {
+    if (!savingCollection) return;
+    addBricksFromCollectionMutation.mutate(
+      {
+        collectionId: savingCollection.collection_id,
+        targetCollectionId,
+      },
+      {
+        onSuccess: (result) => {
+          if (result.added === 0) {
+            toast.info(
+              "All bricks from this collection are already in your collection.",
+            );
+          } else if (result.skipped > 0) {
+            toast.success(
+              `Added ${result.added} new bricks to your collection (${result.skipped} skipped as duplicates).`,
+            );
+          } else {
+            toast.success(
+              `Added all ${result.added} bricks to your collection!`,
+            );
+          }
+          setSavingCollection(null);
+          setDetailBrickId(null);
+        },
+        onError: (err: unknown) => {
+          const errorObj = err as
+            | { detail?: string; message?: string }
+            | undefined;
+          toast.error(
+            errorObj?.detail ||
+              errorObj?.message ||
+              "Failed to add collection.",
+          );
+        },
+      },
+    );
+  };
+
   const handleCreateAndSave = async (name: string) => {
     try {
       const created = await createCollectionMutation.mutateAsync({
@@ -244,7 +303,11 @@ export default function SearchPage({
         description: "",
         tags: [],
       });
-      handleSaveToCollection(created.id);
+      if (savingCollection) {
+        handleSaveCollectionToTarget(created.id);
+      } else if (savingBrick) {
+        handleSaveToCollection(created.id);
+      }
     } catch (err: unknown) {
       const errorObj = err as { detail?: string; message?: string } | undefined;
       toast.error(
@@ -813,21 +876,22 @@ export default function SearchPage({
 
       {/* Brick Detail Modal */}
       <BrickDetailModal
-        isOpen={Boolean(detailBrickId) && !savingBrick}
+        isOpen={Boolean(detailBrickId) && !savingBrick && !savingCollection}
         brickId={detailBrickId}
         onClose={() => setDetailBrickId(null)}
         onPractice={onNavigateToPractice}
         onEdit={onNavigateToEditBrick}
         onAddToCollection={(brick) => setSavingBrick(brick)}
+        onAddCollection={handleOpenAddCollection}
         isLoggedIn={isLoggedIn}
         currentLearnerId={learner?.id}
         onOpenAuth={onOpenAuth}
       />
 
-      {/* Add Brick Modal */}
+      {/* Add Brick or Collection Modal */}
       <SaveToCollectionModal
-        isOpen={Boolean(savingBrick)}
-        mode="brick"
+        isOpen={Boolean(savingBrick || savingCollection)}
+        mode={savingCollection ? "collection" : "brick"}
         brick={
           savingBrick
             ? {
@@ -836,14 +900,25 @@ export default function SearchPage({
               }
             : null
         }
-        collectionToCopy={null}
+        collectionToCopy={savingCollection}
         collections={collections}
         isSaving={
-          addBrickMutation.isPending || createCollectionMutation.isPending
+          addBrickMutation.isPending ||
+          addBricksFromCollectionMutation.isPending ||
+          createCollectionMutation.isPending
         }
-        onSave={handleSaveToCollection}
+        onSave={(targetCollectionId) => {
+          if (savingCollection) {
+            handleSaveCollectionToTarget(targetCollectionId);
+          } else if (savingBrick) {
+            handleSaveToCollection(targetCollectionId);
+          }
+        }}
         onCreateAndSave={handleCreateAndSave}
-        onClose={() => setSavingBrick(null)}
+        onClose={() => {
+          setSavingBrick(null);
+          setSavingCollection(null);
+        }}
       />
 
       {/* Floating Scroll to Top */}
