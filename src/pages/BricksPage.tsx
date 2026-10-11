@@ -16,6 +16,7 @@ import {
   Upload,
   X,
   Tag,
+  ArrowUp,
 } from "lucide-react";
 import {
   useCollections,
@@ -69,6 +70,15 @@ export default function BricksPage({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagInputText, setTagInputText] = useState("");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 350);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Hooks
   const { data: collections = [], isLoading: isLoadingCollections } =
@@ -362,7 +372,7 @@ export default function BricksPage({
       </section>
 
       {/* Filter Bar: Collection selector + Sort controls + Search Button */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div className="sticky top-14 sm:top-16 z-20 bg-surface/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 mb-5 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-3 shadow-2xs transition-all">
         {/* Collection Filter Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
@@ -968,6 +978,19 @@ export default function BricksPage({
             setSelectedCollectionId(targetColId);
           }}
         />
+      )}
+
+      {/* Floating Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-primary text-on-primary shadow-xl hover:shadow-2xl hover:bg-primary/95 transition-all active:scale-90 cursor-pointer animate-in fade-in zoom-in duration-200"
+          title="Scroll to top"
+          aria-label="Scroll to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
       )}
     </div>
   );
