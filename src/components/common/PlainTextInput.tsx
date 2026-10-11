@@ -87,15 +87,19 @@ export default function PlainTextInput({
         disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
       }`}
       onClick={(e) => {
-        if (ref.current && e.target !== ref.current) {
-          ref.current.focus({ preventScroll: true });
-          const sel = window.getSelection();
-          if (sel) {
-            const range = document.createRange();
-            range.selectNodeContents(ref.current);
-            range.collapse(false);
-            sel.removeAllRanges();
-            sel.addRange(range);
+        if (ref.current) {
+          if (document.activeElement !== ref.current) {
+            ref.current.focus({ preventScroll: true });
+          }
+          if (e.target !== ref.current) {
+            const sel = window.getSelection();
+            if (sel) {
+              const range = document.createRange();
+              range.selectNodeContents(ref.current);
+              range.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            }
           }
         }
       }}
@@ -119,7 +123,7 @@ export default function PlainTextInput({
           onBlur={onBlur}
           onCompositionStart={handleCompositionStart}
           onCompositionEnd={handleCompositionEnd}
-          className="w-full outline-none bg-transparent select-text whitespace-nowrap overflow-x-auto leading-normal py-0.5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none"
+          className="w-full outline-none bg-transparent select-text whitespace-nowrap overflow-x-auto leading-normal py-0.5 scroll-mt-28 sm:scroll-mt-36 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none"
         />
       </div>
     </div>
