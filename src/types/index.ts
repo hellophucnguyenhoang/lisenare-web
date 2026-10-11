@@ -17,7 +17,7 @@ export interface Brick {
   targetAudioPath: string;
   targetPron: string | null;
   context: string | null;
-  unitType: string;
+  kind: string;
   isPrivate: boolean;
   lastEditAt: string;
   tags: string[];

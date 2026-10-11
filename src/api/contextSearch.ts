@@ -9,7 +9,7 @@ export interface BrickContextSearch {
 
 export interface ContextSearchParams {
   query: string;
-  unit_type?: "word" | "sentence" | null;
+  kind?: "word" | "sentence" | null;
   limit?: number;
   offset?: number;
   page?: number;
@@ -25,7 +25,7 @@ export async function searchContextBricks(
     });
   }
 
-  const { query, unit_type, limit = 30, page } = params;
+  const { query, kind, limit = 30, page } = params;
   let offset = params.offset;
   if (offset === undefined && page !== undefined && page > 1) {
     offset = (page - 1) * limit;
@@ -35,7 +35,7 @@ export async function searchContextBricks(
 
   const body: {
     query: string;
-    unit_type?: "word" | "sentence" | null;
+    kind?: "word" | "sentence" | null;
     limit: number;
     offset: number;
   } = {
@@ -44,8 +44,8 @@ export async function searchContextBricks(
     offset,
   };
 
-  if (unit_type) {
-    body.unit_type = unit_type;
+  if (kind) {
+    body.kind = kind;
   }
 
   return request<BrickContextSearch[]>("/context-search/bricks-search", {
