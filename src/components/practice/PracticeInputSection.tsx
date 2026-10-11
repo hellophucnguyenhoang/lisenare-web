@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   Mic,
   ArrowRight,
@@ -13,6 +13,8 @@ import AudioWaveform from "@/components/common/AudioWaveform";
 import PlainTextInput from "@/components/common/PlainTextInput";
 
 interface PracticeInputSectionProps {
+  activeBrickId?: number;
+  finishedCount?: number;
   showTypeInput: boolean;
   onToggleTypeInput: () => void;
   typedAnswer: string;
@@ -30,6 +32,8 @@ interface PracticeInputSectionProps {
 }
 
 export default function PracticeInputSection({
+  activeBrickId,
+  finishedCount,
   showTypeInput,
   onToggleTypeInput,
   typedAnswer,
@@ -46,6 +50,33 @@ export default function PracticeInputSection({
   onOpenInstructions,
 }: PracticeInputSectionProps) {
   const inputRef = useRef<HTMLDivElement>(null);
+
+  // Auto focus input when moving to next brick, changing active brick, or toggling typing mode
+  useEffect(() => {
+    if (!showTypeInput) return;
+
+    const focusInput = () => {
+      if (inputRef.current) {
+        inputRef.current.focus({ preventScroll: true });
+        const sel = window.getSelection();
+        if (sel) {
+          const range = document.createRange();
+          range.selectNodeContents(inputRef.current);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }
+    };
+
+    focusInput();
+    const t1 = setTimeout(focusInput, 50);
+    const t2 = setTimeout(focusInput, 150);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [activeBrickId, finishedCount, showTypeInput]);
 
   const handleClearTypedAnswer = () => {
     onChangeTypedAnswer("");
@@ -93,6 +124,7 @@ export default function PracticeInputSection({
         >
           <div className="relative w-full min-w-0 flex items-center scroll-mt-28 sm:scroll-mt-36">
             <PlainTextInput
+              key={`${activeBrickId ?? "brick"}_${finishedCount ?? 0}`}
               inputRef={inputRef}
               placeholder="Type target sentence..."
               value={typedAnswer}

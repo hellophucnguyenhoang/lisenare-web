@@ -5,22 +5,14 @@
  */
 export function maskEmail(email: string | null | undefined): string {
   if (!email) return "";
+
   const atIndex = email.indexOf("@");
   if (atIndex === -1) return email;
 
-  const localPart = email.slice(0, atIndex);
-  const domain = email.slice(atIndex); // includes "@"
+  const maskPart = (part: string) =>
+    part.length <= 1 ? `${part}**` : `${part[0]}*${part[part.length - 1]}`;
 
-  if (localPart.length <= 1) {
-    return `${localPart}*${domain}`;
-  }
-  if (localPart.length === 2) {
-    return `${localPart[0]}*${domain}`;
-  }
+  const [local, domain] = [email.slice(0, atIndex), email.slice(atIndex + 1)];
 
-  const firstChar = localPart[0];
-  const lastChar = localPart[localPart.length - 1];
-  const stars = "*".repeat(3);
-
-  return `${firstChar}${stars}${lastChar}${domain}`;
+  return `${maskPart(local)}@${domain.split(".").map(maskPart).join(".")}`;
 }

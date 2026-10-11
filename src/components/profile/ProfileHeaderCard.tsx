@@ -1,4 +1,4 @@
-import { Edit3, Mail, CheckCircle2, AlertCircle } from "lucide-react";
+import { Edit3, Mail, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
 import { maskEmail } from "@/utils/maskEmail";
 
 interface ProfileHeaderCardProps {
@@ -7,6 +7,8 @@ interface ProfileHeaderCardProps {
   isEmailVerified: boolean;
   onOpenEmailModal: () => void;
   onOpenNameModal: () => void;
+  onReload?: () => void;
+  isReloading?: boolean;
 }
 
 export default function ProfileHeaderCard({
@@ -15,18 +17,21 @@ export default function ProfileHeaderCard({
   isEmailVerified,
   onOpenEmailModal,
   onOpenNameModal,
+  onReload,
+  isReloading = false,
 }: ProfileHeaderCardProps) {
   return (
     <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-xs">
-      <div className="flex items-center gap-4 sm:gap-5">
-        {/* Profile Picture */}
-        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
-          <img
-            src="https://placecats.com/300/300"
-            alt={learnerName}
-            className="w-full h-full object-cover"
-          />
-        </div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+          {/* Profile Picture */}
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
+            <img
+              src="https://placecats.com/300/300"
+              alt={learnerName}
+              className="w-full h-full object-cover"
+            />
+          </div>
 
         {/* Learner Info */}
         <div className="flex-1 min-w-0">
@@ -85,6 +90,22 @@ export default function ProfileHeaderCard({
           </div>
         </div>
       </div>
+      {onReload && (
+        <button
+          type="button"
+          id="btn-reload-profile-card"
+          onClick={onReload}
+          disabled={isReloading}
+          className="p-2.5 text-outline hover:text-primary hover:bg-surface-container rounded-2xl transition-all active:scale-90 cursor-pointer shrink-0 disabled:opacity-50"
+          title="Reload profile data"
+          aria-label="Reload profile data"
+        >
+          <RotateCcw
+            className={`w-4 h-4 ${isReloading ? "animate-spin text-primary" : ""}`}
+          />
+        </button>
+      )}
+    </div>
     </section>
   );
 }
