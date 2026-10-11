@@ -11,6 +11,7 @@ import {
   getBrickDetail,
   getRecommendedBricks,
   createBrickInteraction,
+  reportBrick,
   type BrickDetail,
   type BrickListParams,
   type NextBrickParams,
@@ -194,6 +195,14 @@ export function useCreateBrickInteraction() {
     },
   });
 }
+
+export function useReportBrick() {
+  return useMutation({
+    mutationFn: ({ brickId, reason }: { brickId: number; reason?: string }) =>
+      reportBrick(brickId, reason),
+  });
+}
+
 
 
 

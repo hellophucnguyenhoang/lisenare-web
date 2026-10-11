@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Search,
@@ -14,6 +15,10 @@ import {
   ArrowUp,
   Sparkles,
   RotateCcw,
+  MoreVertical,
+  Edit3,
+  Trash2,
+  Flag,
 } from "lucide-react";
 import { useSearchContextBricks } from "@/hooks/useContextSearch";
 import { useLearnerMe } from "@/hooks/useLearner";
@@ -21,12 +26,18 @@ import { useCollections, useCreateCollection } from "@/hooks/useCollections";
 import {
   useAddBrickFrom,
   useAddBricksFromCollection,
+  useDeleteBrick,
 } from "@/hooks/useBricks";
-import { getRecommendedBricks, createBrickInteraction } from "@/api/bricks";
+import {
+  getRecommendedBricks,
+  createBrickInteraction,
+  getBrickDetail,
+} from "@/api/bricks";
 import { playShortAudio } from "@/utils/audio";
 import { type Brick, type AuthMode } from "@/types";
 import SaveToCollectionModal from "@/components/bricks/SaveToCollectionModal";
 import BrickDetailModal from "@/components/bricks/BrickDetailModal";
+import ReportBrickModal from "@/components/bricks/ReportBrickModal";
 import { toast } from "sonner";
 
 interface SearchPageProps {
@@ -94,9 +105,63 @@ export default function SearchPage({
   } | null>(null);
 
   const { data: collections = [] } = useCollections(isLoggedIn);
+  const queryClient = useQueryClient();
   const addBrickMutation = useAddBrickFrom();
   const addBricksFromCollectionMutation = useAddBricksFromCollection();
   const createCollectionMutation = useCreateCollection();
+  const deleteBrickMutation = useDeleteBrick();
+  const [openMenuBrickId, setOpenMenuBrickId] = useState<number | null>(null);
+  const [reportingBrick, setReportingBrick] = useState<{
+    brickId: number;
+    targetText?: string;
+  } | null>(null);
+
+  // Close 3-dots dropdown menu when clicking anywhere outside
+  useEffect(() => {
+    const handleOutsideClick = () => setOpenMenuBrickId(null);
+    window.addEventListener("click", handleOutsideClick);
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, []);
+
+  const handleOpenReport = (brickId: number, targetText?: string) => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in to report a brick.");
+      onOpenAuth?.("login");
+      return;
+    }
+    setReportingBrick({ brickId, targetText });
+  };
+
+  const handleEditBrick = async (brickId: number) => {
+    if (!onNavigateToEditBrick) return;
+    try {
+      const fullBrick = await getBrickDetail(brickId);
+      onNavigateToEditBrick(fullBrick);
+    } catch (err) {
+      console.error("Failed to load brick for editing:", err);
+      toast.error("Failed to load brick details.");
+    }
+  };
+
+  const handleDeleteBrick = (brickId: number) => {
+    if (confirm("Are you sure you want to delete this brick?")) {
+      deleteBrickMutation.mutate(brickId, {
+        onSuccess: () => {
+          toast.success("Brick deleted successfully.");
+          queryClient.invalidateQueries({ queryKey: ["context-search"] });
+          queryClient.invalidateQueries({ queryKey: ["bricks"] });
+        },
+        onError: (err: unknown) => {
+          const errorObj = err as
+            | { detail?: string; message?: string }
+            | undefined;
+          toast.error(
+            errorObj?.detail || errorObj?.message || "Failed to delete brick.",
+          );
+        },
+      });
+    }
+  };
 
   // Scroll listener for floating scroll-to-top button
   useEffect(() => {
@@ -541,6 +606,19 @@ export default function SearchPage({
                         >
                           <Plus className="w-4 h-4" />
                         </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenReport(brick.id, brick.targetText);
+                          }}
+                          className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-outline hover:text-rose-500 transition-all active:scale-95 cursor-pointer"
+                          title="Report this brick"
+                          aria-label="Report this brick"
+                        >
+                          <Flag className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   );
@@ -739,6 +817,57 @@ export default function SearchPage({
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant">
                             {brick.is_own ? "Your Brick" : "Public"}
                           </span>
+
+                          {brick.is_own && (
+                            <div className="relative">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuBrickId((curr) =>
+                                    curr === brick.brick_id
+                                      ? null
+                                      : brick.brick_id,
+                                  );
+                                }}
+                                className="text-outline hover:text-primary transition-all p-1 rounded-full hover:bg-surface-container-low cursor-pointer"
+                                aria-label="More options"
+                              >
+                                <MoreVertical className="w-5 h-5" />
+                              </button>
+
+                              {openMenuBrickId === brick.brick_id && (
+                                <div className="absolute right-0 top-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-30 py-1.5 w-36">
+                                  {onNavigateToEditBrick && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setOpenMenuBrickId(null);
+                                        handleEditBrick(brick.brick_id);
+                                      }}
+                                      className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+                                    >
+                                      <Edit3 className="w-4 h-4 text-outline" />
+                                      <span>Edit Brick</span>
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuBrickId(null);
+                                      handleDeleteBrick(brick.brick_id);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-error/10 flex items-center gap-2 text-error cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span>Delete Brick</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-1">
@@ -769,22 +898,40 @@ export default function SearchPage({
                         </button>
 
                         {!brick.is_own && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSavingBrick({
-                                brick_id: brick.brick_id,
-                                target_text: brick.target_text,
-                                native_text: brick.native_text,
-                              });
-                            }}
-                            className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all active:scale-95 cursor-pointer"
-                            title="Add to collection"
-                            aria-label="Add to collection"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSavingBrick({
+                                  brick_id: brick.brick_id,
+                                  target_text: brick.target_text,
+                                  native_text: brick.native_text,
+                                });
+                              }}
+                              className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all active:scale-95 cursor-pointer"
+                              title="Add to collection"
+                              aria-label="Add to collection"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenReport(
+                                  brick.brick_id,
+                                  brick.target_text,
+                                );
+                              }}
+                              className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-outline hover:text-rose-500 transition-all active:scale-95 cursor-pointer"
+                              title="Report this brick"
+                              aria-label="Report this brick"
+                            >
+                              <Flag className="w-4 h-4" />
+                            </button>
+                          </>
                         )}
 
                         {brick.is_own && onNavigateToPractice && (
@@ -900,6 +1047,14 @@ export default function SearchPage({
           setSavingBrick(null);
           setSavingCollection(null);
         }}
+      />
+
+      {/* Report Brick Dialog */}
+      <ReportBrickModal
+        isOpen={Boolean(reportingBrick)}
+        brickId={reportingBrick?.brickId ?? null}
+        targetText={reportingBrick?.targetText}
+        onClose={() => setReportingBrick(null)}
       />
 
       {/* Floating Scroll to Top */}
