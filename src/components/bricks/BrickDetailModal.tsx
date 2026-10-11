@@ -17,8 +17,10 @@ import {
   UserCheck,
   FileText,
   Languages,
+  Heart,
 } from "lucide-react";
 import { toast } from "sonner";
+import { type InteractionType } from "@/api/bricks";
 
 interface BrickDetailModalProps {
   isOpen: boolean;
@@ -38,6 +40,7 @@ interface BrickDetailModalProps {
   isLoggedIn?: boolean;
   currentLearnerId?: number;
   onOpenAuth?: (mode: AuthMode) => void;
+  onInteraction?: (brickId: number, type: InteractionType) => void;
 }
 
 export default function BrickDetailModal({
@@ -51,9 +54,11 @@ export default function BrickDetailModal({
   isLoggedIn = false,
   currentLearnerId,
   onOpenAuth,
+  onInteraction,
 }: BrickDetailModalProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [likedMap, setLikedMap] = useState<Record<number, boolean>>({});
 
   const {
     data: detail,
@@ -65,6 +70,23 @@ export default function BrickDetailModal({
   const isOwner = detail
     ? currentLearnerId !== undefined && detail.creatorId === currentLearnerId
     : false;
+
+  const isLiked =
+    brickId !== null && likedMap[brickId] !== undefined
+      ? likedMap[brickId]
+      : detail?.reaction === "LIKE";
+
+  const handleToggleLike = () => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in to react to bricks.");
+      onOpenAuth?.("login");
+      return;
+    }
+    if (!brickId) return;
+    const nextLiked = !isLiked;
+    setLikedMap((prev) => ({ ...prev, [brickId]: nextLiked }));
+    onInteraction?.(brickId, nextLiked ? "LIKE" : "REMOVE_REACTION");
+  };
 
   // Check if brick exists in learner's library using bricks/exists
   const { data: alreadyExists, isLoading: isCheckingExists } =
@@ -93,6 +115,7 @@ export default function BrickDetailModal({
       }
       setIsPlayingAudio(true);
       playShortAudio(audioUrl, undefined, () => setIsPlayingAudio(false));
+      onInteraction?.(brickId, "LISTEN");
     } catch {
       setIsPlayingAudio(false);
       toast.error("Audio is not available for this brick.");
@@ -217,7 +240,7 @@ export default function BrickDetailModal({
                 )}
               </div>
 
-              <div>
+              <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
                   id="btn-play-detail-audio"
@@ -243,6 +266,26 @@ export default function BrickDetailModal({
                         ? "Playing..."
                         : "Listen"}
                   </span>
+                </button>
+
+                <button
+                  type="button"
+                  id="btn-like-detail"
+                  onClick={handleToggleLike}
+                  className={`px-3 py-2 rounded-xl transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5 text-xs font-bold ${
+                    isLiked
+                      ? "bg-rose-50 text-rose-600 border border-rose-200 dark:bg-rose-950/30 dark:border-rose-900/40"
+                      : "bg-surface-container/60 hover:bg-surface-container text-on-surface-variant hover:text-on-surface border border-outline-variant/40"
+                  }`}
+                  title={isLiked ? "Unlike brick" : "Like brick"}
+                  aria-label={isLiked ? "Unlike brick" : "Like brick"}
+                >
+                  <Heart
+                    className={`w-4 h-4 ${
+                      isLiked ? "fill-rose-500 text-rose-500" : ""
+                    }`}
+                  />
+                  <span>{isLiked ? "Liked" : "Like"}</span>
                 </button>
               </div>
             </div>

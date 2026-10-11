@@ -50,14 +50,23 @@ interface BrickReadApi {
   target_lang?: string;
   target_pron: string | null;
   context: string | null;
-  unit_type: string;
+  unit_type?: string;
+  kind?: string;
   is_private: boolean;
   target_audio_path: string;
   last_edit_at: string;
   creator_id: number;
   collection_id: number;
-  tags: string[];
+  tags?: string[];
   learned?: boolean;
+}
+
+export type InteractionType = "LISTEN" | "ADD" | "LIKE" | "REMOVE_REACTION";
+
+export interface BrickInteractionCreate {
+  session_id: string;
+  brick_id: number;
+  interaction_type: InteractionType;
 }
 
 export interface BrickCreator {
@@ -107,10 +116,10 @@ function toBrick(api: BrickReadApi): Brick {
     targetAudioPath: api.target_audio_path,
     targetPron: api.target_pron,
     context: api.context,
-    unitType: api.unit_type,
+    unitType: api.unit_type || api.kind || "sentence",
     isPrivate: api.is_private,
     lastEditAt: api.last_edit_at,
-    tags: api.tags,
+    tags: api.tags || [],
     collectionId: api.collection_id,
     learned: api.learned ?? false,
   };
@@ -261,5 +270,39 @@ export async function getBrickDetail(brickId: number): Promise<BrickDetail> {
   const api = await request<BrickDetailApi>(`/bricks/${brickId}`);
   return toBrickDetail(api);
 }
+
+/**
+ * Retrieves recommended bricks for the given session.
+ * Calls GET /api/bricks/recommended/{session_id}
+ */
+export async function getRecommendedBricks(
+  sessionId: string,
+  pageSize = 5,
+): Promise<{ items: Brick[]; total: number }> {
+  const q = new URLSearchParams();
+  if (pageSize) q.set("page_size", String(pageSize));
+  const qs = q.toString();
+  const data = await request<BrickPageApi>(
+    `/bricks/recommended/${encodeURIComponent(sessionId)}${qs ? `?${qs}` : ""}`,
+  );
+  return {
+    items: (data.items || []).map(toBrick),
+    total: data.total ?? (data.items || []).length,
+  };
+}
+
+/**
+ * Sends a brick interaction to update the profile vector for the session.
+ * Calls POST /api/brick-interactions
+ */
+export async function createBrickInteraction(
+  payload: BrickInteractionCreate,
+): Promise<void> {
+  await request<Record<string, unknown>>("/brick-interactions", {
+    method: "POST",
+    body: payload as unknown as Record<string, unknown>,
+  });
+}
+
 
 

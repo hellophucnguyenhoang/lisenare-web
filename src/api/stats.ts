@@ -5,7 +5,7 @@ export interface LearningCardStats {
   due_count: number;
   true_retention: number;
   average_stability: number;
-  total_memorized: number;
+  estimated_recalled: number;
   timestamp: string;
 }
 

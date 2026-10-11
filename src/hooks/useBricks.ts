@@ -9,9 +9,12 @@ import {
   addBrickFrom,
   addBricksFromCollection,
   getBrickDetail,
+  getRecommendedBricks,
+  createBrickInteraction,
   type BrickDetail,
   type BrickListParams,
   type NextBrickParams,
+  type BrickInteractionCreate,
 } from "@/api/bricks";
 import { getForcedAlignment, type WordSegmentSecond } from "@/api/evaluation";
 import { useDebounce } from "./useDebounce";
@@ -162,6 +165,36 @@ export function useBrickDetail(
     staleTime: 30 * 1000,
   });
 }
+
+export function useRecommendedBricks(
+  sessionId: string | null | undefined,
+  pageSize = 5,
+  enabled = true,
+) {
+  return useQuery<{ items: import("@/types").Brick[]; total: number }>({
+    queryKey: ["bricks", "recommended", sessionId, pageSize],
+    queryFn: () =>
+      sessionId
+        ? getRecommendedBricks(sessionId, pageSize)
+        : Promise.resolve({ items: [], total: 0 }),
+    enabled: Boolean(sessionId) && enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useCreateBrickInteraction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: BrickInteractionCreate) =>
+      createBrickInteraction(payload),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({
+        queryKey: ["bricks", "recommended", variables.session_id],
+      });
+    },
+  });
+}
+
 
 
 
