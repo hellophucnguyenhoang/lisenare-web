@@ -58,10 +58,53 @@ function InfoTooltip({ text }: { text: string }) {
   );
 }
 
+type DueUnit = "hours" | "minutes" | "seconds";
+
+function formatNextDueValue(
+  seconds: number | null | undefined,
+  unit: DueUnit,
+): string {
+  if (seconds == null || isNaN(seconds)) return "0";
+  if (seconds <= 0) return "0";
+
+  let val: number;
+  if (unit === "hours") {
+    val = seconds / 3600;
+  } else if (unit === "minutes") {
+    val = seconds / 60;
+  } else {
+    val = seconds;
+  }
+
+  // If it's an integer, format cleanly
+  if (Number.isInteger(val)) {
+    return val.toString();
+  }
+
+  // Preserve exact significant digits without floating point noise or forced truncation
+  const rounded = parseFloat(val.toFixed(4));
+  return rounded.toString();
+}
+
 export default function LearningMetricsGrid({
   stats,
   isLoading,
 }: LearningMetricsGridProps) {
+  const [dueUnit, setDueUnit] = useState<DueUnit>("hours");
+
+  const cycleDueUnit = () => {
+    setDueUnit((prev) => {
+      if (prev === "hours") return "minutes";
+      if (prev === "minutes") return "seconds";
+      return "hours";
+    });
+  };
+
+  const formattedNextDue = formatNextDueValue(
+    stats?.next_due_in_seconds,
+    dueUnit,
+  );
+
   return (
     <section className="space-y-2">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -105,21 +148,73 @@ export default function LearningMetricsGrid({
           </span>
         </div>
 
-        {/* Average Stability (Replaced estimated_recalled) */}
-        <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-xs relative">
+        {/* Next Due */}
+        <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-between text-center shadow-xs relative">
           <div className="absolute top-2.5 right-2.5">
-            <InfoTooltip text="Shortest estimated time you can remember a card" />
+            <InfoTooltip text="Time until your next card is due for review" />
           </div>
-          <Clock className="w-6 h-6 text-emerald-600 mb-1.5" />
-          <span className="text-xl font-bold font-display text-on-surface">
-            {isLoading
-              ? "..."
-              : stats?.min_stability != null
-                ? `${stats.min_stability.toFixed(1)} days`
-                : "0 days"}
-          </span>
+          <Clock className="w-6 h-6 text-emerald-600 mb-1" />
+
+          <button
+            type="button"
+            onClick={cycleDueUnit}
+            className="flex items-baseline justify-center gap-1 cursor-pointer select-none group transition-transform active:scale-95"
+            title="Click to switch unit (hours, minutes, seconds)"
+          >
+            <span className="text-xl font-bold font-display text-on-surface group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+              {isLoading ? "..." : formattedNextDue}
+            </span>
+            <span className="text-xs font-semibold text-emerald-600">
+              {dueUnit === "hours"
+                ? "hrs"
+                : dueUnit === "minutes"
+                  ? "mins"
+                  : "secs"}
+            </span>
+          </button>
+
+          {/* Dynamic Unit Switcher */}
+          <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-container rounded-lg my-1 border border-outline-variant/40">
+            <button
+              type="button"
+              onClick={() => setDueUnit("hours")}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
+                dueUnit === "hours"
+                  ? "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                  : "text-outline hover:text-on-surface"
+              }`}
+              title="View in hours"
+            >
+              hours
+            </button>
+            <button
+              type="button"
+              onClick={() => setDueUnit("minutes")}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
+                dueUnit === "minutes"
+                  ? "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                  : "text-outline hover:text-on-surface"
+              }`}
+              title="View in minutes"
+            >
+              mins
+            </button>
+            <button
+              type="button"
+              onClick={() => setDueUnit("seconds")}
+              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
+                dueUnit === "seconds"
+                  ? "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                  : "text-outline hover:text-on-surface"
+              }`}
+              title="View in seconds"
+            >
+              secs
+            </button>
+          </div>
+
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            Stability
+            Next Due
           </span>
         </div>
       </div>
