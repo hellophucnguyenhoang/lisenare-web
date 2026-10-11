@@ -302,3 +302,22 @@ export async function createBrickInteraction(
     body: payload as unknown as Record<string, unknown>,
   });
 }
+
+export interface BrickReportCreate {
+  reason?: string;
+}
+
+/**
+ * Reports an issue with a brick.
+ * Calls POST /api/bricks/{brick_id}/report
+ */
+export async function reportBrick(
+  brickId: number,
+  reason = "Not provided",
+): Promise<void> {
+  await request<Record<string, unknown>>(`/bricks/${brickId}/report`, {
+    method: "POST",
+    body: { reason },
+  });
+}
+
