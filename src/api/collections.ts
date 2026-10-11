@@ -80,7 +80,7 @@ export interface BrickExport {
   target_lang?: string;
   target_pron?: string | null;
   context?: string | null;
-  unit_type?: string;
+  kind?: string;
   tags?: string[];
   is_private?: boolean;
 }
@@ -107,4 +107,3 @@ export async function importCollection(
     body: formData,
   });
 }
-

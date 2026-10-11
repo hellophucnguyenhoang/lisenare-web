@@ -54,7 +54,11 @@ export default function AddBrickPage({
 
   useEffect(() => {
     if (learnerLang && !userChangedLangRef.current) {
-      if (learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en") {
+      if (
+        learnerLang === "ja" ||
+        learnerLang === "vi" ||
+        learnerLang === "en"
+      ) {
         setTargetLang(learnerLang);
       }
     }
@@ -67,7 +71,7 @@ export default function AddBrickPage({
 
   const [pronunciation, setPronunciation] = useState("");
   const [context, setContext] = useState("");
-  const [unitType, setUnitType] = useState<UnitType>("sentence");
+  const [kind, setUnitType] = useState<UnitType>("sentence");
   const [tags, setTags] = useState<string[]>([]);
   const [isPrivate, setIsPrivate] = useState(true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -109,9 +113,9 @@ export default function AddBrickPage({
 
   const isFormValid = Boolean(
     nativeText.trim() &&
-      targetText.trim() &&
-      effectiveCollectionId &&
-      audioBlob,
+    targetText.trim() &&
+    effectiveCollectionId &&
+    audioBlob,
   );
 
   const handleSave = () => {
@@ -139,7 +143,7 @@ export default function AddBrickPage({
         target_lang: targetLang,
         target_pron: pronunciation.trim() || null,
         context: context.trim() || null,
-        unit_type: unitType,
+        kind: kind,
         is_private: isPrivate,
         collection_id: effectiveCollectionId,
         tags,
@@ -224,8 +228,8 @@ export default function AddBrickPage({
         {/* Pronunciation Recording / Preview section */}
         <BrickAudioSection audioBlob={audioBlob} onAudioChange={setAudioBlob} />
 
-        {/* Unit Type Section: Word or Sentence */}
-        <BrickUnitTypeSelector unitType={unitType} onChange={setUnitType} />
+        {/* Kind Section: Word or Sentence */}
+        <BrickUnitTypeSelector kind={kind} onChange={setUnitType} />
 
         {/* Privacy Section */}
         <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />

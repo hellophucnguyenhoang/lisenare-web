@@ -74,7 +74,7 @@ export default function SearchPage({
   const [activeTab, setActiveTab] = useState<SearchTab>(
     isLoggedIn ? "yours" : "public",
   );
-  const [unitType, setUnitType] = useState<UnitTypeFilter>(null);
+  const [kind, setUnitType] = useState<UnitTypeFilter>(null);
   const [page, setPage] = useState(1);
   const offset = (page - 1) * PAGE_SIZE;
 
@@ -180,7 +180,7 @@ export default function SearchPage({
   const bricksQuery = useSearchContextBricks(
     {
       query: activeQuery,
-      unit_type: unitType ?? undefined,
+      kind: kind ?? undefined,
       limit: PAGE_SIZE,
       offset,
     },
@@ -395,9 +395,7 @@ export default function SearchPage({
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant">
-                            {brick.unitType === "sentence"
-                              ? "Sentence"
-                              : "Word"}
+                            {brick.kind === "sentence" ? "Sentence" : "Word"}
                           </span>
                           {brick.tags && brick.tags.length > 0 && (
                             <span className="text-[10px] font-medium text-outline truncate max-w-[140px]">
@@ -593,7 +591,7 @@ export default function SearchPage({
                   setPage(1);
                 }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  unitType === null
+                  kind === null
                     ? "bg-primary text-on-primary shadow-2xs font-bold"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
                 }`}
@@ -607,7 +605,7 @@ export default function SearchPage({
                   setPage(1);
                 }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  unitType === "word"
+                  kind === "word"
                     ? "bg-primary text-on-primary shadow-2xs font-bold"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
                 }`}
@@ -621,7 +619,7 @@ export default function SearchPage({
                   setPage(1);
                 }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  unitType === "sentence"
+                  kind === "sentence"
                     ? "bg-primary text-on-primary shadow-2xs font-bold"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
                 }`}

@@ -7,7 +7,7 @@ const sampleBrick = {
     "The worst battle is the one that goes on between your heart and your mind, you never know which one to listen to.",
   targetPron: "/ðə bɪl pliːz/",
   context: "No context hehe",
-  unitType: "sentence",
+  kind: "sentence",
   isPrivate: true,
   id: 10247,
   targetAudioPath: "brick-audios/aWTrDkYdxK4_sentence_252.wav",

@@ -66,7 +66,7 @@ export default function BricksPage({
 
   const [sortBy, setSortBy] = useState<BrickSortType>("NEWEST");
   const [statusFilter, setStatusFilter] = useState<BrickStatusFilter>(null);
-  const [unitTypeFilter, setUnitTypeFilter] = useState<UnitTypeFilter>(null);
+  const [kindFilter, setUnitTypeFilter] = useState<UnitTypeFilter>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagInputText, setTagInputText] = useState("");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -94,7 +94,7 @@ export default function BricksPage({
     {
       collection_ids: selectedCollectionId ? [selectedCollectionId] : undefined,
       status: statusFilter ?? undefined,
-      unit_type: unitTypeFilter ?? undefined,
+      kind: kindFilter ?? undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       sort_by: sortBy,
       limit: 20,
@@ -109,7 +109,7 @@ export default function BricksPage({
   const totalBricks = bricksPages?.pages[0]?.total ?? 0;
   const hasActiveFilters =
     statusFilter !== null ||
-    unitTypeFilter !== null ||
+    kindFilter !== null ||
     selectedTags.length > 0 ||
     sortBy !== "NEWEST";
 
@@ -324,9 +324,9 @@ export default function BricksPage({
           </h2>
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
             {selectedCollection ? ` in "${selectedCollection.name}"` : ""}
-            {unitTypeFilter === "word"
+            {kindFilter === "word"
               ? " • Words"
-              : unitTypeFilter === "sentence"
+              : kindFilter === "sentence"
                 ? " • Sentences"
                 : ""}
             {statusFilter === "LEARNED"
@@ -563,22 +563,22 @@ export default function BricksPage({
 
             {showFilterDropdown && (
               <div className="absolute right-0 top-full mt-1.5 z-30 w-64 sm:w-72 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-3 space-y-3 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
-                {/* Unit Type Filter */}
+                {/* Kind Filter */}
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
-                    Unit Type
+                    Kind
                   </span>
                   <button
                     type="button"
                     onClick={() => setUnitTypeFilter(null)}
                     className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      unitTypeFilter === null
+                      kindFilter === null
                         ? "text-primary bg-primary/10 font-semibold"
                         : "text-on-surface"
                     }`}
                   >
                     <span>All</span>
-                    {unitTypeFilter === null && (
+                    {kindFilter === null && (
                       <Check className="w-3.5 h-3.5 text-primary" />
                     )}
                   </button>
@@ -586,13 +586,13 @@ export default function BricksPage({
                     type="button"
                     onClick={() => setUnitTypeFilter("word")}
                     className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      unitTypeFilter === "word"
+                      kindFilter === "word"
                         ? "text-primary bg-primary/10 font-semibold"
                         : "text-on-surface"
                     }`}
                   >
                     <span>Words</span>
-                    {unitTypeFilter === "word" && (
+                    {kindFilter === "word" && (
                       <Check className="w-3.5 h-3.5 text-primary" />
                     )}
                   </button>
@@ -600,13 +600,13 @@ export default function BricksPage({
                     type="button"
                     onClick={() => setUnitTypeFilter("sentence")}
                     className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      unitTypeFilter === "sentence"
+                      kindFilter === "sentence"
                         ? "text-primary bg-primary/10 font-semibold"
                         : "text-on-surface"
                     }`}
                   >
                     <span>Sentences</span>
-                    {unitTypeFilter === "sentence" && (
+                    {kindFilter === "sentence" && (
                       <Check className="w-3.5 h-3.5 text-primary" />
                     )}
                   </button>
@@ -747,7 +747,10 @@ export default function BricksPage({
                   </div>
 
                   {/* Add custom tag input */}
-                  <form onSubmit={handleAddCustomTag} className="flex gap-1 px-1">
+                  <form
+                    onSubmit={handleAddCustomTag}
+                    className="flex gap-1 px-1"
+                  >
                     <input
                       type="text"
                       value={tagInputText}
@@ -824,14 +827,14 @@ export default function BricksPage({
           <span className="text-[11px] font-semibold text-on-surface-variant mr-1">
             Active filters:
           </span>
-          {unitTypeFilter && (
+          {kindFilter && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium">
-              <span>Type: {unitTypeFilter === "word" ? "Words" : "Sentences"}</span>
+              <span>Type: {kindFilter === "word" ? "Words" : "Sentences"}</span>
               <button
                 type="button"
                 onClick={() => setUnitTypeFilter(null)}
                 className="hover:bg-primary/20 rounded-full p-0.5 cursor-pointer"
-                aria-label="Remove unit type filter"
+                aria-label="Remove kind filter"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -839,7 +842,9 @@ export default function BricksPage({
           )}
           {statusFilter && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium">
-              <span>Status: {statusFilter === "LEARNED" ? "Learned" : "Not Learned"}</span>
+              <span>
+                Status: {statusFilter === "LEARNED" ? "Learned" : "Not Learned"}
+              </span>
               <button
                 type="button"
                 onClick={() => setStatusFilter(null)}

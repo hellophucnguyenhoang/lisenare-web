@@ -9,7 +9,7 @@ export interface BrickCreateJsonData {
   target_lang?: string;
   target_pron?: string | null;
   context?: string | null;
-  unit_type?: string;
+  kind?: string;
   is_private?: boolean;
   collection_id?: number;
   collection_name?: string;
@@ -22,7 +22,7 @@ export interface BrickUpdateJsonData {
   target_lang?: string | null;
   target_pron?: string | null;
   context?: string | null;
-  unit_type?: string | null;
+  kind?: string | null;
   is_private?: boolean | null;
   collection_id?: number | null;
   tags?: string[] | null;
@@ -50,7 +50,6 @@ interface BrickReadApi {
   target_lang?: string;
   target_pron: string | null;
   context: string | null;
-  unit_type?: string;
   kind?: string;
   is_private: boolean;
   target_audio_path: string;
@@ -98,7 +97,7 @@ interface BrickPageApi {
 export interface BrickListParams {
   collection_ids?: number[];
   status?: "LEARNED" | "NOT_LEARNED";
-  unit_type?: "word" | "sentence";
+  kind?: "word" | "sentence";
   tags?: string[];
   sort_by?: "NEWEST" | "AZ" | "ZA";
   limit?: number;
@@ -116,7 +115,7 @@ function toBrick(api: BrickReadApi): Brick {
     targetAudioPath: api.target_audio_path,
     targetPron: api.target_pron,
     context: api.context,
-    unitType: api.unit_type || api.kind || "sentence",
+    kind: api.kind || api.kind || "sentence",
     isPrivate: api.is_private,
     lastEditAt: api.last_edit_at,
     tags: api.tags || [],
@@ -145,7 +144,7 @@ export async function listBricks(params?: BrickListParams) {
     );
   }
   if (params?.status) q.set("status", params.status);
-  if (params?.unit_type) q.set("unit_type", params.unit_type);
+  if (params?.kind) q.set("kind", params.kind);
   if (params?.tags && params.tags.length > 0) {
     params.tags.forEach((tag) => q.append("tags", tag));
   }
@@ -303,6 +302,3 @@ export async function createBrickInteraction(
     body: payload as unknown as Record<string, unknown>,
   });
 }
-
-
-

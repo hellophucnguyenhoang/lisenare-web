@@ -47,8 +47,8 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   );
   const [pronunciation, setPronunciation] = useState(brick.targetPron || "");
   const [context, setContext] = useState(brick.context || "");
-  const [unitType, setUnitType] = useState<UnitType>(
-    brick.unitType === "word" ? "word" : "sentence",
+  const [kind, setUnitType] = useState<UnitType>(
+    brick.kind === "word" ? "word" : "sentence",
   );
   const [tags, setTags] = useState<string[]>(brick.tags || []);
   const [isPrivate, setIsPrivate] = useState<boolean>(brick.isPrivate ?? true);
@@ -118,7 +118,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         target_lang: targetLang,
         target_pron: pronunciation.trim() || null,
         context: context.trim() || null,
-        unit_type: unitType,
+        kind: kind,
         collection_id: selectedCollectionId,
         is_private: isPrivate,
         tags,
@@ -217,8 +217,8 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           brickId={brick.id}
         />
 
-        {/* Unit Type Section: Word or Sentence */}
-        <BrickUnitTypeSelector unitType={unitType} onChange={setUnitType} />
+        {/* Kind Section: Word or Sentence */}
+        <BrickUnitTypeSelector kind={kind} onChange={setUnitType} />
 
         {/* Privacy Section */}
         <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
