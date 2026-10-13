@@ -25,7 +25,11 @@ import {
   useCreateCollection,
   useExportCollection,
 } from "@/hooks/useCollections";
-import { useInfiniteBricks, useDeleteBrick } from "@/hooks/useBricks";
+import {
+  useInfiniteBricks,
+  useDeleteBrick,
+  useForgetBrick,
+} from "@/hooks/useBricks";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { type AuthMode } from "@/types";
 import { useHeader } from "@/context/HeaderContext";
@@ -152,6 +156,7 @@ export default function BricksPage({
   const updateCollection = useUpdateCollection();
   const createCollection = useCreateCollection();
   const deleteBrick = useDeleteBrick();
+  const forgetBrick = useForgetBrick();
   const exportCollection = useExportCollection();
 
   const [showImportModal, setShowImportModal] = useState(false);
@@ -935,6 +940,23 @@ export default function BricksPage({
                 brick={brick}
                 onEditBrick={onNavigateToEditBrick}
                 onDeleteBrick={(brickId: number) => deleteBrick.mutate(brickId)}
+                onForgetBrick={(brickId: number) => {
+                  forgetBrick.mutate(brickId, {
+                    onSuccess: () => {
+                      toast.success("Brick memory reset successfully.");
+                    },
+                    onError: (err: unknown) => {
+                      const errorObj = err as
+                        | { detail?: string; message?: string }
+                        | undefined;
+                      toast.error(
+                        errorObj?.detail ||
+                          errorObj?.message ||
+                          "Failed to reset brick memory. Please try again.",
+                      );
+                    },
+                  });
+                }}
                 onSelectBrick={() => onNavigateToPractice(brick.id)}
                 onStudyBrick={() => onNavigateToPractice(brick.id)}
                 onSelectTag={handleToggleTag}
