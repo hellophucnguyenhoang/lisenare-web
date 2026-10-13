@@ -13,11 +13,16 @@ import {
   createBrickInteraction,
   reportBrick,
   forgetBrick,
+  getListeningBricks,
+  type BrickListeningParams,
+  type BrickListeningPage,
+  type BrickListeningData,
   type BrickDetail,
   type BrickListParams,
   type NextBrickParams,
   type BrickInteractionCreate,
 } from "@/api/bricks";
+export type { BrickListeningData, BrickListeningPage, BrickListeningParams };
 import { getForcedAlignment, type WordSegmentSecond } from "@/api/evaluation";
 import { useDebounce } from "./useDebounce";
 
@@ -215,6 +220,42 @@ export function useForgetBrick() {
     },
   });
 }
+
+export function useInfiniteListeningBricks(
+  params?: Omit<BrickListeningParams, "offset">,
+  enabled = true,
+) {
+  const limit = params?.limit ?? 10;
+  return useInfiniteQuery({
+    queryKey: ["bricks", "listening", "infinite", params],
+    queryFn: ({ pageParam = 0 }) =>
+      getListeningBricks({ ...params, offset: pageParam, limit }),
+    initialPageParam: 0,
+    enabled,
+    staleTime: 60 * 1000,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalFetched = allPages.reduce(
+        (sum, p) => sum + p.items.length,
+        0,
+      );
+      if (totalFetched >= lastPage.total) return undefined;
+      return totalFetched;
+    },
+  });
+}
+
+export function useListeningBricks(
+  params?: BrickListeningParams,
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: ["bricks", "listening", params],
+    queryFn: () => getListeningBricks(params),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
 
 
 

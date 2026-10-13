@@ -331,4 +331,46 @@ export async function forgetBrick(brickId: number): Promise<void> {
   });
 }
 
+export interface BrickListeningData {
+  audio_path: string;
+  target_text: string;
+  native_text: string;
+}
+
+export interface BrickListeningPage {
+  items: BrickListeningData[];
+  offset: number;
+  limit: number;
+  total: number;
+}
+
+export interface BrickListeningParams {
+  collection_ids?: number[];
+  offset?: number;
+  limit?: number;
+  shuffle_page?: boolean;
+}
+
+/**
+ * Retrieves bricks formatted specifically for listening practice with pagination.
+ * Calls GET /api/bricks/listening
+ */
+export async function getListeningBricks(
+  params: BrickListeningParams = {},
+): Promise<BrickListeningPage> {
+  const q = new URLSearchParams();
+  if (params.offset !== undefined) q.set("offset", String(params.offset));
+  if (params.limit !== undefined) q.set("limit", String(params.limit));
+  if (params.shuffle_page !== undefined)
+    q.set("shuffle_page", String(params.shuffle_page));
+  if (params.collection_ids && params.collection_ids.length > 0) {
+    params.collection_ids.forEach((id) =>
+      q.append("collection_ids", String(id)),
+    );
+  }
+  const qs = q.toString();
+  return request<BrickListeningPage>(`/bricks/listening${qs ? `?${qs}` : ""}`);
+}
+
+
 
