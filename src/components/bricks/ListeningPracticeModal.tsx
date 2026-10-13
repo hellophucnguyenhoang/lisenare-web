@@ -27,17 +27,28 @@ interface ListeningPracticeModalProps {
 
 const PLAYBACK_SPEEDS = [0.8, 1.0, 1.2] as const;
 
-/**
- * Modern Fisher-Yates array shuffle
- */
-function shuffleArray<T>(array: T[]): T[] {
-  const result = [...array];
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
 }
+
+const getStorageBool = (key: string) => {
+  try {
+    return localStorage.getItem(key) === "true";
+  } catch {
+    return false;
+  }
+};
+
+const setStorageBool = (key: string, val: boolean) => {
+  try {
+    localStorage.setItem(key, String(val));
+  } catch {}
+};
 
 export default function ListeningPracticeModal({
   isOpen,
@@ -47,23 +58,12 @@ export default function ListeningPracticeModal({
 }: ListeningPracticeModalProps) {
   const [playbackMode, setPlaybackMode] =
     useState<ListeningPlaybackMode>("auto");
-
-  // Persistent user preferences
-  const [shuffleEnabled, setShuffleEnabled] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem("listening_shuffle") === "true";
-    } catch {
-      return false;
-    }
-  });
-
-  const [autoPlayAgain, setAutoPlayAgain] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem("listening_auto_play_again") === "true";
-    } catch {
-      return false;
-    }
-  });
+  const [shuffleEnabled, setShuffleEnabled] = useState(() =>
+    getStorageBool("listening_shuffle"),
+  );
+  const [autoPlayAgain, setAutoPlayAgain] = useState(() =>
+    getStorageBool("listening_auto_play_again"),
+  );
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [order, setOrder] = useState<number[]>([]);
@@ -73,11 +73,8 @@ export default function ListeningPracticeModal({
   const [hasUserStarted, setHasUserStarted] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const autoAdvanceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch listening bricks with infinite pagination under the hood
   const {
     data,
     isLoading,
@@ -95,76 +92,62 @@ export default function ListeningPracticeModal({
     isOpen,
   );
 
-  // Flatten raw items across all loaded pages
   const rawItems: BrickListeningData[] = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
   );
-
   const totalCount = data?.pages[0]?.total ?? rawItems.length;
 
-  // Synchronize playback order indices with rawItems
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // Keep order synchronized with loaded rawItems
   useEffect(() => {
     if (rawItems.length === 0) {
       setOrder([]);
       return;
     }
-
-    setOrder((prevOrder) => {
-      // First load or query reset
-      if (prevOrder.length === 0) {
-        const indices = Array.from({ length: rawItems.length }, (_, i) => i);
-        return shuffleEnabled ? shuffleArray(indices) : indices;
+    setOrder((prev) => {
+      if (prev.length === 0) {
+        const idxs = Array.from({ length: rawItems.length }, (_, i) => i);
+        return shuffleEnabled ? shuffle(idxs) : idxs;
       }
-
-      // Appending newly fetched pages from infinite query
-      if (rawItems.length > prevOrder.length) {
-        const addedIndices = Array.from(
-          { length: rawItems.length - prevOrder.length },
-          (_, i) => prevOrder.length + i,
+      if (rawItems.length > prev.length) {
+        const added = Array.from(
+          { length: rawItems.length - prev.length },
+          (_, i) => prev.length + i,
         );
-
-        if (shuffleEnabled) {
-          return [...prevOrder, ...shuffleArray(addedIndices)];
-        }
-        return [...prevOrder, ...addedIndices];
+        return [...prev, ...(shuffleEnabled ? shuffle(added) : added)];
       }
-
-      // If items shrank (e.g. filter changed)
-      if (rawItems.length < prevOrder.length) {
-        const valid = prevOrder.filter((i) => i < rawItems.length);
-        return valid.length === rawItems.length
-          ? valid
-          : Array.from({ length: rawItems.length }, (_, i) => i);
-      }
-
-      return prevOrder;
+      return prev.filter((i) => i < rawItems.length);
     });
   }, [rawItems.length, shuffleEnabled]);
 
-  // Current active brick determined by order mapping
-  const currentBrick = useMemo(() => {
-    if (order.length === 0 || rawItems.length === 0) return undefined;
-    const rawIdx = order[currentIndex];
-    return rawIdx !== undefined ? rawItems[rawIdx] : undefined;
-  }, [order, currentIndex, rawItems]);
+  const currentBrick = useMemo(
+    () =>
+      order.length > 0 && order[currentIndex] !== undefined
+        ? rawItems[order[currentIndex]]
+        : undefined,
+    [order, currentIndex, rawItems],
+  );
 
-  // Initialize and clean up audio element
+  // Audio setup and cleanup
   useEffect(() => {
     const audio = new Audio();
     audioRef.current = audio;
-
     return () => {
       audio.pause();
       audio.src = "";
       audioRef.current = null;
-      if (autoAdvanceTimeoutRef.current) {
-        clearTimeout(autoAdvanceTimeoutRef.current);
-      }
+      clearTimer();
     };
   }, []);
 
-  // Reset state when opening modal
+  // Modal open/close reset
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(0);
@@ -172,26 +155,150 @@ export default function ListeningPracticeModal({
       setIsFinishedSession(false);
       setHasUserStarted(false);
     } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
-      if (autoAdvanceTimeoutRef.current) {
-        clearTimeout(autoAdvanceTimeoutRef.current);
-      }
+      audioRef.current?.pause();
+      if (audioRef.current) audioRef.current.src = "";
+      clearTimer();
       setIsPlaying(false);
     }
   }, [isOpen]);
 
-  // Stop auto-advance timer helper
-  const clearAutoAdvanceTimer = useCallback(() => {
-    if (autoAdvanceTimeoutRef.current) {
-      clearTimeout(autoAdvanceTimeoutRef.current);
-      autoAdvanceTimeoutRef.current = null;
-    }
-  }, []);
+  // Audio play helper
+  const playAudio = useCallback(
+    (brick?: BrickListeningData) => {
+      clearTimer();
+      if (!audioRef.current || !brick?.audio_path) return;
+      const audio = audioRef.current;
+      const url = resolveAudioUrl(brick.audio_path);
+      if (audio.src !== url) audio.src = url;
+      audio.playbackRate = playbackSpeed;
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setHasUserStarted(true);
+        })
+        .catch(() => setIsPlaying(false));
+    },
+    [playbackSpeed],
+  );
 
-  // Background prefetch next page when approaching end of loaded items
+  // Loop session
+  const loopSession = useCallback(() => {
+    clearTimer();
+    setIsFinishedSession(false);
+    setHasUserStarted(true);
+    if (rawItems.length === 0) return;
+
+    let newOrder = Array.from({ length: rawItems.length }, (_, i) => i);
+    if (shuffleEnabled && rawItems.length > 1) {
+      const lastRawIdx = order[currentIndex];
+      newOrder = shuffle(newOrder);
+      if (newOrder[0] === lastRawIdx) {
+        const swap = Math.floor(Math.random() * (newOrder.length - 1)) + 1;
+        [newOrder[0], newOrder[swap]] = [newOrder[swap], newOrder[0]];
+      }
+    }
+    setOrder(newOrder);
+    if (currentIndex === 0) playAudio(rawItems[newOrder[0]]);
+    else setCurrentIndex(0);
+  }, [shuffleEnabled, rawItems, order, currentIndex, playAudio]);
+
+  // Move next
+  const handleNext = useCallback(() => {
+    clearTimer();
+    if (currentIndex < order.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+      setHasUserStarted(true);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage().then((res) => {
+        const total = res.data?.pages.flatMap((p) => p.items).length ?? 0;
+        if (total > rawItems.length) {
+          setCurrentIndex((prev) => prev + 1);
+          setHasUserStarted(true);
+        } else if (autoPlayAgain && rawItems.length > 0) {
+          loopSession();
+        } else {
+          setIsPlaying(false);
+          setIsFinishedSession(true);
+        }
+      });
+    } else if (autoPlayAgain && rawItems.length > 0) {
+      loopSession();
+    } else {
+      setIsPlaying(false);
+      setIsFinishedSession(true);
+      audioRef.current?.pause();
+    }
+  }, [
+    currentIndex,
+    order.length,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rawItems.length,
+    autoPlayAgain,
+    loopSession,
+  ]);
+
+  const handlePrevious = () => {
+    clearTimer();
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+      setIsFinishedSession(false);
+      setHasUserStarted(true);
+    }
+  };
+
+  const handlePause = () => {
+    clearTimer();
+    audioRef.current?.pause();
+    setIsPlaying(false);
+  };
+
+  const handleTogglePlay = () => {
+    if (isPlaying) handlePause();
+    else if (isFinishedSession) loopSession();
+    else if (currentBrick) playAudio(currentBrick);
+  };
+
+  const handleReplay = () => {
+    clearTimer();
+    if (!audioRef.current || !currentBrick) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.playbackRate = playbackSpeed;
+    audioRef.current
+      .play()
+      .then(() => setIsPlaying(true))
+      .catch(() => setIsPlaying(false));
+  };
+
+  const handleToggleShuffle = () => {
+    const next = !shuffleEnabled;
+    setShuffleEnabled(next);
+    setStorageBool("listening_shuffle", next);
+    if (rawItems.length > 0) {
+      const currentRaw = order[currentIndex] ?? 0;
+      if (next) {
+        const rest = Array.from(
+          { length: rawItems.length },
+          (_, i) => i,
+        ).filter((i) => i !== currentRaw);
+        setOrder([currentRaw, ...shuffle(rest)]);
+        setCurrentIndex(0);
+      } else {
+        setOrder(Array.from({ length: rawItems.length }, (_, i) => i));
+        setCurrentIndex(currentRaw);
+      }
+    }
+  };
+
+  const handleToggleAutoPlayAgain = () => {
+    const next = !autoPlayAgain;
+    setAutoPlayAgain(next);
+    setStorageBool("listening_auto_play_again", next);
+  };
+
+  // Prefetch when near end
   useEffect(() => {
     if (
       isOpen &&
@@ -212,288 +319,51 @@ export default function ListeningPracticeModal({
     fetchNextPage,
   ]);
 
-  // Play audio for a specific brick
-  const playAudioForBrick = useCallback(
-    (brick: BrickListeningData | undefined) => {
-      clearAutoAdvanceTimer();
-      if (!audioRef.current || !brick?.audio_path) return;
-
-      const audio = audioRef.current;
-      const resolvedUrl = resolveAudioUrl(brick.audio_path);
-
-      if (audio.src !== resolvedUrl) {
-        audio.src = resolvedUrl;
-      }
-      audio.playbackRate = playbackSpeed;
-
-      audio
-        .play()
-        .then(() => {
-          setIsPlaying(true);
-          setHasUserStarted(true);
-        })
-        .catch((err) => {
-          if (err?.name !== "AbortError") {
-            console.warn("Audio play rejected:", err);
-          }
-          setIsPlaying(false);
-        });
-    },
-    [clearAutoAdvanceTimer, playbackSpeed],
-  );
-
-  // Restart / Loop the session automatically
-  const loopSession = useCallback(() => {
-    clearAutoAdvanceTimer();
-    setIsFinishedSession(false);
-    setHasUserStarted(true);
-
-    if (rawItems.length === 0) return;
-
-    if (shuffleEnabled && rawItems.length > 1) {
-      // Unpredictable new order for this loop cycle
-      const lastRawIdx = order[currentIndex];
-      let newOrder = shuffleArray(
-        Array.from({ length: rawItems.length }, (_, i) => i),
-      );
-
-      // Ensure the first brick in the new loop is not the exact same brick just finished
-      if (newOrder[0] === lastRawIdx && newOrder.length > 1) {
-        const swapIdx = Math.floor(Math.random() * (newOrder.length - 1)) + 1;
-        [newOrder[0], newOrder[swapIdx]] = [newOrder[swapIdx], newOrder[0]];
-      }
-
-      setOrder(newOrder);
-      if (currentIndex === 0) {
-        playAudioForBrick(rawItems[newOrder[0]]);
-      } else {
-        setCurrentIndex(0);
-      }
-    } else {
-      // Sequential loop (same original order)
-      const sequentialOrder = Array.from(
-        { length: rawItems.length },
-        (_, i) => i,
-      );
-      setOrder(sequentialOrder);
-      if (currentIndex === 0) {
-        playAudioForBrick(rawItems[sequentialOrder[0]]);
-      } else {
-        setCurrentIndex(0);
-      }
-    }
-  }, [
-    clearAutoAdvanceTimer,
-    shuffleEnabled,
-    rawItems,
-    order,
-    currentIndex,
-    playAudioForBrick,
-  ]);
-
-  // Move to next brick
-  const handleNext = useCallback(() => {
-    clearAutoAdvanceTimer();
-
-    if (currentIndex < order.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      setHasUserStarted(true);
-    } else if (hasNextPage && !isFetchingNextPage) {
-      // More items are available on backend: fetch and advance
-      void fetchNextPage().then((res) => {
-        const pages = res.data?.pages ?? [];
-        const allLoaded = pages.flatMap((p) => p.items);
-        if (allLoaded.length > rawItems.length) {
-          setCurrentIndex((prev) => prev + 1);
-          setHasUserStarted(true);
-        } else if (autoPlayAgain && rawItems.length > 0) {
-          loopSession();
-        } else {
-          setIsPlaying(false);
-          setIsFinishedSession(true);
-        }
-      });
-    } else {
-      // Reached the end of all available bricks
-      if (autoPlayAgain && rawItems.length > 0) {
-        loopSession();
-      } else {
-        setIsPlaying(false);
-        setIsFinishedSession(true);
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
-      }
-    }
-  }, [
-    clearAutoAdvanceTimer,
-    currentIndex,
-    order.length,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    rawItems.length,
-    autoPlayAgain,
-    loopSession,
-  ]);
-
-  // Move to previous brick
-  const handlePrevious = useCallback(() => {
-    clearAutoAdvanceTimer();
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
-      setIsFinishedSession(false);
-      setHasUserStarted(true);
-    }
-  }, [clearAutoAdvanceTimer, currentIndex]);
-
-  // Pause playback
-  const handlePause = useCallback(() => {
-    clearAutoAdvanceTimer();
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-    setIsPlaying(false);
-  }, [clearAutoAdvanceTimer]);
-
-  // Toggle play/pause
-  const handleTogglePlay = useCallback(() => {
-    if (isPlaying) {
-      handlePause();
-    } else {
-      if (isFinishedSession) {
-        loopSession();
-      } else if (currentBrick) {
-        playAudioForBrick(currentBrick);
-      }
-    }
-  }, [isPlaying, isFinishedSession, handlePause, loopSession, currentBrick, playAudioForBrick]);
-
-  // Replay current brick from start
-  const handleReplay = useCallback(() => {
-    clearAutoAdvanceTimer();
-    if (!audioRef.current || !currentBrick) return;
-    audioRef.current.currentTime = 0;
-    audioRef.current.playbackRate = playbackSpeed;
-    audioRef.current
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false));
-  }, [clearAutoAdvanceTimer, currentBrick, playbackSpeed]);
-
-  // Toggle Shuffle with seamless order transition
-  const handleToggleShuffle = useCallback(() => {
-    setShuffleEnabled((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("listening_shuffle", String(next));
-      } catch {
-        // Ignore storage errors
-      }
-
-      if (rawItems.length > 0) {
-        const currentRawIdx = order[currentIndex] ?? 0;
-
-        if (next) {
-          // Shuffle ON: keep current brick at index 0, randomize upcoming items
-          const remaining = Array.from(
-            { length: rawItems.length },
-            (_, i) => i,
-          ).filter((i) => i !== currentRawIdx);
-          setOrder([currentRawIdx, ...shuffleArray(remaining)]);
-          setCurrentIndex(0);
-        } else {
-          // Shuffle OFF: restore original sequential order, keep current brick active
-          const sequential = Array.from(
-            { length: rawItems.length },
-            (_, i) => i,
-          );
-          setOrder(sequential);
-          setCurrentIndex(currentRawIdx);
-        }
-      }
-
-      return next;
-    });
-  }, [rawItems.length, order, currentIndex]);
-
-  // Toggle Auto Play Again preference
-  const handleToggleAutoPlayAgain = useCallback(() => {
-    setAutoPlayAgain((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("listening_auto_play_again", String(next));
-      } catch {
-        // Ignore storage errors
-      }
-      return next;
-    });
-  }, []);
-
-  // Listen to audio element ended and error events
+  // Audio ended listener
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    const handleEnded = () => {
+    const onEnded = () => {
       setIsPlaying(false);
-
-      if (playbackMode === "auto") {
-        // Smooth breathing interval before auto-advancing to the next brick
-        autoAdvanceTimeoutRef.current = setTimeout(() => {
-          handleNext();
-        }, 850);
-      }
+      if (playbackMode === "auto")
+        timerRef.current = setTimeout(handleNext, 850);
     };
-
-    const handleError = () => {
-      setIsPlaying(false);
-    };
-
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("error", handleError);
-
+    const onError = () => setIsPlaying(false);
+    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("error", onError);
     return () => {
-      audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("error", handleError);
+      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("error", onError);
     };
   }, [playbackMode, handleNext]);
 
-  // Trigger audio playback whenever current brick updates
+  // Autoplay on current brick change
   useEffect(() => {
     if (!isOpen || !currentBrick || isFinishedSession) return;
-
-    if (hasUserStarted || playbackMode === "auto") {
-      playAudioForBrick(currentBrick);
-    }
+    if (hasUserStarted || playbackMode === "auto") playAudio(currentBrick);
   }, [
     isOpen,
     currentBrick,
-    playAudioForBrick,
+    playAudio,
     hasUserStarted,
     playbackMode,
     isFinishedSession,
   ]);
 
-  // Keep audio playbackRate in sync
+  // Playback speed sync
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.playbackRate = playbackSpeed;
-    }
+    if (audioRef.current) audioRef.current.playbackRate = playbackSpeed;
   }, [playbackSpeed]);
 
-  // Global keyboard shortcuts
+  // Keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
-      ) {
+      )
         return;
-      }
-
       if (e.code === "Space") {
         e.preventDefault();
         handleTogglePlay();
@@ -514,17 +384,24 @@ export default function ListeningPracticeModal({
         onClose();
       }
     };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [
     isOpen,
-    handleTogglePlay,
+    isPlaying,
+    isFinishedSession,
+    currentBrick,
+    currentIndex,
+    order,
+    hasNextPage,
+    isFetchingNextPage,
+    rawItems,
+    autoPlayAgain,
+    loopSession,
     handleNext,
-    handlePrevious,
-    handleReplay,
-    handleToggleShuffle,
     onClose,
+    playAudio,
+    shuffleEnabled,
   ]);
 
   if (!isOpen) return null;
@@ -565,7 +442,6 @@ export default function ListeningPracticeModal({
           </div>
 
           <div className="flex items-center gap-1">
-            {/* Auto play again (repeat/loop) toggle */}
             <button
               type="button"
               onClick={handleToggleAutoPlayAgain}
@@ -586,7 +462,6 @@ export default function ListeningPracticeModal({
               <Repeat className="w-4 h-4" />
             </button>
 
-            {/* Shuffle toggle */}
             <button
               type="button"
               onClick={handleToggleShuffle}
@@ -605,7 +480,6 @@ export default function ListeningPracticeModal({
               <Shuffle className="w-4 h-4" />
             </button>
 
-            {/* Close button */}
             <button
               type="button"
               onClick={onClose}
@@ -617,40 +491,29 @@ export default function ListeningPracticeModal({
           </div>
         </div>
 
-        {/* Playback Mode Switcher Toggle */}
+        {/* Playback Mode Switcher */}
         <div className="px-5 pt-3.5 pb-2 flex items-center justify-between gap-2 border-b border-outline-variant/20 bg-surface-container-lowest">
           <span className="text-[11px] font-semibold text-outline uppercase tracking-wider">
             Mode
           </span>
           <div className="inline-flex p-0.5 rounded-xl bg-surface-container border border-outline-variant/40">
-            <button
-              type="button"
-              onClick={() => {
-                setPlaybackMode("auto");
-                clearAutoAdvanceTimer();
-              }}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                playbackMode === "auto"
-                  ? "bg-surface-container-lowest text-primary shadow-xs"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              Auto-Play
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setPlaybackMode("manual");
-                clearAutoAdvanceTimer();
-              }}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                playbackMode === "manual"
-                  ? "bg-surface-container-lowest text-primary shadow-xs"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-            >
-              Manual Step
-            </button>
+            {(["auto", "manual"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => {
+                  setPlaybackMode(mode);
+                  clearTimer();
+                }}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  playbackMode === mode
+                    ? "bg-surface-container-lowest text-primary shadow-xs"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                {mode === "auto" ? "Auto-Play" : "Manual Step"}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -659,11 +522,7 @@ export default function ListeningPracticeModal({
           <div
             className="bg-primary h-full transition-all duration-300 ease-out"
             style={{
-              width: `${
-                totalCount > 0
-                  ? Math.min(100, ((currentIndex + 1) / totalCount) * 100)
-                  : 0
-              }%`,
+              width: `${totalCount > 0 ? Math.min(100, ((currentIndex + 1) / totalCount) * 100) : 0}%`,
             }}
           />
         </div>
@@ -729,7 +588,7 @@ export default function ListeningPracticeModal({
             </div>
           ) : (
             <div className="w-full space-y-6 animate-in fade-in duration-150">
-              {/* Sound wave visualizer pill */}
+              {/* Sound visualizer pill */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-xs font-semibold text-on-surface-variant">
                 {isPlaying ? (
                   <>
@@ -758,13 +617,11 @@ export default function ListeningPracticeModal({
                 )}
               </div>
 
-              {/* Target Text (Simultaneously displayed) */}
+              {/* Target & Native Text simultaneously */}
               <div className="space-y-3">
                 <h3 className="text-2xl sm:text-3xl font-extrabold font-display text-on-surface leading-tight tracking-tight select-text">
                   {currentBrick?.target_text}
                 </h3>
-
-                {/* Native Text (Simultaneously displayed) */}
                 <p className="text-base sm:text-lg font-medium text-on-surface-variant italic leading-relaxed select-text">
                   {currentBrick?.native_text}
                 </p>
@@ -774,98 +631,96 @@ export default function ListeningPracticeModal({
         </div>
 
         {/* Bottom Control Bar */}
-        {!isLoading && !isError && rawItems.length > 0 && !isFinishedSession && (
-          <div className="p-4 sm:p-5 border-t border-outline-variant/30 bg-surface-container-low/40 flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              {/* Speed selector */}
-              <div className="flex items-center gap-1">
-                {PLAYBACK_SPEEDS.map((speed) => (
+        {!isLoading &&
+          !isError &&
+          rawItems.length > 0 &&
+          !isFinishedSession && (
+            <div className="p-4 sm:p-5 border-t border-outline-variant/30 bg-surface-container-low/40 flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                {/* Speed selector */}
+                <div className="flex items-center gap-1">
+                  {PLAYBACK_SPEEDS.map((speed) => (
+                    <button
+                      key={speed}
+                      type="button"
+                      onClick={() => setPlaybackSpeed(speed)}
+                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                        playbackSpeed === speed
+                          ? "bg-primary text-on-primary shadow-2xs"
+                          : "text-outline hover:text-on-surface bg-surface-container"
+                      }`}
+                      title={`Playback speed ${speed}x`}
+                    >
+                      {speed}x
+                    </button>
+                  ))}
+                </div>
+
+                {/* Transport Buttons */}
+                <div className="flex items-center gap-2 sm:gap-3">
                   <button
-                    key={speed}
                     type="button"
-                    onClick={() => setPlaybackSpeed(speed)}
-                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
-                      playbackSpeed === speed
-                        ? "bg-primary text-on-primary shadow-2xs"
-                        : "text-outline hover:text-on-surface bg-surface-container"
-                    }`}
-                    title={`Playback speed ${speed}x`}
+                    onClick={handlePrevious}
+                    disabled={currentIndex === 0}
+                    className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    title="Previous brick (Left Arrow)"
+                    aria-label="Previous brick"
                   >
-                    {speed}x
+                    <SkipBack className="w-5 h-5" />
                   </button>
-                ))}
+
+                  <button
+                    type="button"
+                    onClick={handleTogglePlay}
+                    className="w-13 h-13 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md hover:bg-primary/95 active:scale-95 transition-all cursor-pointer"
+                    title={isPlaying ? "Pause (Space)" : "Play audio (Space)"}
+                    aria-label={isPlaying ? "Pause" : "Play"}
+                  >
+                    {isPlaying ? (
+                      <Pause className="w-6 h-6 fill-current" />
+                    ) : (
+                      <Play className="w-6 h-6 fill-current ml-0.5" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    disabled={
+                      !autoPlayAgain &&
+                      !hasNextPage &&
+                      currentIndex >= order.length - 1
+                    }
+                    className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    title="Next brick (Right Arrow)"
+                    aria-label="Next brick"
+                  >
+                    <SkipForward className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Replay button */}
+                <div className="flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={handleReplay}
+                    className="p-2.5 rounded-xl text-outline hover:text-primary hover:bg-surface-container active:scale-95 transition-all cursor-pointer"
+                    title="Replay current audio (R)"
+                    aria-label="Replay current audio"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              {/* Main Player Transport Buttons */}
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Previous Brick */}
-                <button
-                  type="button"
-                  onClick={handlePrevious}
-                  disabled={currentIndex === 0}
-                  className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                  title="Previous brick (Left Arrow)"
-                  aria-label="Previous brick"
-                >
-                  <SkipBack className="w-5 h-5" />
-                </button>
-
-                {/* Play / Pause Toggle */}
-                <button
-                  type="button"
-                  onClick={handleTogglePlay}
-                  className="w-13 h-13 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md hover:bg-primary/95 active:scale-95 transition-all cursor-pointer"
-                  title={
-                    isPlaying ? "Pause (Space)" : "Play audio (Space)"
-                  }
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                >
-                  {isPlaying ? (
-                    <Pause className="w-6 h-6 fill-current" />
-                  ) : (
-                    <Play className="w-6 h-6 fill-current ml-0.5" />
-                  )}
-                </button>
-
-                {/* Next Brick */}
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={
-                    !autoPlayAgain &&
-                    !hasNextPage &&
-                    currentIndex >= order.length - 1
-                  }
-                  className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                  title="Next brick (Right Arrow)"
-                  aria-label="Next brick"
-                >
-                  <SkipForward className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Replay current brick button */}
-              <div className="flex items-center justify-end">
-                <button
-                  type="button"
-                  onClick={handleReplay}
-                  className="p-2.5 rounded-xl text-outline hover:text-primary hover:bg-surface-container active:scale-95 transition-all cursor-pointer"
-                  title="Replay current audio (R)"
-                  aria-label="Replay current audio"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
+              {/* Hint bar */}
+              <div className="text-[10px] text-outline/80 text-center select-none hidden sm:block">
+                {playbackMode === "auto"
+                  ? "Auto-advancing upon audio completion • Space to pause • S to shuffle"
+                  : "Manual mode • Press Next or Right Arrow to advance • Space to play"}
               </div>
             </div>
-
-            {/* Hint bar */}
-            <div className="text-[10px] text-outline/80 text-center select-none hidden sm:block">
-              {playbackMode === "auto"
-                ? "Auto-advancing upon audio completion • Space to pause • S to shuffle"
-                : "Manual mode • Press Next or Right Arrow to advance • Space to play"}
-            </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );
