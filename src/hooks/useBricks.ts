@@ -232,7 +232,7 @@ export function useInfiniteListeningBricks(
       getListeningBricks({ ...params, offset: pageParam, limit }),
     initialPageParam: 0,
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: params?.shuffle_page ? 0 : 60 * 1000,
     getNextPageParam: (lastPage, allPages) => {
       const totalFetched = allPages.reduce(
         (sum, p) => sum + p.items.length,

@@ -8,6 +8,7 @@ import {
   SkipBack,
   Headphones,
   Shuffle,
+  Repeat,
   Volume2,
   CheckCircle2,
 } from "lucide-react";
@@ -26,6 +27,18 @@ interface ListeningPracticeModalProps {
 
 const PLAYBACK_SPEEDS = [0.8, 1.0, 1.2] as const;
 
+/**
+ * Modern Fisher-Yates array shuffle
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export default function ListeningPracticeModal({
   isOpen,
   onClose,
@@ -34,8 +47,26 @@ export default function ListeningPracticeModal({
 }: ListeningPracticeModalProps) {
   const [playbackMode, setPlaybackMode] =
     useState<ListeningPlaybackMode>("auto");
-  const [shufflePage, setShufflePage] = useState(false);
+
+  // Persistent user preferences
+  const [shuffleEnabled, setShuffleEnabled] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("listening_shuffle") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const [autoPlayAgain, setAutoPlayAgain] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("listening_auto_play_again") === "true";
+    } catch {
+      return false;
+    }
+  });
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [order, setOrder] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [isFinishedSession, setIsFinishedSession] = useState(false);
@@ -59,19 +90,64 @@ export default function ListeningPracticeModal({
     {
       collection_ids: collectionId ? [collectionId] : undefined,
       limit: 15,
-      shuffle_page: shufflePage,
+      shuffle_page: shuffleEnabled,
     },
     isOpen,
   );
 
-  // Flatten items across all pages
-  const items: BrickListeningData[] = useMemo(
+  // Flatten raw items across all loaded pages
+  const rawItems: BrickListeningData[] = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data],
   );
 
-  const totalCount = data?.pages[0]?.total ?? items.length;
-  const currentBrick = items[currentIndex];
+  const totalCount = data?.pages[0]?.total ?? rawItems.length;
+
+  // Synchronize playback order indices with rawItems
+  useEffect(() => {
+    if (rawItems.length === 0) {
+      setOrder([]);
+      return;
+    }
+
+    setOrder((prevOrder) => {
+      // First load or query reset
+      if (prevOrder.length === 0) {
+        const indices = Array.from({ length: rawItems.length }, (_, i) => i);
+        return shuffleEnabled ? shuffleArray(indices) : indices;
+      }
+
+      // Appending newly fetched pages from infinite query
+      if (rawItems.length > prevOrder.length) {
+        const addedIndices = Array.from(
+          { length: rawItems.length - prevOrder.length },
+          (_, i) => prevOrder.length + i,
+        );
+
+        if (shuffleEnabled) {
+          return [...prevOrder, ...shuffleArray(addedIndices)];
+        }
+        return [...prevOrder, ...addedIndices];
+      }
+
+      // If items shrank (e.g. filter changed)
+      if (rawItems.length < prevOrder.length) {
+        const valid = prevOrder.filter((i) => i < rawItems.length);
+        return valid.length === rawItems.length
+          ? valid
+          : Array.from({ length: rawItems.length }, (_, i) => i);
+      }
+
+      return prevOrder;
+    });
+  }, [rawItems.length, shuffleEnabled]);
+
+  // Current active brick determined by order mapping
+  const currentBrick = useMemo(() => {
+    if (order.length === 0 || rawItems.length === 0) return undefined;
+    const rawIdx = order[currentIndex];
+    return rawIdx !== undefined ? rawItems[rawIdx] : undefined;
+  }, [order, currentIndex, rawItems]);
 
   // Initialize and clean up audio element
   useEffect(() => {
@@ -107,19 +183,6 @@ export default function ListeningPracticeModal({
     }
   }, [isOpen]);
 
-  // Prefetch next page in the background when approaching the end of loaded items
-  useEffect(() => {
-    if (
-      isOpen &&
-      hasNextPage &&
-      !isFetchingNextPage &&
-      items.length > 0 &&
-      currentIndex >= items.length - 3
-    ) {
-      void fetchNextPage();
-    }
-  }, [isOpen, currentIndex, items.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
   // Stop auto-advance timer helper
   const clearAutoAdvanceTimer = useCallback(() => {
     if (autoAdvanceTimeoutRef.current) {
@@ -128,28 +191,151 @@ export default function ListeningPracticeModal({
     }
   }, []);
 
+  // Background prefetch next page when approaching end of loaded items
+  useEffect(() => {
+    if (
+      isOpen &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      rawItems.length > 0 &&
+      currentIndex >= order.length - 3
+    ) {
+      void fetchNextPage();
+    }
+  }, [
+    isOpen,
+    currentIndex,
+    order.length,
+    rawItems.length,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  ]);
+
+  // Play audio for a specific brick
+  const playAudioForBrick = useCallback(
+    (brick: BrickListeningData | undefined) => {
+      clearAutoAdvanceTimer();
+      if (!audioRef.current || !brick?.audio_path) return;
+
+      const audio = audioRef.current;
+      const resolvedUrl = resolveAudioUrl(brick.audio_path);
+
+      if (audio.src !== resolvedUrl) {
+        audio.src = resolvedUrl;
+      }
+      audio.playbackRate = playbackSpeed;
+
+      audio
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setHasUserStarted(true);
+        })
+        .catch((err) => {
+          if (err?.name !== "AbortError") {
+            console.warn("Audio play rejected:", err);
+          }
+          setIsPlaying(false);
+        });
+    },
+    [clearAutoAdvanceTimer, playbackSpeed],
+  );
+
+  // Restart / Loop the session automatically
+  const loopSession = useCallback(() => {
+    clearAutoAdvanceTimer();
+    setIsFinishedSession(false);
+    setHasUserStarted(true);
+
+    if (rawItems.length === 0) return;
+
+    if (shuffleEnabled && rawItems.length > 1) {
+      // Unpredictable new order for this loop cycle
+      const lastRawIdx = order[currentIndex];
+      let newOrder = shuffleArray(
+        Array.from({ length: rawItems.length }, (_, i) => i),
+      );
+
+      // Ensure the first brick in the new loop is not the exact same brick just finished
+      if (newOrder[0] === lastRawIdx && newOrder.length > 1) {
+        const swapIdx = Math.floor(Math.random() * (newOrder.length - 1)) + 1;
+        [newOrder[0], newOrder[swapIdx]] = [newOrder[swapIdx], newOrder[0]];
+      }
+
+      setOrder(newOrder);
+      if (currentIndex === 0) {
+        playAudioForBrick(rawItems[newOrder[0]]);
+      } else {
+        setCurrentIndex(0);
+      }
+    } else {
+      // Sequential loop (same original order)
+      const sequentialOrder = Array.from(
+        { length: rawItems.length },
+        (_, i) => i,
+      );
+      setOrder(sequentialOrder);
+      if (currentIndex === 0) {
+        playAudioForBrick(rawItems[sequentialOrder[0]]);
+      } else {
+        setCurrentIndex(0);
+      }
+    }
+  }, [
+    clearAutoAdvanceTimer,
+    shuffleEnabled,
+    rawItems,
+    order,
+    currentIndex,
+    playAudioForBrick,
+  ]);
+
   // Move to next brick
   const handleNext = useCallback(() => {
     clearAutoAdvanceTimer();
 
-    if (currentIndex < items.length - 1) {
+    if (currentIndex < order.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setHasUserStarted(true);
-    } else if (hasNextPage) {
-      // Trigger fetch and advance if already available or soon available
-      void fetchNextPage().then(() => {
-        setCurrentIndex((prev) => prev + 1);
-        setHasUserStarted(true);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      // More items are available on backend: fetch and advance
+      void fetchNextPage().then((res) => {
+        const pages = res.data?.pages ?? [];
+        const allLoaded = pages.flatMap((p) => p.items);
+        if (allLoaded.length > rawItems.length) {
+          setCurrentIndex((prev) => prev + 1);
+          setHasUserStarted(true);
+        } else if (autoPlayAgain && rawItems.length > 0) {
+          loopSession();
+        } else {
+          setIsPlaying(false);
+          setIsFinishedSession(true);
+        }
       });
     } else {
-      // Finished all bricks
-      setIsPlaying(false);
-      setIsFinishedSession(true);
-      if (audioRef.current) {
-        audioRef.current.pause();
+      // Reached the end of all available bricks
+      if (autoPlayAgain && rawItems.length > 0) {
+        loopSession();
+      } else {
+        setIsPlaying(false);
+        setIsFinishedSession(true);
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
       }
     }
-  }, [clearAutoAdvanceTimer, currentIndex, items.length, hasNextPage, fetchNextPage]);
+  }, [
+    clearAutoAdvanceTimer,
+    currentIndex,
+    order.length,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    rawItems.length,
+    autoPlayAgain,
+    loopSession,
+  ]);
 
   // Move to previous brick
   const handlePrevious = useCallback(() => {
@@ -160,33 +346,6 @@ export default function ListeningPracticeModal({
       setHasUserStarted(true);
     }
   }, [clearAutoAdvanceTimer, currentIndex]);
-
-  // Play current brick's audio
-  const playCurrentAudio = useCallback(() => {
-    clearAutoAdvanceTimer();
-    if (!audioRef.current || !currentBrick?.audio_path) return;
-
-    const audio = audioRef.current;
-    const resolvedUrl = resolveAudioUrl(currentBrick.audio_path);
-
-    if (audio.src !== resolvedUrl) {
-      audio.src = resolvedUrl;
-    }
-    audio.playbackRate = playbackSpeed;
-
-    audio
-      .play()
-      .then(() => {
-        setIsPlaying(true);
-        setHasUserStarted(true);
-      })
-      .catch((err) => {
-        if (err?.name !== "AbortError") {
-          console.warn("Audio play rejected:", err);
-        }
-        setIsPlaying(false);
-      });
-  }, [clearAutoAdvanceTimer, currentBrick, playbackSpeed]);
 
   // Pause playback
   const handlePause = useCallback(() => {
@@ -203,12 +362,12 @@ export default function ListeningPracticeModal({
       handlePause();
     } else {
       if (isFinishedSession) {
-        setIsFinishedSession(false);
-        setCurrentIndex(0);
+        loopSession();
+      } else if (currentBrick) {
+        playAudioForBrick(currentBrick);
       }
-      playCurrentAudio();
     }
-  }, [isPlaying, isFinishedSession, handlePause, playCurrentAudio]);
+  }, [isPlaying, isFinishedSession, handlePause, loopSession, currentBrick, playAudioForBrick]);
 
   // Replay current brick from start
   const handleReplay = useCallback(() => {
@@ -222,6 +381,55 @@ export default function ListeningPracticeModal({
       .catch(() => setIsPlaying(false));
   }, [clearAutoAdvanceTimer, currentBrick, playbackSpeed]);
 
+  // Toggle Shuffle with seamless order transition
+  const handleToggleShuffle = useCallback(() => {
+    setShuffleEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("listening_shuffle", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+
+      if (rawItems.length > 0) {
+        const currentRawIdx = order[currentIndex] ?? 0;
+
+        if (next) {
+          // Shuffle ON: keep current brick at index 0, randomize upcoming items
+          const remaining = Array.from(
+            { length: rawItems.length },
+            (_, i) => i,
+          ).filter((i) => i !== currentRawIdx);
+          setOrder([currentRawIdx, ...shuffleArray(remaining)]);
+          setCurrentIndex(0);
+        } else {
+          // Shuffle OFF: restore original sequential order, keep current brick active
+          const sequential = Array.from(
+            { length: rawItems.length },
+            (_, i) => i,
+          );
+          setOrder(sequential);
+          setCurrentIndex(currentRawIdx);
+        }
+      }
+
+      return next;
+    });
+  }, [rawItems.length, order, currentIndex]);
+
+  // Toggle Auto Play Again preference
+  const handleToggleAutoPlayAgain = useCallback(() => {
+    setAutoPlayAgain((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("listening_auto_play_again", String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  }, []);
+
   // Listen to audio element ended and error events
   useEffect(() => {
     const audio = audioRef.current;
@@ -231,7 +439,7 @@ export default function ListeningPracticeModal({
       setIsPlaying(false);
 
       if (playbackMode === "auto") {
-        // Wait a small, pleasant interval before auto-advancing to the next brick
+        // Smooth breathing interval before auto-advancing to the next brick
         autoAdvanceTimeoutRef.current = setTimeout(() => {
           handleNext();
         }, 850);
@@ -251,23 +459,30 @@ export default function ListeningPracticeModal({
     };
   }, [playbackMode, handleNext]);
 
-  // When current brick changes, auto-load and play if session is active or mode is auto
+  // Trigger audio playback whenever current brick updates
   useEffect(() => {
-    if (!isOpen || !currentBrick) return;
+    if (!isOpen || !currentBrick || isFinishedSession) return;
 
     if (hasUserStarted || playbackMode === "auto") {
-      playCurrentAudio();
+      playAudioForBrick(currentBrick);
     }
-  }, [isOpen, currentIndex, currentBrick, playCurrentAudio, hasUserStarted, playbackMode]);
+  }, [
+    isOpen,
+    currentBrick,
+    playAudioForBrick,
+    hasUserStarted,
+    playbackMode,
+    isFinishedSession,
+  ]);
 
-  // Update playback speed dynamically
+  // Keep audio playbackRate in sync
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.playbackRate = playbackSpeed;
     }
   }, [playbackSpeed]);
 
-  // Global keyboard shortcuts (Space: Play/Pause, Right: Next, Left: Prev, R: Replay, Esc: Close)
+  // Global keyboard shortcuts
   useEffect(() => {
     if (!isOpen) return;
 
@@ -291,6 +506,9 @@ export default function ListeningPracticeModal({
       } else if (e.key === "r" || e.key === "R") {
         e.preventDefault();
         handleReplay();
+      } else if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        handleToggleShuffle();
       } else if (e.code === "Escape") {
         e.preventDefault();
         onClose();
@@ -299,7 +517,15 @@ export default function ListeningPracticeModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, handleTogglePlay, handleNext, handlePrevious, handleReplay, onClose]);
+  }, [
+    isOpen,
+    handleTogglePlay,
+    handleNext,
+    handlePrevious,
+    handleReplay,
+    handleToggleShuffle,
+    onClose,
+  ]);
 
   if (!isOpen) return null;
 
@@ -331,7 +557,7 @@ export default function ListeningPracticeModal({
                 )}
               </h2>
               <p className="text-[11px] text-outline truncate">
-                {items.length > 0
+                {rawItems.length > 0
                   ? `Brick ${currentIndex + 1} of ${totalCount}`
                   : "Continuous listening practice"}
               </p>
@@ -339,20 +565,41 @@ export default function ListeningPracticeModal({
           </div>
 
           <div className="flex items-center gap-1">
+            {/* Auto play again (repeat/loop) toggle */}
+            <button
+              type="button"
+              onClick={handleToggleAutoPlayAgain}
+              className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                autoPlayAgain
+                  ? "bg-primary/15 text-primary font-bold shadow-2xs"
+                  : "text-outline hover:text-on-surface hover:bg-surface-container"
+              }`}
+              title={
+                autoPlayAgain
+                  ? shuffleEnabled
+                    ? "Auto play again enabled (loops in shuffled order)"
+                    : "Auto play again enabled (loops in order)"
+                  : "Auto play again disabled"
+              }
+              aria-label="Toggle auto play again"
+            >
+              <Repeat className="w-4 h-4" />
+            </button>
+
             {/* Shuffle toggle */}
             <button
               type="button"
-              onClick={() => {
-                setShufflePage((prev) => !prev);
-                setCurrentIndex(0);
-                void refetch();
-              }}
+              onClick={handleToggleShuffle}
               className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
-                shufflePage
-                  ? "bg-primary/15 text-primary font-bold"
+                shuffleEnabled
+                  ? "bg-primary/15 text-primary font-bold shadow-2xs"
                   : "text-outline hover:text-on-surface hover:bg-surface-container"
               }`}
-              title={shufflePage ? "Shuffle enabled" : "Shuffle disabled"}
+              title={
+                shuffleEnabled
+                  ? "Shuffle enabled (unpredictable order)"
+                  : "Shuffle disabled (sequential order)"
+              }
               aria-label="Toggle shuffle"
             >
               <Shuffle className="w-4 h-4" />
@@ -441,7 +688,7 @@ export default function ListeningPracticeModal({
                 Try Again
               </button>
             </div>
-          ) : items.length === 0 ? (
+          ) : rawItems.length === 0 ? (
             <div className="py-12 flex flex-col items-center gap-3">
               <p className="text-sm font-bold text-on-surface">
                 No bricks found to listen to.
@@ -465,11 +712,7 @@ export default function ListeningPracticeModal({
               <div className="flex gap-2.5 mt-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsFinishedSession(false);
-                    setCurrentIndex(0);
-                    playCurrentAudio();
-                  }}
+                  onClick={loopSession}
                   className="px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-sm hover:bg-primary/95 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -531,7 +774,7 @@ export default function ListeningPracticeModal({
         </div>
 
         {/* Bottom Control Bar */}
-        {!isLoading && !isError && items.length > 0 && !isFinishedSession && (
+        {!isLoading && !isError && rawItems.length > 0 && !isFinishedSession && (
           <div className="p-4 sm:p-5 border-t border-outline-variant/30 bg-surface-container-low/40 flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
               {/* Speed selector */}
@@ -588,7 +831,11 @@ export default function ListeningPracticeModal({
                 <button
                   type="button"
                   onClick={handleNext}
-                  disabled={!hasNextPage && currentIndex >= items.length - 1}
+                  disabled={
+                    !autoPlayAgain &&
+                    !hasNextPage &&
+                    currentIndex >= order.length - 1
+                  }
                   className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
                   title="Next brick (Right Arrow)"
                   aria-label="Next brick"
@@ -614,7 +861,7 @@ export default function ListeningPracticeModal({
             {/* Hint bar */}
             <div className="text-[10px] text-outline/80 text-center select-none hidden sm:block">
               {playbackMode === "auto"
-                ? "Auto-advancing upon audio completion • Space to pause • Left/Right to skip"
+                ? "Auto-advancing upon audio completion • Space to pause • S to shuffle"
                 : "Manual mode • Press Next or Right Arrow to advance • Space to play"}
             </div>
           </div>
