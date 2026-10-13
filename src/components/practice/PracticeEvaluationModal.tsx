@@ -75,7 +75,11 @@ export default function PracticeEvaluationModal({
               onClick={onPlayTargetAudio}
               disabled={isLoadingTargetAudio}
               className="p-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all active:scale-90 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
-              title={isLoadingTargetAudio ? "Loading audio..." : "Listen to Target Audio"}
+              title={
+                isLoadingTargetAudio
+                  ? "Loading audio..."
+                  : "Listen to Target Audio"
+              }
               aria-label="Listen to Target Audio"
             >
               {isLoadingTargetAudio ? (
@@ -111,7 +115,7 @@ export default function PracticeEvaluationModal({
           </div>
         </div>
 
-        {/* Action Button: Next Brick only if score >= 0.7 */}
+        {/* Action Button: Next Brick only if score >= 0.8 */}
         <div className="w-full pt-2">
           {passed ? (
             <button

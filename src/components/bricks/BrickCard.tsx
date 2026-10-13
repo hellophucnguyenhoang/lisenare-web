@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { type Brick } from "@/types";
-import { MoreVertical, Edit3, Trash2, CheckCircle2 } from "lucide-react";
+import { MoreVertical, Edit3, Trash2, RotateCcw, CheckCircle2 } from "lucide-react";
 
 interface BrickCardProps {
   brick: Brick;
   onEditBrick: (brick: Brick) => void;
   onDeleteBrick: (brickId: number) => void;
+  onForgetBrick?: (brickId: number) => void;
   onSelectBrick?: (brick: Brick) => void;
   onStudyBrick?: (brick: Brick) => void;
   onSelectTag?: (tag: string) => void;
@@ -15,11 +16,19 @@ export default function BrickCard({
   brick,
   onEditBrick,
   onDeleteBrick,
+  onForgetBrick,
   onSelectBrick,
   onStudyBrick,
   onSelectTag,
 }: BrickCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleOutsideClick = () => setIsMenuOpen(false);
+    window.addEventListener("click", handleOutsideClick);
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, [isMenuOpen]);
 
   const handleCardClick = () => {
     if (onSelectBrick) {
@@ -63,6 +72,26 @@ export default function BrickCard({
                 >
                   <Edit3 className="w-4 h-4 text-outline" />
                   <span>Edit Brick</span>
+                </button>
+              )}
+              {onForgetBrick && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (
+                      confirm(
+                        "Are you sure you want to forget this brick? All memory and review history for it will be reset.",
+                      )
+                    ) {
+                      onForgetBrick(brick.id);
+                    }
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4 text-outline" />
+                  <span>Forget Brick</span>
                 </button>
               )}
               {onDeleteBrick && (

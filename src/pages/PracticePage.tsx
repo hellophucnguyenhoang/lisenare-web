@@ -304,7 +304,7 @@ export default function PracticePage({
 
         setIsRevealed(true);
         setHasRevealedAnswer(true);
-        const passed = res.score >= (res.threshold ?? 0.7);
+        const passed = res.score >= (res.threshold ?? 0.8);
         setEvaluationResult({
           score: res.score,
           passed,
@@ -347,7 +347,7 @@ export default function PracticePage({
 
       setIsRevealed(true);
       setHasRevealedAnswer(true);
-      const passed = res.score >= (res.threshold ?? 0.7);
+      const passed = res.score >= (res.threshold ?? 0.8);
       setEvaluationResult({
         score: res.score,
         passed,

@@ -321,3 +321,14 @@ export async function reportBrick(
   });
 }
 
+/**
+ * Resets memory and review history for a brick.
+ * Calls POST /api/bricks/{brick_id}/forget
+ */
+export async function forgetBrick(brickId: number): Promise<void> {
+  await request<void>(`/bricks/${brickId}/forget`, {
+    method: "POST",
+  });
+}
+
+

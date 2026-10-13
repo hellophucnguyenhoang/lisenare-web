@@ -12,6 +12,7 @@ import {
   getRecommendedBricks,
   createBrickInteraction,
   reportBrick,
+  forgetBrick,
   type BrickDetail,
   type BrickListParams,
   type NextBrickParams,
@@ -202,6 +203,19 @@ export function useReportBrick() {
       reportBrick(brickId, reason),
   });
 }
+
+export function useForgetBrick() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (brickId: number) => forgetBrick(brickId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      qc.invalidateQueries({ queryKey: ["context-search"] });
+    },
+  });
+}
+
 
 
 

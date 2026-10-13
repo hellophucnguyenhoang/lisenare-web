@@ -27,6 +27,7 @@ import {
   useAddBrickFrom,
   useAddBricksFromCollection,
   useDeleteBrick,
+  useForgetBrick,
 } from "@/hooks/useBricks";
 import {
   getRecommendedBricks,
@@ -110,6 +111,7 @@ export default function SearchPage({
   const addBricksFromCollectionMutation = useAddBricksFromCollection();
   const createCollectionMutation = useCreateCollection();
   const deleteBrickMutation = useDeleteBrick();
+  const forgetBrickMutation = useForgetBrick();
   const [openMenuBrickId, setOpenMenuBrickId] = useState<number | null>(null);
   const [reportingBrick, setReportingBrick] = useState<{
     brickId: number;
@@ -140,6 +142,33 @@ export default function SearchPage({
     } catch (err) {
       console.error("Failed to load brick for editing:", err);
       toast.error("Failed to load brick details.");
+    }
+  };
+
+  const handleForgetBrick = (brickId: number) => {
+    if (
+      confirm(
+        "Are you sure you want to forget this brick? All memory and review history for it will be reset.",
+      )
+    ) {
+      forgetBrickMutation.mutate(brickId, {
+        onSuccess: () => {
+          toast.success("Brick memory reset successfully.");
+          queryClient.invalidateQueries({ queryKey: ["context-search"] });
+          queryClient.invalidateQueries({ queryKey: ["bricks"] });
+          queryClient.invalidateQueries({ queryKey: ["stats"] });
+        },
+        onError: (err: unknown) => {
+          const errorObj = err as
+            | { detail?: string; message?: string }
+            | undefined;
+          toast.error(
+            errorObj?.detail ||
+              errorObj?.message ||
+              "Failed to reset brick memory. Please try again.",
+          );
+        },
+      });
     }
   };
 
@@ -852,6 +881,18 @@ export default function SearchPage({
                                       <span>Edit Brick</span>
                                     </button>
                                   )}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuBrickId(null);
+                                      handleForgetBrick(brick.brick_id);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+                                  >
+                                    <RotateCcw className="w-4 h-4 text-outline" />
+                                    <span>Forget Brick</span>
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={(e) => {
