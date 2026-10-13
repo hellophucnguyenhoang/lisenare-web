@@ -3,6 +3,7 @@ import { type Collection, type Brick } from "@/types";
 import BrickCard from "@/components/bricks/BrickCard";
 import AddCollectionModal from "@/components/bricks/AddCollectionModal";
 import ImportCollectionModal from "@/components/bricks/ImportCollectionModal";
+import ListeningPracticeModal from "@/components/bricks/ListeningPracticeModal";
 import {
   Plus,
   Search,
@@ -17,6 +18,7 @@ import {
   X,
   Tag,
   ArrowUp,
+  Headphones,
 } from "lucide-react";
 import {
   useCollections,
@@ -62,6 +64,7 @@ export default function BricksPage({
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null,
   );
+  const [showListeningModal, setShowListeningModal] = useState(false);
 
   // Sort and filter state
   type BrickSortType = "NEWEST" | "AZ" | "ZA";
@@ -354,6 +357,16 @@ export default function BricksPage({
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => setShowListeningModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/15 border border-primary/30 rounded-xl text-xs font-bold text-primary transition-all active:scale-95 shadow-2xs cursor-pointer"
+              title={`Listen to "${selectedCollection.name}"`}
+            >
+              <Headphones className="w-3.5 h-3.5" />
+              <span>Listen</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => handleExportCollection(selectedCollection)}
               disabled={exportCollection.isPending}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
@@ -452,8 +465,22 @@ export default function BricksPage({
                       </span>
                     </button>
 
-                    {/* Actions: check indicator, edit, export, import, delete - always visible for mobile & desktop */}
+                    {/* Actions: listen, check indicator, edit, export, import, delete - always visible for mobile & desktop */}
                     <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCollectionId(col.id);
+                          setShowCollectionDropdown(false);
+                          setShowListeningModal(true);
+                        }}
+                        className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
+                        title={`Listen to "${col.name}"`}
+                        aria-label={`Listen to ${col.name}`}
+                      >
+                        <Headphones className="w-3.5 h-3.5" />
+                      </button>
                       {selectedCollectionId === col.id && (
                         <Check className="w-4 h-4 text-primary shrink-0 mr-0.5" />
                       )}
@@ -544,8 +571,24 @@ export default function BricksPage({
           )}
         </div>
 
-        {/* Right side: Sort & Filter + Search Button */}
+        {/* Right side: Listen Bricks + Sort & Filter + Search Button */}
         <div className="flex items-center gap-2">
+          {/* Listen Bricks Button */}
+          <button
+            type="button"
+            id="btn-listen-bricks"
+            onClick={() => setShowListeningModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+            title={
+              selectedCollection
+                ? `Listen to "${selectedCollection.name}"`
+                : "Listen to all bricks"
+            }
+          >
+            <Headphones className="w-4 h-4 text-primary" />
+            <span className="hidden sm:inline">Listen Bricks</span>
+          </button>
+
           {/* Sort & Filter Dropdown Button (icon-only) */}
           <div className="relative" ref={filterDropdownRef}>
             <button
@@ -1006,6 +1049,14 @@ export default function BricksPage({
           }}
         />
       )}
+
+      {/* Listening Practice Modal */}
+      <ListeningPracticeModal
+        isOpen={showListeningModal}
+        onClose={() => setShowListeningModal(false)}
+        collectionId={selectedCollectionId}
+        collectionName={selectedCollection?.name}
+      />
 
       {/* Floating Scroll to Top Button */}
       {showScrollTop && (

@@ -173,3 +173,23 @@ export function createMediaRecorder(stream: MediaStream): MediaRecorder {
   }
   return new MediaRecorder(stream);
 }
+
+/**
+ * Ensures an audio path or URL is properly formatted for browser playback.
+ */
+export function resolveAudioUrl(audioPath: string | null | undefined): string {
+  if (!audioPath) return "";
+  if (
+    audioPath.startsWith("http://") ||
+    audioPath.startsWith("https://") ||
+    audioPath.startsWith("blob:") ||
+    audioPath.startsWith("data:")
+  ) {
+    return audioPath;
+  }
+  if (audioPath.startsWith("/")) {
+    return audioPath;
+  }
+  return `/${audioPath}`;
+}
+
