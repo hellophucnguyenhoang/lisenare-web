@@ -335,6 +335,8 @@ export interface BrickListeningData {
   audio_path: string;
   target_text: string;
   native_text: string;
+  target_pron?: string | null;
+  context?: string | null;
 }
 
 export interface BrickListeningPage {

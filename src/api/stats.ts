@@ -4,7 +4,7 @@ export interface LearningCardStats {
   total_learning: number;
   due_count: number;
   true_retention: number;
-  next_due_in_seconds: number;
+  next_due?: string | null;
   estimated_recalled: number;
   timestamp: string;
 }
