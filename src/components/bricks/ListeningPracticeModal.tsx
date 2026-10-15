@@ -11,6 +11,8 @@ import {
   Repeat,
   Volume2,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useInfiniteListeningBricks } from "@/hooks/useBricks";
 import { type BrickListeningData } from "@/api/bricks";
@@ -64,6 +66,14 @@ export default function ListeningPracticeModal({
   const [autoPlayAgain, setAutoPlayAgain] = useState(() =>
     getStorageBool("listening_auto_play_again"),
   );
+  const [isRevealed, setIsRevealed] = useState(() => {
+    try {
+      const stored = localStorage.getItem("listening_show_answer");
+      return stored !== null ? stored === "true" : true;
+    } catch {
+      return true;
+    }
+  });
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [order, setOrder] = useState<number[]>([]);
@@ -298,6 +308,14 @@ export default function ListeningPracticeModal({
     setStorageBool("listening_auto_play_again", next);
   };
 
+  const handleToggleReveal = () => {
+    setIsRevealed((prev) => {
+      const next = !prev;
+      setStorageBool("listening_show_answer", next);
+      return next;
+    });
+  };
+
   // Prefetch when near end
   useEffect(() => {
     if (
@@ -379,6 +397,9 @@ export default function ListeningPracticeModal({
       } else if (e.key === "s" || e.key === "S") {
         e.preventDefault();
         handleToggleShuffle();
+      } else if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        handleToggleReveal();
       } else if (e.code === "Escape") {
         e.preventDefault();
         onClose();
@@ -402,6 +423,7 @@ export default function ListeningPracticeModal({
     onClose,
     playAudio,
     shuffleEnabled,
+    handleToggleReveal,
   ]);
 
   if (!isOpen) return null;
@@ -587,7 +609,7 @@ export default function ListeningPracticeModal({
               </div>
             </div>
           ) : (
-            <div className="w-full space-y-6 animate-in fade-in duration-150">
+            <div className="w-full space-y-4 sm:space-y-5 animate-in fade-in duration-150 flex flex-col items-center">
               {/* Sound visualizer pill */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-xs font-semibold text-on-surface-variant">
                 {isPlaying ? (
@@ -617,15 +639,65 @@ export default function ListeningPracticeModal({
                 )}
               </div>
 
-              {/* Target & Native Text simultaneously */}
-              <div className="space-y-3">
-                <h3 className="text-2xl sm:text-3xl font-extrabold font-display text-on-surface leading-tight tracking-tight select-text">
-                  {currentBrick?.target_text}
-                </h3>
-                <p className="text-base sm:text-lg font-medium text-on-surface-variant italic leading-relaxed select-text">
+              {/* Native Sentence */}
+              <div className="space-y-1 w-full max-w-md">
+                <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-md text-[9px] font-bold tracking-wider uppercase">
+                  Native Sentence
+                </span>
+                <h2 className="text-base sm:text-lg font-bold font-display text-on-surface leading-snug select-text">
                   {currentBrick?.native_text}
-                </p>
+                </h2>
               </div>
+
+              {/* Show/Hide Answer Toggle Button (matching PracticePage flashcard) */}
+              <div className="flex items-center justify-center my-0.5">
+                <button
+                  type="button"
+                  id="btn-listening-toggle-reveal"
+                  onClick={handleToggleReveal}
+                  className={`p-3.5 rounded-full transition-all active:scale-90 shadow-xs cursor-pointer ${
+                    isRevealed
+                      ? "bg-secondary/15 text-secondary ring-2 ring-secondary/20 hover:bg-secondary/25"
+                      : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-secondary"
+                  }`}
+                  title={
+                    isRevealed ? "Hide target sentence" : "Reveal target sentence"
+                  }
+                  aria-label={
+                    isRevealed ? "Hide target sentence" : "Reveal target sentence"
+                  }
+                >
+                  {isRevealed ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+
+              {/* Revealed Target Content */}
+              {isRevealed && (
+                <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200 flex flex-col items-center pt-2 border-t border-outline-variant/30">
+                  <span className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-bold tracking-wider uppercase mb-1.5">
+                    Target Sentence
+                  </span>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-display text-primary leading-tight tracking-tight select-text">
+                    {currentBrick?.target_text}
+                  </h3>
+                  {currentBrick?.target_pron && (
+                    <p className="text-xs text-outline font-mono select-none mt-1">
+                      {currentBrick.target_pron}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Context if available */}
+              {currentBrick?.context && (
+                <p className="text-xs text-on-surface-variant/80 italic mt-2 pt-2 border-t border-outline-variant/20 w-full max-w-md select-text">
+                  "{currentBrick.context}"
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -716,8 +788,8 @@ export default function ListeningPracticeModal({
               {/* Hint bar */}
               <div className="text-[10px] text-outline/80 text-center select-none hidden sm:block">
                 {playbackMode === "auto"
-                  ? "Auto-advancing upon audio completion • Space to pause • S to shuffle"
-                  : "Manual mode • Press Next or Right Arrow to advance • Space to play"}
+                  ? "Auto-advancing upon audio completion • Space to pause • E to show/hide • S to shuffle"
+                  : "Manual mode • Press Next or Right Arrow to advance • Space to play • E to show/hide"}
               </div>
             </div>
           )}

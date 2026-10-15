@@ -65,25 +65,15 @@ function formatNextDueValue(
   unit: DueUnit,
 ): string {
   if (seconds == null || isNaN(seconds)) return "0";
-  if (seconds <= 0) return "0";
-
-  let val: number;
-  if (unit === "hours") {
-    val = seconds / 3600;
-  } else if (unit === "minutes") {
-    val = seconds / 60;
-  } else {
-    val = seconds;
-  }
-
-  // If it's an integer, format cleanly
-  if (Number.isInteger(val)) {
-    return val.toString();
-  }
-
-  // Preserve exact significant digits without floating point noise or forced truncation
-  const rounded = parseFloat(val.toFixed(4));
-  return rounded.toString();
+  const val =
+    unit === "hours"
+      ? seconds / 3600
+      : unit === "minutes"
+        ? seconds / 60
+        : seconds;
+  return Number.isInteger(val)
+    ? val.toString()
+    : parseFloat(val.toFixed(4)).toString();
 }
 
 export default function LearningMetricsGrid({
@@ -93,17 +83,15 @@ export default function LearningMetricsGrid({
   const [dueUnit, setDueUnit] = useState<DueUnit>("hours");
 
   const cycleDueUnit = () => {
-    setDueUnit((prev) => {
-      if (prev === "hours") return "minutes";
-      if (prev === "minutes") return "seconds";
-      return "hours";
-    });
+    setDueUnit((prev) =>
+      prev === "hours" ? "minutes" : prev === "minutes" ? "seconds" : "hours",
+    );
   };
 
-  const formattedNextDue = formatNextDueValue(
-    stats?.next_due_in_seconds,
-    dueUnit,
-  );
+  const dueMs = stats?.next_due ? new Date(stats.next_due).getTime() : null;
+  const isOverdue = Boolean(dueMs && dueMs < Date.now());
+  const diffSeconds = dueMs ? Math.abs(Date.now() - dueMs) / 1000 : null;
+  const formattedNextDue = formatNextDueValue(diffSeconds, dueUnit);
 
   return (
     <section className="space-y-2">
@@ -148,23 +136,47 @@ export default function LearningMetricsGrid({
           </span>
         </div>
 
-        {/* Next Due */}
+        {/* Next Due / Overdue */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-between text-center shadow-xs relative">
           <div className="absolute top-2.5 right-2.5">
-            <InfoTooltip text="Time until your next card is due for review" />
+            <InfoTooltip
+              text={
+                isOverdue
+                  ? "Time elapsed since your nearest card became due for review"
+                  : "Time until your next card is due for review"
+              }
+            />
           </div>
-          <Clock className="w-6 h-6 text-emerald-600 mb-1" />
+          <Clock
+            className={`w-6 h-6 mb-1 ${
+              isOverdue ? "text-rose-600 dark:text-rose-400" : "text-emerald-600"
+            }`}
+          />
 
           <button
             type="button"
             onClick={cycleDueUnit}
             className="flex items-baseline justify-center gap-1 cursor-pointer select-none group transition-transform active:scale-95"
-            title="Click to switch unit (hours, minutes, seconds)"
+            title={`Click to switch unit (hours, minutes, seconds) - ${
+              isOverdue ? "Overdue time" : "Remaining time"
+            }`}
           >
-            <span className="text-xl font-bold font-display text-on-surface group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+            <span
+              className={`text-xl font-bold font-display text-on-surface transition-colors ${
+                isOverdue
+                  ? "group-hover:text-rose-700 dark:group-hover:text-rose-300"
+                  : "group-hover:text-emerald-700 dark:group-hover:text-emerald-400"
+              }`}
+            >
               {isLoading ? "..." : formattedNextDue}
             </span>
-            <span className="text-xs font-semibold text-emerald-600">
+            <span
+              className={`text-xs font-semibold ${
+                isOverdue
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-emerald-600"
+              }`}
+            >
               {dueUnit === "hours"
                 ? "hrs"
                 : dueUnit === "minutes"
@@ -180,7 +192,9 @@ export default function LearningMetricsGrid({
               onClick={() => setDueUnit("hours")}
               className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
                 dueUnit === "hours"
-                  ? "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                  ? isOverdue
+                    ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
+                    : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
                   : "text-outline hover:text-on-surface"
               }`}
               title="View in hours"
@@ -192,7 +206,9 @@ export default function LearningMetricsGrid({
               onClick={() => setDueUnit("minutes")}
               className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
                 dueUnit === "minutes"
-                  ? "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                  ? isOverdue
+                    ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
+                    : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
                   : "text-outline hover:text-on-surface"
               }`}
               title="View in minutes"
@@ -204,7 +220,9 @@ export default function LearningMetricsGrid({
               onClick={() => setDueUnit("seconds")}
               className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
                 dueUnit === "seconds"
-                  ? "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                  ? isOverdue
+                    ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
+                    : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
                   : "text-outline hover:text-on-surface"
               }`}
               title="View in seconds"
@@ -214,7 +232,7 @@ export default function LearningMetricsGrid({
           </div>
 
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            Next Due
+            {isOverdue ? "Overdue" : "Next Due"}
           </span>
         </div>
       </div>
