@@ -21,11 +21,11 @@ export default function AccountSettingsSection({
     <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-5 shadow-xs">
       <h3 className="text-sm font-bold font-display text-on-surface mb-3 flex items-center gap-2">
         <ShieldCheck className="w-4 h-4 text-primary" />
-        Account Settings
+        Account settings
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
-        {/* Email Settings */}
+        {/* Email settings */}
         <button
           type="button"
           id="btn-email-settings"
@@ -37,7 +37,7 @@ export default function AccountSettingsSection({
           </div>
           <div className="min-w-0">
             <h4 className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors truncate">
-              Email Settings
+              Email settings
             </h4>
             <p className="text-[10px] text-outline truncate">
               {learnerEmail
@@ -49,7 +49,7 @@ export default function AccountSettingsSection({
           </div>
         </button>
 
-        {/* Change Password */}
+        {/* Change password */}
         <button
           type="button"
           id="btn-change-password"
@@ -61,15 +61,13 @@ export default function AccountSettingsSection({
           </div>
           <div className="min-w-0">
             <h4 className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors truncate">
-              Change Password
+              Change password
             </h4>
-            <p className="text-[10px] text-outline truncate">
-              Update password
-            </p>
+            <p className="text-[10px] text-outline truncate">Update password</p>
           </div>
         </button>
 
-        {/* Edit Display Name */}
+        {/* Edit display name */}
         <button
           type="button"
           id="btn-edit-name-settings"
@@ -81,7 +79,7 @@ export default function AccountSettingsSection({
           </div>
           <div className="min-w-0">
             <h4 className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors truncate">
-              Display Name
+              Display name
             </h4>
             <p className="text-[10px] text-outline truncate">
               Edit profile name
@@ -89,7 +87,7 @@ export default function AccountSettingsSection({
           </div>
         </button>
 
-        {/* Sign Out */}
+        {/* Sign out */}
         <button
           type="button"
           id="btn-sign-out"
@@ -100,12 +98,8 @@ export default function AccountSettingsSection({
             <LogOut className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <h4 className="text-xs font-bold text-error truncate">
-              Sign Out
-            </h4>
-            <p className="text-[10px] text-outline truncate">
-              Switch to guest
-            </p>
+            <h4 className="text-xs font-bold text-error truncate">Sign out</h4>
+            <p className="text-[10px] text-outline truncate">Switch to guest</p>
           </div>
         </button>
       </div>

@@ -33,7 +33,7 @@ export default function VideoCard({
 
   return (
     <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl overflow-hidden shadow-xs hover:border-primary/30 transition-all flex flex-col justify-between group">
-      {/* Top: Video Thumbnail */}
+      {/* Top: Video thumbnail  */}
       <div className="relative aspect-video w-full bg-surface-container overflow-hidden">
         <img
           src={thumbnailUrl}
@@ -109,7 +109,7 @@ export default function VideoCard({
           ))}
         </div>
 
-        {/* Action Bar */}
+        {/* Action bar  */}
         <div className="flex items-center justify-between pt-3 border-t border-outline-variant/30 text-xs">
           <button
             type="button"
@@ -117,7 +117,7 @@ export default function VideoCard({
             className="inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary font-semibold transition-colors cursor-pointer"
           >
             <Languages className="w-3.5 h-3.5 text-primary" />
-            <span>{showTranslation ? "Hide Translation" : "Translation"}</span>
+            <span>{showTranslation ? "Hide translation " : "Translation"}</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -137,7 +137,7 @@ export default function VideoCard({
               className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Save as Brick</span>
+              <span>Save as brick</span>
             </button>
           </div>
         </div>

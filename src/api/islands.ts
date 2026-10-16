@@ -71,7 +71,7 @@ export async function deleteIsland(islandId: number) {
   });
 }
 
-// ── Export / Import Island ──────────────────────────
+// ── Export / Import island ──────────────────────────
 
 export interface BrickExport {
   native_text: string;

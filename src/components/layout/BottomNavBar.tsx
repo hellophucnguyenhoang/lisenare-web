@@ -21,7 +21,7 @@ export default function BottomNavBar({
 
   return (
     <nav
-      aria-label="Bottom Navigation"
+      aria-label="Bottom navigation"
       className="fixed bottom-0 left-0 w-full z-40 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant/30 shadow-lg safe-bottom"
     >
       <div className="max-w-lg mx-auto flex items-center justify-around px-2 py-1.5">

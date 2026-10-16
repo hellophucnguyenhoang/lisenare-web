@@ -99,7 +99,7 @@ export default function ChangePasswordModal({
         className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
       />
 
-      {/* Modal Container */}
+      {/* Modal container */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/60 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
@@ -109,7 +109,7 @@ export default function ChangePasswordModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                Change Password
+                Change password
               </h3>
               <p className="text-[11px] text-outline">
                 Enter your current and new password
@@ -126,7 +126,7 @@ export default function ChangePasswordModal({
           </button>
         </div>
 
-        {/* Error Alert */}
+        {/* Error alert */}
         {errorMessage && (
           <div className="mt-4 p-3 bg-error-container/40 border border-error/30 rounded-xl flex items-start gap-2.5 animate-in fade-in duration-200">
             <AlertCircle className="w-4 h-4 text-error shrink-0 mt-0.5" />
@@ -137,13 +137,13 @@ export default function ChangePasswordModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-5" noValidate>
-          {/* Current / Old Password */}
+          {/* Current / Old password */}
           <div className="space-y-1.5">
             <label
               htmlFor="change-old-password"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              Current Password
+              Current password
             </label>
             <div className="relative flex items-center">
               <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -164,9 +164,7 @@ export default function ChangePasswordModal({
                 id="btn-toggle-change-old-password"
                 onClick={() => setShowOldPassword(!showOldPassword)}
                 className="absolute right-3 p-1.5 rounded-lg text-outline hover:text-on-surface transition-colors cursor-pointer"
-                aria-label={
-                  showOldPassword ? "Hide password" : "Show password"
-                }
+                aria-label={showOldPassword ? "Hide password" : "Show password"}
               >
                 {showOldPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -177,13 +175,13 @@ export default function ChangePasswordModal({
             </div>
           </div>
 
-          {/* New Password */}
+          {/* New password */}
           <div className="space-y-1.5">
             <label
               htmlFor="change-new-password"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              New Password
+              New password
             </label>
             <div className="relative flex items-center">
               <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -203,9 +201,7 @@ export default function ChangePasswordModal({
                 id="btn-toggle-change-new-password"
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="absolute right-3 p-1.5 rounded-lg text-outline hover:text-on-surface transition-colors cursor-pointer"
-                aria-label={
-                  showNewPassword ? "Hide password" : "Show password"
-                }
+                aria-label={showNewPassword ? "Hide password" : "Show password"}
               >
                 {showNewPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -215,7 +211,7 @@ export default function ChangePasswordModal({
               </button>
             </div>
 
-            {/* Strength Meter */}
+            {/* Strength meter */}
             {newPassword && (
               <div className="flex items-center gap-2 pt-1">
                 <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden flex gap-1">
@@ -239,7 +235,7 @@ export default function ChangePasswordModal({
             )}
           </div>
 
-          {/* Submit Button */}
+          {/* Submit button */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-outline-variant/30">
             <button
               type="button"
@@ -260,7 +256,7 @@ export default function ChangePasswordModal({
                   <span>Updating...</span>
                 </>
               ) : (
-                <span>Update Password</span>
+                <span>Update password</span>
               )}
             </button>
           </div>

@@ -151,14 +151,14 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
     return (
       <RetrievalInstructionsPage
         onBack={() => setShowInstructions(false)}
-        backButtonLabel="Back to Edit Brick"
+        backButtonLabel="Back to edit brick"
       />
     );
   }
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 pt-6 pb-32 animate-in fade-in duration-300">
-      {/* Top Header App Bar */}
+      {/* Top header app bar */}
       <header className="sticky top-0 z-10 bg-surface/90 backdrop-blur-xs flex justify-between items-center w-full max-w-lg mx-auto h-16 mb-6">
         <div className="flex items-center gap-4">
           <button
@@ -169,7 +169,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
             <ArrowLeft className="w-6 h-6 text-primary" />
           </button>
           <h1 className="text-xl font-bold font-display text-primary">
-            Edit Brick
+            Edit brick
           </h1>
         </div>
 
@@ -185,7 +185,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
-        {/* Island Selector: choose, create, or edit island */}
+        {/* Island selector: choose, create, or edit island */}
         <BrickIslandSelector
           selectedIslandId={selectedIslandId}
           onSelectIsland={setSelectedIslandId}
@@ -217,13 +217,13 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           brickId={brick.id}
         />
 
-        {/* Kind Section: Word or Sentence */}
+        {/* Kind section: Word or Sentence */}
         <BrickUnitTypeSelector kind={kind} onChange={setUnitType} />
 
-        {/* Privacy Section */}
+        {/* Privacy section */}
         <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
 
-        {/* Tags Section */}
+        {/* Tags section */}
         <BrickTagsSection tags={tags} onChange={setTags} />
 
         {/* Action buttons block */}
@@ -237,12 +237,12 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
             {updateBrick.isPending ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Saving Brick...</span>
+                <span>Saving brick...</span>
               </>
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                <span>Save Brick</span>
+                <span>Save brick</span>
               </>
             )}
           </button>
@@ -253,7 +253,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
             className="w-full flex items-center justify-center gap-2 py-4 text-error font-bold text-sm border border-error/20 bg-error/5 hover:bg-error/10 rounded-2xl transition-all active:scale-99 shadow-xs cursor-pointer"
           >
             <Trash2 className="w-5 h-5" />
-            <span>Delete Brick</span>
+            <span>Delete brick</span>
           </button>
         </section>
       </main>

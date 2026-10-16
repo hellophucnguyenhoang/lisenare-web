@@ -86,7 +86,7 @@ export default function AddIslandModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div className="bg-surface-container-lowest border border-outline-variant/70 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-        {/* Modal Header */}
+        {/* Modal header  */}
         <div className="flex justify-between items-center pb-4 border-b border-outline-variant/30">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -98,7 +98,7 @@ export default function AddIslandModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                {islandToEdit ? "Edit Island" : "Create Island"}
+                {islandToEdit ? "Edit island" : "Create island"}
               </h3>
               <p className="text-xs text-outline">
                 {islandToEdit
@@ -117,26 +117,26 @@ export default function AddIslandModal({
           </button>
         </div>
 
-        {/* Form Content */}
+        {/* Form content  */}
         <form
           onSubmit={handleSubmit}
           className="mt-5 space-y-4"
           autoComplete="off"
           noValidate
         >
-          {/* Island Name */}
+          {/* Island name  */}
           <div className="space-y-1.5">
             <label
               htmlFor="input-island-name"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              Island Name <span className="text-error">*</span>
+              Island name <span className="text-error">*</span>
             </label>
             <PlainTextInput
               id="input-island-name"
               value={name}
               onChange={setName}
-              placeholder="e.g. Slang Words, Medical Terms, Travel"
+              placeholder="e.g. Slang words , Medical terms , Travel"
               className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-sm font-medium text-on-surface transition-all outline-none"
               autoFocus
             />
@@ -198,7 +198,7 @@ export default function AddIslandModal({
               </button>
             </div>
 
-            {/* Tag Pills */}
+            {/* Tag pills  */}
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1.5">
                 {tags.map((tag) => (
@@ -221,7 +221,7 @@ export default function AddIslandModal({
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Action buttons  */}
           <div className="flex gap-2 pt-2 border-t border-outline-variant/30">
             {islandToEdit && onExportIsland && (
               <button
@@ -247,7 +247,7 @@ export default function AddIslandModal({
               className="flex-2 py-2.5 px-4 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary/95 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Check className="w-4 h-4" />
-              <span>{islandToEdit ? "Save Changes" : "Create Island"}</span>
+              <span>{islandToEdit ? "Save changes" : "Create island"}</span>
             </button>
           </div>
         </form>

@@ -213,7 +213,7 @@ export default function SearchPage({
       .finally(() => setIsLoadingInitial(false));
   }, [sessionId, isLoggedIn]);
 
-  // Load more recommendations: ONLY called when user explicitly clicks "Load More"
+  // Load more recommendations: ONLY called when user explicitly clicks "Load more"
   const handleLoadMore = async () => {
     if (isLoadingMore || !sessionId || !isLoggedIn) return;
     setIsLoadingMore(true);
@@ -421,12 +421,12 @@ export default function SearchPage({
         <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
           <img
             src="/favicon.svg"
-            alt="Lisenare Logo"
+            alt="Lisenare logo"
             className="w-full h-full object-contain rounded-xl"
           />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
-          Search & Discover Bricks
+          Search & Discover bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
           Sign in to search vocabulary, receive personalized recommendations,
@@ -438,7 +438,7 @@ export default function SearchPage({
             onClick={() => onOpenAuth("login")}
             className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
           >
-            Log In to Search
+            Log in to search
           </button>
         )}
       </div>
@@ -449,7 +449,7 @@ export default function SearchPage({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-28 animate-in fade-in duration-300">
-      {/* Sticky Search Header */}
+      {/* Sticky search header */}
       <div className="sticky top-0 z-30 bg-surface/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pt-3.5 pb-3 mb-6 border-b border-outline-variant/30 shadow-2xs">
         <div className="max-w-4xl mx-auto flex items-center gap-2.5">
           <button
@@ -498,7 +498,7 @@ export default function SearchPage({
         </div>
       </div>
 
-      {/* VIEW 1: Recommended Bricks Stream */}
+      {/* VIEW 1: Recommended bricks stream */}
       {!activeQuery && (
         <div className="space-y-6">
           {isLoadingInitial ? (
@@ -529,7 +529,7 @@ export default function SearchPage({
                 onClick={handleLoadMore}
                 className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all cursor-pointer"
               >
-                Refresh Recommendations
+                Refresh recommendations
               </button>
             </div>
           ) : (
@@ -551,7 +551,7 @@ export default function SearchPage({
                             {brick.kind === "sentence" ? "Sentence" : "Word"}
                           </span>
                           {brick.tags && brick.tags.length > 0 && (
-                            <span className="text-[10px] font-medium text-outline truncate max-w-[140px]">
+                            <span className="text-[10px] font-medium text-outline truncate max-w-35">
                               #{brick.tags[0].replace(/^#/, "")}
                               {brick.tags.length > 1
                                 ? ` +${brick.tags.length - 1}`
@@ -664,7 +664,7 @@ export default function SearchPage({
                       <span>Loading more...</span>
                     </>
                   ) : (
-                    <span>More Recommends</span>
+                    <span>More recommends</span>
                   )}
                 </button>
               </div>
@@ -673,13 +673,13 @@ export default function SearchPage({
         </div>
       )}
 
-      {/* VIEW 2: Search Results */}
+      {/* VIEW 2: Search results */}
       {activeQuery && (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-outline-variant/40">
             <div>
               <h2 className="text-base sm:text-lg font-bold font-display text-on-surface">
-                Search Results for &ldquo;{activeQuery}&rdquo;
+                Search results for &ldquo;{activeQuery}&rdquo;
               </h2>
               <p className="text-xs text-on-surface-variant">
                 Found {searchResults.length} matching result
@@ -697,7 +697,7 @@ export default function SearchPage({
             </button>
           </div>
 
-          {/* Tabs: Yours vs Public & Type Selector */}
+          {/* Tabs: Yours vs Public & Type selector */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/60 pb-2">
             <div className="flex items-center gap-2">
               <button
@@ -840,7 +840,7 @@ export default function SearchPage({
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant">
-                            {brick.is_own ? "Your Brick" : "Public"}
+                            {brick.is_own ? "Your brick" : "Public"}
                           </span>
 
                           {brick.is_own && (
@@ -874,7 +874,7 @@ export default function SearchPage({
                                       className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
                                     >
                                       <Edit3 className="w-4 h-4 text-outline" />
-                                      <span>Edit Brick</span>
+                                      <span>Edit brick</span>
                                     </button>
                                   )}
                                   <button
@@ -887,7 +887,7 @@ export default function SearchPage({
                                     className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
                                   >
                                     <RotateCcw className="w-4 h-4 text-outline" />
-                                    <span>Forget Brick</span>
+                                    <span>Forget brick</span>
                                   </button>
                                   <button
                                     type="button"
@@ -899,7 +899,7 @@ export default function SearchPage({
                                     className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-error/10 flex items-center gap-2 text-error cursor-pointer"
                                   >
                                     <Trash2 className="w-4 h-4" />
-                                    <span>Delete Brick</span>
+                                    <span>Delete brick</span>
                                   </button>
                                 </div>
                               )}
@@ -1039,7 +1039,7 @@ export default function SearchPage({
         </div>
       )}
 
-      {/* Brick Detail Modal */}
+      {/* Brick detail modal */}
       <BrickDetailModal
         isOpen={Boolean(detailBrickId) && !savingBrick && !savingIsland}
         brickId={detailBrickId}
@@ -1053,7 +1053,7 @@ export default function SearchPage({
         onOpenAuth={onOpenAuth}
       />
 
-      {/* Add Brick or Island Modal */}
+      {/* Add brick or island Modal */}
       <SaveToIslandModal
         isOpen={Boolean(savingBrick || savingIsland)}
         mode={savingIsland ? "island" : "brick"}
@@ -1086,7 +1086,7 @@ export default function SearchPage({
         }}
       />
 
-      {/* Report Brick Dialog */}
+      {/* Report brick dialog */}
       <ReportBrickModal
         isOpen={Boolean(reportingBrick)}
         brickId={reportingBrick?.brickId ?? null}
@@ -1094,7 +1094,7 @@ export default function SearchPage({
         onClose={() => setReportingBrick(null)}
       />
 
-      {/* Floating Scroll to Top */}
+      {/* Floating scroll to top */}
       {showScrollTop && (
         <button
           type="button"

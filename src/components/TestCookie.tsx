@@ -39,7 +39,7 @@ export default function TestCookie() {
   return (
     <div className="max-w-md mx-auto my-10 p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
-        Cookie Tester
+        Cookie tester
       </h3>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -63,7 +63,7 @@ export default function TestCookie() {
           onClick={() => queryClient.invalidateQueries({ queryKey: ["me"] })}
           className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded"
         >
-          Refetch Me
+          Refetch me
         </button>
       </div>
 

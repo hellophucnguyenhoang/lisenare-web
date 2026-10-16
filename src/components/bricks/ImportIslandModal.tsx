@@ -207,7 +207,7 @@ export default function ImportIslandModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                Import Island
+                Import island
               </h3>
               <p className="text-xs text-outline">
                 Load bricks from an exported JSON file
@@ -227,7 +227,7 @@ export default function ImportIslandModal({
 
         {/* Content */}
         <div className="mt-5 space-y-5">
-          {/* File Picker / Dropzone */}
+          {/* File picker  / Dropzone */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
               Island JSON File <span className="text-error">*</span>
@@ -303,10 +303,10 @@ export default function ImportIslandModal({
             )}
           </div>
 
-          {/* Destination Island Selector */}
+          {/* Destination island Selector */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-              Import Destination
+              Import destination
             </label>
 
             {/* Mode selection tabs */}
@@ -322,7 +322,7 @@ export default function ImportIslandModal({
                 }`}
               >
                 <Folder className="w-3.5 h-3.5" />
-                <span>Existing Island</span>
+                <span>Existing island</span>
               </button>
               <button
                 type="button"
@@ -334,7 +334,7 @@ export default function ImportIslandModal({
                 }`}
               >
                 <FolderPlus className="w-3.5 h-3.5" />
-                <span>New Island</span>
+                <span>New island</span>
               </button>
             </div>
 
@@ -363,7 +363,7 @@ export default function ImportIslandModal({
                   id="input-import-new-island-name"
                   value={newIslandName}
                   onChange={setNewIslandName}
-                  placeholder="e.g. Travel Vocabulary, Slang"
+                  placeholder="e.g. Travel vocabulary , Slang"
                   className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-xs font-semibold text-on-surface outline-none transition-all"
                 />
                 <p className="text-[11px] text-outline px-1">
@@ -373,7 +373,7 @@ export default function ImportIslandModal({
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Action buttons  */}
           <div className="flex gap-2 pt-3 border-t border-outline-variant/30">
             <button
               type="button"

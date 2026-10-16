@@ -68,18 +68,18 @@ export default function NavigationDrawer({
         id="navigation-drawer"
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation Menu"
+        aria-label="Navigation menu"
         className={`fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[80vw] bg-surface-container-lowest border-r border-outline-variant/30 shadow-2xl flex flex-col transition-transform duration-300 ease-out select-none ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Drawer Header */}
+        {/* Drawer header */}
         <div className="h-14 sm:h-16 px-4 sm:px-5 border-b border-outline-variant/30 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-white border border-primary/20 shadow-2xs flex items-center justify-center p-1.5 overflow-hidden">
               <img
                 src="/favicon.svg"
-                alt="Lisenare Logo"
+                alt="Lisenare logo"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -99,7 +99,7 @@ export default function NavigationDrawer({
           </button>
         </div>
 
-        {/* Navigation Options List */}
+        {/* Navigation options list */}
         <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
@@ -134,10 +134,10 @@ export default function NavigationDrawer({
           })}
         </nav>
 
-        {/* Drawer Footer */}
+        {/* Drawer footer */}
         <div className="p-4 border-t border-outline-variant/20 text-center">
           <p className="text-[11px] text-outline font-medium">
-            Lisenare &bull; Language Learning
+            Lisenare &bull; Language learning
           </p>
         </div>
       </aside>

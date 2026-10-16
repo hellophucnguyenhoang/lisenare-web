@@ -176,7 +176,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col">
-      {/* Sticky Header Bar with Lisenare Logo and Dynamic Tab Content */}
+      {/* Sticky header Bar with Lisenare logo and Dynamic tab Content */}
       <AppHeader
         activeTab={activeTab}
         setActiveTab={(tab) => {

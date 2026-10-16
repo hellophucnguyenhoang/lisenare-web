@@ -50,7 +50,7 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
     introTitle: "How to Retrieval",
     introDescription:
       "Follow these 5 simple steps for every sentence (brick) to build real fluency.",
-    addBrickButton: "Add Brick",
+    addBrickButton: "Add brick",
     backButton: "Back to Retrieval",
     steps: [
       {
@@ -83,9 +83,9 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
       },
       {
         step: "Step 4",
-        title: "Try Step 1 again until you get it right",
+        title: "Try step 1 again until you get it right",
         description:
-          "Repeat Step 1 without looking at the answer until you can say the target sentence smoothly and correctly.",
+          "Repeat step 1 without looking at the answer until you can say the target sentence smoothly and correctly.",
         icon: RotateCcw,
         color: "text-amber-600 bg-amber-500/10",
         badgeColor: "text-amber-600",
@@ -107,8 +107,8 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
     introTitle: "Cách Luyện Tập",
     introDescription:
       "Thực hiện 5 bước đơn giản này cho mỗi câu (brick) để hình thành phản xạ tự nhiên.",
-    addBrickButton: "Thêm Brick Đầu Tiên",
-    backButton: "Quay Lại Luyện Tập",
+    addBrickButton: "Thêm brick đầu tiên",
+    backButton: "Quay lại luyện tập",
     steps: [
       {
         step: "Bước 1",
@@ -245,7 +245,7 @@ export default function RetrievalInstructionsPage({
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 pt-6 pb-24 animate-in fade-in duration-300">
-      {/* Top Header */}
+      {/* Top header */}
       <header className="flex items-center justify-between h-14 w-full mb-4">
         <button
           onClick={onBack}
@@ -261,7 +261,7 @@ export default function RetrievalInstructionsPage({
       </header>
 
       <main className="space-y-4">
-        {/* Language Selection Tabs */}
+        {/* Language selection tabs */}
         <div className="flex items-center justify-center p-1 bg-surface-container-low rounded-2xl border border-outline-variant/60 shadow-2xs">
           {LANGUAGES.map((item) => {
             const isActive = lang === item.code;
@@ -285,7 +285,7 @@ export default function RetrievalInstructionsPage({
           })}
         </div>
 
-        {/* Intro Banner */}
+        {/* Intro banner */}
         <section className="bg-white p-5 rounded-2xl border border-outline-variant/60 shadow-xs text-center space-y-2">
           <h2 className="text-xl font-bold font-display text-on-surface">
             {t.introTitle}

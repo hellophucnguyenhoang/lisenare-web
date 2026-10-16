@@ -45,7 +45,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
     console.log("body", body, "status", res.status);
     const errorBody = body as ApiErrorBody;
 
-    // {"debug_message": "Bad Credential", "error_code": "INVALID_CREDENTIALS"}
+    // {"debug_message": "Bad credential", "error_code": "INVALID_CREDENTIALS"}
     const error_code = errorBody.error_code ?? "UNKNOWN_ERROR";
 
     const message =
@@ -79,7 +79,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
  * });
  *
  * @example
- * // 3. Multipart File Upload (FormData)
+ * // 3. Multipart file upload (FormData)
  * const formData = new FormData();
  * formData.append("audio", { uri: "...", name: "rec.m4a", type: "audio/m4a" } as any);
  * await request("/upload", {
@@ -119,9 +119,7 @@ export async function request<T>(
 
   const base = API_BASE_URL ?? "";
   const normalizedEndpoint =
-    base && endpoint.startsWith(base)
-      ? endpoint
-      : `${base}${endpoint}`;
+    base && endpoint.startsWith(base) ? endpoint : `${base}${endpoint}`;
 
   const res = await fetch(normalizedEndpoint, options);
   return handleResponse<T>(res);

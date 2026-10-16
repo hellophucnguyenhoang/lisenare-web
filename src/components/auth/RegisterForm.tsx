@@ -83,13 +83,13 @@ export default function RegisterForm({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header Title */}
+      {/* Header title */}
       <div className="text-center space-y-1.5">
         <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary mx-auto flex items-center justify-center mb-2 shadow-xs">
           <Sparkles className="w-6 h-6" />
         </div>
         <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
-          Create Account
+          Create account
         </h2>
         <p className="text-xs text-on-surface-variant font-medium">
           Join Lisenare to save your vocabulary streaks
@@ -97,7 +97,7 @@ export default function RegisterForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        {/* Username Input */}
+        {/* Username input */}
         <div className="space-y-1.5">
           <label
             htmlFor="reg-username"
@@ -121,7 +121,7 @@ export default function RegisterForm({
           </div>
         </div>
 
-        {/* Password Input */}
+        {/* Password input */}
         <div className="space-y-1.5">
           <label
             htmlFor="reg-password"
@@ -157,7 +157,7 @@ export default function RegisterForm({
             </button>
           </div>
 
-          {/* Strength Indicator */}
+          {/* Strength indicator */}
           {password && (
             <div className="flex items-center gap-2 pt-1">
               <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden flex gap-1">
@@ -181,13 +181,13 @@ export default function RegisterForm({
           )}
         </div>
 
-        {/* Confirm Password Input */}
+        {/* Confirm password input */}
         <div className="space-y-1.5">
           <label
             htmlFor="reg-confirm-password"
             className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
           >
-            Confirm Password
+            Confirm password
           </label>
           <div className="relative flex items-center">
             <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -226,7 +226,7 @@ export default function RegisterForm({
           </div>
         </div>
 
-        {/* Primary Register Button */}
+        {/* Primary register button */}
         <button
           type="submit"
           id="btn-register-submit"
@@ -239,7 +239,7 @@ export default function RegisterForm({
               <span>Creating account...</span>
             </>
           ) : (
-            <span>Register Now</span>
+            <span>Register now</span>
           )}
         </button>
       </form>
@@ -254,7 +254,7 @@ export default function RegisterForm({
             onClick={onSwitchToLogin}
             className="font-bold text-primary hover:underline transition-all cursor-pointer ml-1"
           >
-            Log In
+            Log in
           </button>
         </p>
       </div>

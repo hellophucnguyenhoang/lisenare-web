@@ -68,7 +68,7 @@ export default function FiltersPage({
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 pt-6 pb-36 animate-in fade-in duration-300">
-      {/* Top App Bar Navigation */}
+      {/* Top app bar navigation */}
       <header className="sticky top-0 z-10 bg-surface/90 backdrop-blur-xs w-full max-w-lg mx-auto h-16 flex items-center justify-between border-b border-outline-variant/25 mb-6">
         <div className="flex items-center gap-4">
           <button
@@ -86,18 +86,18 @@ export default function FiltersPage({
           onClick={handleClear}
           className="text-primary font-bold text-xs px-3 py-2 rounded-lg hover:bg-primary/5 transition-all active:scale-95"
         >
-          Clear All
+          Clear all
         </button>
       </header>
 
       <main className="max-w-lg mx-auto space-y-8">
-        {/* Sort Section */}
+        {/* Sort section */}
         <section className="space-y-4">
           <h2 className="text-lg font-bold font-display text-on-surface-variant px-1">
             Sort
           </h2>
           <div className="space-y-3">
-            {/* Random Option */}
+            {/* Random option */}
             <label
               onClick={() => setActiveSort("random")}
               className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all shadow-xs ${
@@ -119,7 +119,7 @@ export default function FiltersPage({
               />
             </label>
 
-            {/* Date Option wrapper */}
+            {/* Date option wrapper */}
             <div
               className={`rounded-xl border shadow-xs overflow-hidden transition-all ${
                 ["newest", "oldest"].includes(activeSort)
@@ -178,7 +178,7 @@ export default function FiltersPage({
               </div>
             </div>
 
-            {/* Alphabetical Option wrapper */}
+            {/* Alphabetical option wrapper */}
             <div
               className={`rounded-xl border shadow-xs overflow-hidden transition-all ${
                 ["az", "za"].includes(activeSort)
@@ -237,7 +237,7 @@ export default function FiltersPage({
           </div>
         </section>
 
-        {/* Filter - Status Section */}
+        {/* Filter - Status section */}
         <section className="space-y-4">
           <h2 className="text-lg font-bold font-display text-on-surface-variant px-1">
             Status
@@ -265,7 +265,7 @@ export default function FiltersPage({
           </div>
         </section>
 
-        {/* Filter - Tags Section */}
+        {/* Filter - Tags section */}
         <section className="space-y-4">
           <h2 className="text-lg font-bold font-display text-on-surface-variant px-1">
             Tags
@@ -299,14 +299,14 @@ export default function FiltersPage({
         <div className="h-10"></div>
       </main>
 
-      {/* Bottom Sticky Action Bar */}
+      {/* Bottom sticky action bar */}
       <div className="fixed bottom-0 left-0 w-full bg-surface-container-lowest border-t border-outline-variant/20 p-4 safe-bottom z-40 shadow-lg">
         <div className="max-w-lg mx-auto">
           <button
             onClick={handleApply}
             className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold font-display shadow-md shadow-primary/10 active:scale-98 hover:shadow-lg flex items-center justify-center gap-2"
           >
-            <span>Apply Filters</span>
+            <span>Apply filters</span>
             <CheckCheck className="w-5 h-5" />
           </button>
         </div>

@@ -36,7 +36,7 @@ export default function AuthModal({
         className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
       />
 
-      {/* Modal Content */}
+      {/* Modal content */}
       <div className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto animate-in zoom-in-95 fade-in duration-200">
         <AuthComponent
           initialMode={initialMode}

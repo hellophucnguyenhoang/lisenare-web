@@ -78,17 +78,17 @@ export default function RetrievalFlashcard({
       </div>
 
       <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase mb-3 sm:mb-5">
-        Native Sentence
+        Native sentence
       </span>
 
-      {/* Native Phrase */}
+      {/* Native phrase */}
       <div className="mb-4 sm:mb-6">
         <h2 className="text-base md:text-lg lg:text-xl font-bold font-display text-on-background tracking-tight leading-snug">
           {activeBrick.nativeText}
         </h2>
       </div>
 
-      {/* Action controls: Target Audio Listen & Reveal Toggle */}
+      {/* Action controls: Target audio listen & Reveal toggle */}
       <div className="flex items-center justify-center gap-3 my-2">
         <button
           type="button"
@@ -132,11 +132,11 @@ export default function RetrievalFlashcard({
         </button>
       </div>
 
-      {/* Revealed Target Content */}
+      {/* Revealed target content */}
       {isRevealed && (
         <div className="w-full animate-in fade-in zoom-in-95 duration-300 flex flex-col items-center mt-4 pt-5 border-t border-outline-variant/30">
           <span className="px-3 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold tracking-wider uppercase mb-2">
-            Target Sentence
+            Target sentence
           </span>
           <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-primary mb-1 font-display flex flex-wrap justify-center gap-x-1.5 leading-snug">
             {wordsWithTiming.map(({ word, segment }, idx) => (

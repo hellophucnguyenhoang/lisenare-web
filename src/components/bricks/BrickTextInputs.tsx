@@ -126,10 +126,10 @@ export default function BrickTextInputs({
 
   return (
     <section className="bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-xs space-y-5">
-      {/* Native Sentence */}
+      {/* Native sentence  */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Native Sentence</span>
+          <span>Native sentence </span>
           <InfoTooltip text="Native text you want to express." />
         </label>
         <PlainTextInput
@@ -140,16 +140,16 @@ export default function BrickTextInputs({
         />
       </div>
 
-      {/* Target Sentence with Integrated Flag Language Chooser */}
+      {/* Target sentence  with integrated flag language chooser */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-              <span>Target Sentence</span>
+              <span>Target sentence </span>
               <InfoTooltip text="Target text you want to say." />
             </label>
 
-            {/* Language Dropdown with Flag */}
+            {/* Language dropdown  with Flag */}
             <div
               ref={langDropdownRef}
               className="relative inline-flex items-center"
@@ -174,7 +174,7 @@ export default function BrickTextInputs({
                 />
               </button>
 
-              {/* Custom Dropdown Menu */}
+              {/* Custom dropdown menu */}
               {isLangDropdownOpen && (
                 <div
                   role="listbox"
@@ -240,7 +240,7 @@ export default function BrickTextInputs({
           </div>
         )}
 
-        {/* Auto-generate Audio Button */}
+        {/* Auto-generate Audio button  */}
         {onGenerateAudio && (
           <div className="flex items-center justify-between gap-2 pt-0.5">
             <button
@@ -257,7 +257,7 @@ export default function BrickTextInputs({
               {isGeneratingAudio ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                  <span>Generating Audio...</span>
+                  <span>Generating audio...</span>
                 </>
               ) : (
                 <>
@@ -270,10 +270,10 @@ export default function BrickTextInputs({
         )}
       </div>
 
-      {/* Target Pronunciation */}
+      {/* Target pronunciation  */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Target Pronunciation (Optional)</span>
+          <span>Target pronunciation (Optional)</span>
           <InfoTooltip text="Optional pronunciation guide." />
         </label>
         <PlainTextInput

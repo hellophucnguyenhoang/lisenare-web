@@ -144,29 +144,29 @@ export default function LearningMetricsGrid({
   return (
     <section className="space-y-2">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {/* Total Learning */}
+        {/* Total learning */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-xs">
           <Layers className="w-6 h-6 text-primary mb-1.5" />
           <span className="text-xl font-bold font-display text-on-surface">
             {isLoading ? "..." : (stats?.total_learning ?? 0)}
           </span>
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            Total Learning
+            Total learning
           </span>
         </div>
 
-        {/* Due Reviews */}
+        {/* Due reviews */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-xs">
           <Flame className="w-6 h-6 text-amber-500 mb-1.5" />
           <span className="text-xl font-bold font-display text-on-surface">
             {isLoading ? "..." : (stats?.due_count ?? 0)}
           </span>
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            Due Reviews
+            Due reviews
           </span>
         </div>
 
-        {/* True Retention Rate */}
+        {/* True retention Rate */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-xs relative">
           <div className="absolute top-2.5 right-2.5">
             <InfoTooltip text="% of times you answer correctly" />
@@ -180,11 +180,11 @@ export default function LearningMetricsGrid({
                 : "0%"}
           </span>
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            Retention Rate
+            Retention rate
           </span>
         </div>
 
-        {/* Next Due / Overdue */}
+        {/* Next due / Overdue */}
         <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-between text-center shadow-xs relative">
           <div className="absolute top-2.5 right-2.5">
             <InfoTooltip
@@ -197,7 +197,9 @@ export default function LearningMetricsGrid({
           </div>
           <Clock
             className={`w-6 h-6 mb-1 ${
-              isOverdue ? "text-rose-600 dark:text-rose-400" : "text-emerald-600"
+              isOverdue
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-emerald-600"
             }`}
           />
 
@@ -207,9 +209,7 @@ export default function LearningMetricsGrid({
             className="flex items-baseline justify-center gap-1 cursor-pointer select-none group transition-transform active:scale-95"
             title={`Click to switch unit (${availableUnits
               .map((u) => UNIT_PILL_LABEL[u])
-              .join(", ")}) - ${
-              isOverdue ? "Overdue time" : "Remaining time"
-            }`}
+              .join(", ")}) - ${isOverdue ? "Overdue time" : "Remaining time"}`}
           >
             <span
               className={`text-xl font-bold font-display text-on-surface transition-colors ${
@@ -231,7 +231,7 @@ export default function LearningMetricsGrid({
             </span>
           </button>
 
-          {/* Dynamic Unit Switcher (Adaptively shows 3 units from days, hours, mins, secs) */}
+          {/* Dynamic unit switcher (Adaptively shows 3 units from days, hours, mins, secs) */}
           <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-container rounded-lg my-1 border border-outline-variant/40">
             {availableUnits.map((unit) => (
               <button
@@ -253,7 +253,7 @@ export default function LearningMetricsGrid({
           </div>
 
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            {isOverdue ? "Overdue" : "Next Due"}
+            {isOverdue ? "Overdue" : "Next due"}
           </span>
         </div>
       </div>

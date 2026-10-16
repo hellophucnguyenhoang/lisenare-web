@@ -202,7 +202,7 @@ export default function EmailManagerModal({
         className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Modal Container */}
+      {/* Modal container */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/60 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
@@ -225,7 +225,7 @@ export default function EmailManagerModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                {currentEmail ? "Change Email" : "Add Email"}
+                {currentEmail ? "Change email" : "Add email"}
               </h3>
               <p className="text-xs text-outline">
                 {currentEmail
@@ -259,7 +259,7 @@ export default function EmailManagerModal({
             <div className="bg-surface-container-low border border-outline-variant/50 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-outline">
-                  Current Email
+                  Current email
                 </span>
                 {isVerified ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
@@ -289,15 +289,15 @@ export default function EmailManagerModal({
               className="w-full py-3 px-4 bg-primary text-on-primary font-bold text-sm rounded-xl shadow-xs hover:bg-primary/95 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
             >
               <Edit3 className="w-4 h-4" />
-              Change Email Address
+              Change email address
             </button>
           </div>
         )}
 
-        {/* STEP 2: Input Details (Username, Old Email if exists, New Email) & Send OTP */}
+        {/* STEP 2: Input details (username, old email if exists, new email) & send OTP */}
         {step === "enter-details" && (
           <form onSubmit={handleSendOtp} className="mt-5 space-y-4" noValidate>
-            {/* Username Input */}
+            {/* Username input */}
             <div className="space-y-1.5">
               <label
                 htmlFor="input-email-username"
@@ -321,14 +321,14 @@ export default function EmailManagerModal({
               </div>
             </div>
 
-            {/* Old Email Input (Only shown if user currently has an email) */}
+            {/* Old email input (Only shown if user currently has an email) */}
             {currentEmail && (
               <div className="space-y-1.5">
                 <label
                   htmlFor="input-email-old"
                   className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
                 >
-                  Current Email
+                  Current email
                 </label>
                 <div className="relative flex items-center">
                   <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -347,13 +347,13 @@ export default function EmailManagerModal({
               </div>
             )}
 
-            {/* New Email Input */}
+            {/* New email input */}
             <div className="space-y-1.5">
               <label
                 htmlFor="input-email-new"
                 className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
               >
-                {currentEmail ? "New Email Address" : "Email Address"}
+                {currentEmail ? "New email address" : "Email address"}
               </label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -419,7 +419,7 @@ export default function EmailManagerModal({
                 <KeyRound className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-on-surface">
-                Enter 6-Digit Code
+                Enter 6-Digit code
               </h4>
               <p className="text-xs text-outline mt-0.5">
                 Sent to{" "}
@@ -429,7 +429,7 @@ export default function EmailManagerModal({
               </p>
             </div>
 
-            {/* OTP Input 6-Box Grid */}
+            {/* OTP Input 6-Box grid */}
             <div className="flex justify-center gap-2 my-4">
               {otpDigits.map((digit, idx) => (
                 <input
@@ -464,7 +464,7 @@ export default function EmailManagerModal({
               </button>
             </div>
 
-            {/* Submit Action */}
+            {/* Submit action */}
             <button
               type="submit"
               id="btn-confirm-email-otp"
@@ -476,12 +476,12 @@ export default function EmailManagerModal({
               ) : (
                 <CheckCircle2 className="w-4 h-4" />
               )}
-              Confirm & Update Email
+              Confirm & Update email
             </button>
           </form>
         )}
 
-        {/* STEP 4: Success View */}
+        {/* STEP 4: Success view */}
         {step === "success" && (
           <div className="mt-5 text-center space-y-4 py-3">
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto">
@@ -489,7 +489,7 @@ export default function EmailManagerModal({
             </div>
             <div>
               <h4 className="text-base font-bold text-on-surface">
-                Email Updated!
+                Email updated!
               </h4>
               <p className="text-xs text-outline mt-1">
                 Your email has been successfully updated to{" "}

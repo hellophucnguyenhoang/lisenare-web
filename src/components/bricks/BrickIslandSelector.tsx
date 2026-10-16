@@ -57,7 +57,7 @@ export default function BrickIslandSelector({
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-        To Island <span className="text-error">*</span>
+        To island <span className="text-error">*</span>
       </label>
 
       <div className="flex items-center gap-2">
@@ -124,7 +124,7 @@ export default function BrickIslandSelector({
                 className="w-full px-3.5 py-2.5 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4" />
-                <span>Create New Island</span>
+                <span>Create new sland</span>
               </button>
             </div>
           )}
@@ -155,7 +155,7 @@ export default function BrickIslandSelector({
         </button>
       </div>
 
-      {/* Add / Edit Island Modals */}
+      {/* Add / Edit island Modals */}
       {(showAddModal || editingIsland) && (
         <AddIslandModal
           onClose={() => {

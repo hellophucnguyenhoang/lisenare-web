@@ -57,9 +57,9 @@ function SaveToIslandModalContent({
         className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Modal Card */}
+      {/* Modal card  */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-3xl p-5 sm:p-6 w-full max-w-sm sm:max-w-md shadow-2xl animate-in zoom-in duration-200 text-center z-10 max-h-[90vh] overflow-y-auto">
-        {/* Top Header with single Back button */}
+        {/* Top header  with single Back button */}
         <div className="flex items-center justify-start mb-3 pb-2 border-b border-outline-variant/30">
           <button
             type="button"
@@ -100,7 +100,7 @@ function SaveToIslandModalContent({
           )}
         </p>
 
-        {/* Existing Islands List: Shown FIRST for 1-tap save */}
+        {/* Existing islands List: Shown FIRST for 1-tap save */}
         {islands.length > 0 ? (
           <div className="space-y-2 mb-3 max-h-56 sm:max-h-64 overflow-y-auto pr-1 text-left">
             {islands.map((col) => (
@@ -110,7 +110,7 @@ function SaveToIslandModalContent({
                 id={`btn-select-col-${col.id}`}
                 disabled={isSaving}
                 onClick={() => onSave(col.id)}
-                className="w-full text-left p-3.5 bg-surface-container-low hover:bg-primary/10 hover:border-primary/40 active:scale-98 transition-all border border-outline-variant/60 rounded-2xl flex items-center justify-between cursor-pointer disabled:opacity-50 min-h-[48px]"
+                className="w-full text-left p-3.5 bg-surface-container-low hover:bg-primary/10 hover:border-primary/40 active:scale-98 transition-all border border-outline-variant/60 rounded-2xl flex items-center justify-between cursor-pointer disabled:opacity-50 min-h-12"
               >
                 <div className="truncate mr-2">
                   <span className="block truncate text-xs sm:text-sm font-bold text-on-surface">
@@ -137,13 +137,13 @@ function SaveToIslandModalContent({
           </div>
         )}
 
-        {/* Create New Island Section */}
+        {/* Create new  island Section */}
         <div className="mb-4 text-left">
           {islands.length > 0 && !showCreateInput ? (
             <button
               type="button"
               onClick={() => setShowCreateInput(true)}
-              className="w-full py-2.5 px-3.5 border border-dashed border-outline-variant/80 hover:border-primary hover:bg-primary/5 rounded-2xl text-xs font-bold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer min-h-[42px]"
+              className="w-full py-2.5 px-3.5 border border-dashed border-outline-variant/80 hover:border-primary hover:bg-primary/5 rounded-2xl text-xs font-bold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer min-h-10.5"
             >
               <Plus className="w-3.5 h-3.5 text-primary" />
               <span>Or create a new island</span>
@@ -154,7 +154,7 @@ function SaveToIslandModalContent({
               className="p-3.5 bg-surface-container/40 border border-outline-variant/60 rounded-2xl space-y-3 animate-in fade-in duration-150"
             >
               <label className="text-[11px] font-bold text-on-surface-variant block">
-                New Island Name
+                New island name
               </label>
               <input
                 type="text"

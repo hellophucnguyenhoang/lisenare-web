@@ -57,11 +57,11 @@ export default function TargetLanguageSelector({
       <div className="flex items-center gap-2 min-w-0">
         <Languages className="w-4 h-4 text-primary shrink-0" />
         <span className="text-xs sm:text-sm font-bold text-on-surface truncate">
-          Target Language
+          Target language
         </span>
       </div>
 
-      {/* Custom Selector Button & Floating Dropdown */}
+      {/* Custom selector button & floating dropdown */}
       <div className="relative shrink-0">
         <button
           type="button"
@@ -88,7 +88,7 @@ export default function TargetLanguageSelector({
           />
         </button>
 
-        {/* Custom Dropdown Popover */}
+        {/* Custom dropdown popover */}
         {isOpen && (
           <div
             role="listbox"

@@ -10,20 +10,20 @@ export const ERROR_MESSAGES: Record<string, string> = {
   USERNAME_OR_EMAIL_TAKEN: "Username or email is already taken",
   INCORRECT_EMAIL: "Your old email is not correct",
 
-  // One-Time Passwords (OTP)
+  // One-time passwords (OTP)
   OTP_NOT_FOUND:
     "No active verification code was found. Please request a new one.",
   OTP_EXPIRED: "Your verification code has expired. Please send a new code.",
   INVALID_OTP:
     "The verification code you entered is invalid. Please double-check it.",
 
-  // Islands Management
+  // Islands management
   COLLECTION_ALREADY_EXISTS: "You already have this island.",
 
-  // Bricks Management
+  // Bricks management
   BRICK_EDIT_FORBIDDEN: "You do not have permission to modify this item.",
 
-  // External / AI Engine Errors
+  // External / AI Engine errors
   INVALID_EXPLANATION_RESPONSE:
     "We couldn't generate a clear explanation right now. Please try again in a moment.",
 
