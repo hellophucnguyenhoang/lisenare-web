@@ -3,7 +3,7 @@ import { type TimeSeriesPoint } from "@/api/stats";
 import TotalLearningLineChart from "./TotalLearningLineChart";
 import ReviewsBarChart from "./ReviewsBarChart";
 
-interface PracticeActivityCardProps {
+interface RetrievalActivityCardProps {
   metric: "reviews" | "total_learning";
   onMetricChange: (metric: "reviews" | "total_learning") => void;
   days: number | null;
@@ -12,14 +12,14 @@ interface PracticeActivityCardProps {
   isLoading: boolean;
 }
 
-export default function PracticeActivityCard({
+export default function RetrievalActivityCard({
   metric,
   onMetricChange,
   days,
   onDaysChange,
   points,
   isLoading,
-}: PracticeActivityCardProps) {
+}: RetrievalActivityCardProps) {
   const maxTimeseriesValue = Math.max(...points.map((p) => p.value), 1);
   const totalTimeseriesValue = points.reduce((sum, p) => sum + p.value, 0);
   const latestTimeseriesValue =
@@ -31,7 +31,7 @@ export default function PracticeActivityCard({
         <div>
           <h3 className="text-sm font-bold font-display text-on-surface flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-primary" />
-            Practice Activity
+            Retrieval Activity
           </h3>
           <p className="text-xs text-on-surface-variant font-medium mt-0.5">
             {metric === "total_learning"

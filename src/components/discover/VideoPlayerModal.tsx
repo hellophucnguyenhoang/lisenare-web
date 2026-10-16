@@ -5,13 +5,13 @@ import { type DiscoverVideo } from "@/types";
 interface VideoPlayerModalProps {
   video: DiscoverVideo | null;
   onClose: () => void;
-  onSaveToCollection?: (video: DiscoverVideo) => void;
+  onSaveToIsland?: (video: DiscoverVideo) => void;
 }
 
 export default function VideoPlayerModal({
   video,
   onClose,
-  onSaveToCollection,
+  onSaveToIsland,
 }: VideoPlayerModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -96,11 +96,11 @@ export default function VideoPlayerModal({
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
-            {onSaveToCollection && (
+            {onSaveToIsland && (
               <button
                 type="button"
                 onClick={() => {
-                  onSaveToCollection(video);
+                  onSaveToIsland(video);
                   onClose();
                 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary font-bold rounded-xl text-xs hover:bg-primary-container transition-all active:scale-95 cursor-pointer shadow-xs"

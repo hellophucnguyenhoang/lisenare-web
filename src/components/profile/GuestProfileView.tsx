@@ -23,7 +23,7 @@ export default function GuestProfileView({
         </h2>
 
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Simple and effective practice.
+          Simple and effective retrieval.
         </p>
 
         <div className="w-full flex flex-col gap-2.5 mb-6">
@@ -56,7 +56,7 @@ export default function GuestProfileView({
           <div className="p-2 rounded-xl bg-surface/50">
             <Layers className="w-4 h-4 text-primary mx-auto mb-1" />
             <span className="text-[10px] font-semibold text-outline block">
-              Collections
+              Islands
             </span>
           </div>
           <div className="p-2 rounded-xl bg-surface/50">

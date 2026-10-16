@@ -26,17 +26,14 @@ interface BrickDetailModalProps {
   isOpen: boolean;
   brickId: number | null;
   onClose: () => void;
-  onPractice?: (brickId: number) => void;
+  onRetrieval?: (brickId: number) => void;
   onEdit?: (brick: Brick) => void;
-  onAddToCollection?: (brick: {
+  onAddToIsland?: (brick: {
     brick_id: number;
     target_text: string;
     native_text: string;
   }) => void;
-  onAddCollection?: (collection: {
-    collection_id: number;
-    collection_name: string;
-  }) => void;
+  onAddIsland?: (island: { island_id: number; island_name: string }) => void;
   isLoggedIn?: boolean;
   currentLearnerId?: number;
   onOpenAuth?: (mode: AuthMode) => void;
@@ -47,10 +44,10 @@ export default function BrickDetailModal({
   isOpen,
   brickId,
   onClose,
-  onPractice,
+  onRetrieval,
   onEdit,
-  onAddToCollection,
-  onAddCollection,
+  onAddToIsland,
+  onAddIsland,
   isLoggedIn = false,
   currentLearnerId,
   onOpenAuth,
@@ -315,8 +312,8 @@ export default function BrickDetailModal({
               </div>
             )}
 
-            {/* Collection Info Box with "Add this collection" button */}
-            {detail.collectionName && (
+            {/* Island Info Box with "Add this island" button */}
+            {detail.islandName && (
               <div className="p-4 bg-surface-container/30 border border-outline-variant/60 rounded-2xl space-y-3">
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -324,29 +321,29 @@ export default function BrickDetailModal({
                   </div>
                   <div className="min-w-0">
                     <span className="text-[10px] uppercase font-bold text-outline block">
-                      Collection
+                      Island
                     </span>
                     <span className="text-sm font-bold text-on-surface truncate block">
-                      {detail.collectionName}
+                      {detail.islandName}
                     </span>
                   </div>
                 </div>
 
-                {!isOwner && detail.collectionId && onAddCollection && (
+                {!isOwner && detail.islandId && onAddIsland && (
                   <button
                     type="button"
-                    id="btn-detail-add-this-collection"
+                    id="btn-detail-add-this-island"
                     onClick={() => {
-                      onAddCollection({
-                        collection_id: detail.collectionId,
-                        collection_name: detail.collectionName,
+                      onAddIsland({
+                        island_id: detail.islandId,
+                        island_name: detail.islandName,
                       });
                     }}
                     className="w-full py-2.5 px-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
-                    title={`Add "${detail.collectionName}" to your collection`}
+                    title={`Add "${detail.islandName}" to your island`}
                   >
                     <FolderPlus className="w-4 h-4" />
-                    <span>Add this Collection</span>
+                    <span>Add this Island</span>
                   </button>
                 )}
               </div>
@@ -385,18 +382,18 @@ export default function BrickDetailModal({
             <div className="pt-4 border-t border-outline-variant/40">
               {isOwner ? (
                 <div className="flex items-center justify-between gap-3">
-                  {onPractice && (
+                  {onRetrieval && (
                     <button
                       type="button"
-                      id="btn-detail-practice"
+                      id="btn-detail-retrieval"
                       onClick={() => {
                         handleClose();
-                        onPractice(detail.id);
+                        onRetrieval(detail.id);
                       }}
                       className="flex-1 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
                     >
                       <Play className="w-4 h-4 text-on-primary" />
-                      <span>Practice</span>
+                      <span>Retrieval</span>
                     </button>
                   )}
                   {onEdit && (
@@ -422,14 +419,14 @@ export default function BrickDetailModal({
               ) : alreadyExists ? (
                 <div className="w-full py-2.5 px-4 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 rounded-xl flex items-center justify-center gap-1.5">
                   <Check className="w-4 h-4" />
-                  <span>In your collection</span>
+                  <span>In your island</span>
                 </div>
               ) : (
                 <button
                   type="button"
                   id="btn-detail-add-this-brick"
                   onClick={() => {
-                    onAddToCollection?.({
+                    onAddToIsland?.({
                       brick_id: detail.id,
                       target_text: detail.targetText,
                       native_text: detail.nativeText,

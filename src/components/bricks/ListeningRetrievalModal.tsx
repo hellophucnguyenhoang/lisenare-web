@@ -20,11 +20,11 @@ import { resolveAudioUrl } from "@/utils/audio";
 
 export type ListeningPlaybackMode = "auto" | "manual";
 
-interface ListeningPracticeModalProps {
+interface ListeningRetrievalModalProps {
   isOpen: boolean;
   onClose: () => void;
-  collectionId?: number | null;
-  collectionName?: string | null;
+  islandId?: number | null;
+  islandName?: string | null;
 }
 
 const PLAYBACK_SPEEDS = [0.8, 1.0, 1.2] as const;
@@ -52,12 +52,12 @@ const setStorageBool = (key: string, val: boolean) => {
   } catch {}
 };
 
-export default function ListeningPracticeModal({
+export default function ListeningRetrievalModal({
   isOpen,
   onClose,
-  collectionId,
-  collectionName,
-}: ListeningPracticeModalProps) {
+  islandId,
+  islandName,
+}: ListeningRetrievalModalProps) {
   const [playbackMode, setPlaybackMode] =
     useState<ListeningPlaybackMode>("auto");
   const [shuffleEnabled, setShuffleEnabled] = useState(() =>
@@ -95,7 +95,7 @@ export default function ListeningPracticeModal({
     refetch,
   } = useInfiniteListeningBricks(
     {
-      collection_ids: collectionId ? [collectionId] : undefined,
+      island_ids: islandId ? [islandId] : undefined,
       limit: 15,
       shuffle_page: shuffleEnabled,
     },
@@ -449,16 +449,16 @@ export default function ListeningPracticeModal({
             <div className="min-w-0">
               <h2 className="text-sm font-bold text-on-surface truncate flex items-center gap-1.5">
                 <span>Listen Bricks</span>
-                {collectionName && (
+                {islandName && (
                   <span className="text-outline font-normal text-xs truncate">
-                    • {collectionName}
+                    • {islandName}
                   </span>
                 )}
               </h2>
               <p className="text-[11px] text-outline truncate">
                 {rawItems.length > 0
                   ? `Brick ${currentIndex + 1} of ${totalCount}`
-                  : "Continuous listening practice"}
+                  : "Continuous listening retrieval"}
               </p>
             </div>
           </div>
@@ -575,7 +575,7 @@ export default function ListeningPracticeModal({
                 No bricks found to listen to.
               </p>
               <p className="text-xs text-outline max-w-xs">
-                Add bricks to your collection first to start listening practice.
+                Add bricks to your island first to start listening retrieval.
               </p>
             </div>
           ) : isFinishedSession ? (
@@ -649,7 +649,7 @@ export default function ListeningPracticeModal({
                 </h2>
               </div>
 
-              {/* Show/Hide Answer Toggle Button (matching PracticePage flashcard) */}
+              {/* Show/Hide Answer Toggle Button (matching RetrievalPage flashcard) */}
               <div className="flex items-center justify-center my-0.5">
                 <button
                   type="button"
@@ -661,10 +661,14 @@ export default function ListeningPracticeModal({
                       : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-secondary"
                   }`}
                   title={
-                    isRevealed ? "Hide target sentence" : "Reveal target sentence"
+                    isRevealed
+                      ? "Hide target sentence"
+                      : "Reveal target sentence"
                   }
                   aria-label={
-                    isRevealed ? "Hide target sentence" : "Reveal target sentence"
+                    isRevealed
+                      ? "Hide target sentence"
+                      : "Reveal target sentence"
                   }
                 >
                   {isRevealed ? (

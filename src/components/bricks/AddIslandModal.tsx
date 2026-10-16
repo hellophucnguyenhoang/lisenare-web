@@ -8,17 +8,17 @@ import {
   Tag,
   Upload,
 } from "lucide-react";
-import { type Collection } from "@/types";
+import { type Island } from "@/types";
 import PlainTextInput from "@/components/common/PlainTextInput";
 
-interface AddCollectionModalProps {
+interface AddIslandModalProps {
   onClose: () => void;
-  onAddCollection?: (data: {
+  onAddIsland?: (data: {
     name: string;
     description: string;
     tags: string[];
   }) => void;
-  onEditCollection?: (
+  onEditIsland?: (
     id: number,
     data: {
       name: string;
@@ -26,22 +26,22 @@ interface AddCollectionModalProps {
       tags: string[];
     },
   ) => void;
-  onExportCollection?: (collection: Collection) => void;
-  collectionToEdit?: Collection;
+  onExportIsland?: (island: Island) => void;
+  islandToEdit?: Island;
 }
 
-export default function AddCollectionModal({
+export default function AddIslandModal({
   onClose,
-  onAddCollection,
-  onEditCollection,
-  onExportCollection,
-  collectionToEdit,
-}: AddCollectionModalProps) {
-  const [name, setName] = useState(collectionToEdit?.name || "");
+  onAddIsland,
+  onEditIsland,
+  onExportIsland,
+  islandToEdit,
+}: AddIslandModalProps) {
+  const [name, setName] = useState(islandToEdit?.name || "");
   const [description, setDescription] = useState(
-    collectionToEdit?.description || "",
+    islandToEdit?.description || "",
   );
-  const [tags, setTags] = useState<string[]>(collectionToEdit?.tags || []);
+  const [tags, setTags] = useState<string[]>(islandToEdit?.tags || []);
   const [tagInput, setTagInput] = useState("");
 
   const handleAddTag = () => {
@@ -75,10 +75,10 @@ export default function AddCollectionModal({
       tags,
     };
 
-    if (collectionToEdit && onEditCollection) {
-      onEditCollection(collectionToEdit.id, payload);
-    } else if (onAddCollection) {
-      onAddCollection(payload);
+    if (islandToEdit && onEditIsland) {
+      onEditIsland(islandToEdit.id, payload);
+    } else if (onAddIsland) {
+      onAddIsland(payload);
     }
     onClose();
   };
@@ -90,7 +90,7 @@ export default function AddCollectionModal({
         <div className="flex justify-between items-center pb-4 border-b border-outline-variant/30">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              {collectionToEdit ? (
+              {islandToEdit ? (
                 <FolderEdit className="w-5 h-5" />
               ) : (
                 <FolderPlus className="w-5 h-5" />
@@ -98,11 +98,11 @@ export default function AddCollectionModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                {collectionToEdit ? "Edit Collection" : "Create Collection"}
+                {islandToEdit ? "Edit Island" : "Create Island"}
               </h3>
               <p className="text-xs text-outline">
-                {collectionToEdit
-                  ? "Update collection details & tags"
+                {islandToEdit
+                  ? "Update island details & tags"
                   : "Organize vocabulary by topics"}
               </p>
             </div>
@@ -118,17 +118,22 @@ export default function AddCollectionModal({
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4" autoComplete="off" noValidate>
-          {/* Collection Name */}
+        <form
+          onSubmit={handleSubmit}
+          className="mt-5 space-y-4"
+          autoComplete="off"
+          noValidate
+        >
+          {/* Island Name */}
           <div className="space-y-1.5">
             <label
-              htmlFor="input-collection-name"
+              htmlFor="input-island-name"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              Collection Name <span className="text-error">*</span>
+              Island Name <span className="text-error">*</span>
             </label>
             <PlainTextInput
-              id="input-collection-name"
+              id="input-island-name"
               value={name}
               onChange={setName}
               placeholder="e.g. Slang Words, Medical Terms, Travel"
@@ -140,21 +145,21 @@ export default function AddCollectionModal({
           {/* Description */}
           <div className="space-y-1.5">
             <label
-              htmlFor="input-collection-desc"
+              htmlFor="input-island-desc"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
               Description (Optional)
             </label>
             <textarea
-              id="input-collection-desc"
-              name="collection-description"
+              id="input-island-desc"
+              name="island-description"
               autoComplete="off"
               autoCorrect="off"
               spellCheck={false}
               data-form-type="other"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe what this collection is for..."
+              placeholder="Describe what this island is for..."
               rows={2}
               className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary focus:outline-none text-sm font-medium text-on-surface placeholder:text-outline transition-all resize-none"
             />
@@ -163,7 +168,7 @@ export default function AddCollectionModal({
           {/* Tags */}
           <div className="space-y-1.5">
             <label
-              htmlFor="input-collection-tags"
+              htmlFor="input-island-tags"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
               Tags (Optional)
@@ -174,7 +179,7 @@ export default function AddCollectionModal({
                   <Tag className="w-3.5 h-3.5" />
                 </div>
                 <PlainTextInput
-                  id="input-collection-tags"
+                  id="input-island-tags"
                   value={tagInput}
                   onChange={setTagInput}
                   onKeyDown={handleTagKeyDown}
@@ -218,12 +223,12 @@ export default function AddCollectionModal({
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2 border-t border-outline-variant/30">
-            {collectionToEdit && onExportCollection && (
+            {islandToEdit && onExportIsland && (
               <button
                 type="button"
-                onClick={() => onExportCollection(collectionToEdit)}
+                onClick={() => onExportIsland(islandToEdit)}
                 className="py-2.5 px-3 bg-surface hover:bg-surface-container border border-outline-variant/60 text-primary font-bold text-xs rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                title="Export this collection as JSON"
+                title="Export this island as JSON"
               >
                 <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Export</span>
@@ -242,9 +247,7 @@ export default function AddCollectionModal({
               className="flex-2 py-2.5 px-4 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary/95 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Check className="w-4 h-4" />
-              <span>
-                {collectionToEdit ? "Save Changes" : "Create Collection"}
-              </span>
+              <span>{islandToEdit ? "Save Changes" : "Create Island"}</span>
             </button>
           </div>
         </form>

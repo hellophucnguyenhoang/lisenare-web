@@ -17,7 +17,7 @@ const sampleBrick = {
     id: 2,
     name: "Phúc",
   },
-  collectionId: 1,
+  islandId: 1,
   tags: ["Lesson 1363"],
   learned: false,
 };

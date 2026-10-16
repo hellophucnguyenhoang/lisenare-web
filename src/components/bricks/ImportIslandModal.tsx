@@ -9,52 +9,49 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { type Collection } from "@/types";
-import {
-  useImportCollection,
-  useImportToNewCollection,
-} from "@/hooks/useCollections";
+import { type Island } from "@/types";
+import { useImportIsland, useImportToNewIsland } from "@/hooks/useIslands";
 import PlainTextInput from "@/components/common/PlainTextInput";
 import { toast } from "sonner";
 
-interface ImportCollectionModalProps {
+interface ImportIslandModalProps {
   isOpen: boolean;
   onClose: () => void;
-  collections: Collection[];
-  defaultCollectionId?: number | null;
-  onSuccess?: (collectionId: number) => void;
+  islands: Island[];
+  defaultIslandId?: number | null;
+  onSuccess?: (islandId: number) => void;
 }
 
-export default function ImportCollectionModal({
+export default function ImportIslandModal({
   isOpen,
   onClose,
-  collections,
-  defaultCollectionId,
+  islands,
+  defaultIslandId,
   onSuccess,
-}: ImportCollectionModalProps) {
+}: ImportIslandModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [brickCount, setBrickCount] = useState<number | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Target collection mode: 'existing' | 'new'
+  // Target island mode: 'existing' | 'new'
   const [mode, setMode] = useState<"existing" | "new">(() => {
-    return collections.length > 0 ? "existing" : "new";
+    return islands.length > 0 ? "existing" : "new";
   });
 
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    number | null
-  >(() => {
-    if (defaultCollectionId) return defaultCollectionId;
-    return collections.length > 0 ? collections[0].id : null;
-  });
+  const [selectedIslandId, setSelectedIslandId] = useState<number | null>(
+    () => {
+      if (defaultIslandId) return defaultIslandId;
+      return islands.length > 0 ? islands[0].id : null;
+    },
+  );
 
-  const [newCollectionName, setNewCollectionName] = useState("");
+  const [newIslandName, setNewIslandName] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const importToExisting = useImportCollection();
-  const importToNew = useImportToNewCollection();
+  const importToExisting = useImportIsland();
+  const importToNew = useImportToNewIsland();
   const isImporting = importToExisting.isPending || importToNew.isPending;
 
   if (!isOpen) return null;
@@ -83,7 +80,7 @@ export default function ImportCollectionModal({
 
       if (!Array.isArray(parsed)) {
         setFileError(
-          "Invalid collection file: the JSON file must contain a list of bricks.",
+          "Invalid island file: the JSON file must contain a list of bricks.",
         );
         setFile(null);
         setBrickCount(null);
@@ -93,9 +90,9 @@ export default function ImportCollectionModal({
       setFile(selectedFile);
       setBrickCount(parsed.length);
 
-      // Auto-suggest new collection name if empty
-      if (!newCollectionName) {
-        setNewCollectionName(sanitizeNameFromFilename(selectedFile.name));
+      // Auto-suggest new island name if empty
+      if (!newIslandName) {
+        setNewIslandName(sanitizeNameFromFilename(selectedFile.name));
       }
     } catch {
       setFileError("Unable to parse JSON file. The file may be corrupted.");
@@ -146,53 +143,53 @@ export default function ImportCollectionModal({
     }
 
     if (mode === "new") {
-      if (!newCollectionName.trim()) {
-        toast.error("Please enter a name for the new collection.");
+      if (!newIslandName.trim()) {
+        toast.error("Please enter a name for the new island.");
         return;
       }
 
       importToNew.mutate(
         {
-          collectionName: newCollectionName.trim(),
+          islandName: newIslandName.trim(),
           file,
         },
         {
-          onSuccess: ({ collection, result }) => {
+          onSuccess: ({ island, result }) => {
             toast.success(
-              `Imported to "${collection.name}": ${result.added} added, ${result.skipped} skipped.`,
+              `Imported to "${island.name}": ${result.added} added, ${result.skipped} skipped.`,
             );
-            onSuccess?.(collection.id);
+            onSuccess?.(island.id);
             onClose();
           },
           onError: (err: unknown) => {
-            console.error("Failed to import collection:", err);
-            toast.error("Failed to import collection. Please check the file.");
+            console.error("Failed to import island:", err);
+            toast.error("Failed to import island. Please check the file.");
           },
         },
       );
     } else {
-      if (!selectedCollectionId) {
-        toast.error("Please select a collection to import into.");
+      if (!selectedIslandId) {
+        toast.error("Please select an island to import into.");
         return;
       }
 
-      const targetCol = collections.find((c) => c.id === selectedCollectionId);
+      const targetCol = islands.find((c) => c.id === selectedIslandId);
       importToExisting.mutate(
         {
-          collectionId: selectedCollectionId,
+          islandId: selectedIslandId,
           file,
         },
         {
           onSuccess: (result) => {
             toast.success(
-              `Imported to "${targetCol?.name || "collection"}": ${result.added} added, ${result.skipped} skipped.`,
+              `Imported to "${targetCol?.name || "island"}": ${result.added} added, ${result.skipped} skipped.`,
             );
-            onSuccess?.(selectedCollectionId);
+            onSuccess?.(selectedIslandId);
             onClose();
           },
           onError: (err: unknown) => {
-            console.error("Failed to import collection:", err);
-            toast.error("Failed to import collection. Please check the file.");
+            console.error("Failed to import island:", err);
+            toast.error("Failed to import island. Please check the file.");
           },
         },
       );
@@ -210,7 +207,7 @@ export default function ImportCollectionModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                Import Collection
+                Import Island
               </h3>
               <p className="text-xs text-outline">
                 Load bricks from an exported JSON file
@@ -233,7 +230,7 @@ export default function ImportCollectionModal({
           {/* File Picker / Dropzone */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-              Collection JSON File <span className="text-error">*</span>
+              Island JSON File <span className="text-error">*</span>
             </label>
 
             <input
@@ -280,7 +277,8 @@ export default function ImportCollectionModal({
                     </p>
                     <p className="text-[11px] text-outline font-medium">
                       {(file.size / 1024).toFixed(1)} KB
-                      {brickCount !== null && ` • ${brickCount} bricks detected`}
+                      {brickCount !== null &&
+                        ` • ${brickCount} bricks detected`}
                     </p>
                   </div>
                 </div>
@@ -305,7 +303,7 @@ export default function ImportCollectionModal({
             )}
           </div>
 
-          {/* Destination Collection Selector */}
+          {/* Destination Island Selector */}
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
               Import Destination
@@ -316,7 +314,7 @@ export default function ImportCollectionModal({
               <button
                 type="button"
                 onClick={() => setMode("existing")}
-                disabled={collections.length === 0}
+                disabled={islands.length === 0}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   mode === "existing"
                     ? "bg-white text-primary shadow-xs"
@@ -324,7 +322,7 @@ export default function ImportCollectionModal({
                 }`}
               >
                 <Folder className="w-3.5 h-3.5" />
-                <span>Existing Collection</span>
+                <span>Existing Island</span>
               </button>
               <button
                 type="button"
@@ -336,7 +334,7 @@ export default function ImportCollectionModal({
                 }`}
               >
                 <FolderPlus className="w-3.5 h-3.5" />
-                <span>New Collection</span>
+                <span>New Island</span>
               </button>
             </div>
 
@@ -344,34 +342,32 @@ export default function ImportCollectionModal({
             {mode === "existing" ? (
               <div className="space-y-1">
                 <select
-                  value={selectedCollectionId ?? ""}
-                  onChange={(e) =>
-                    setSelectedCollectionId(Number(e.target.value))
-                  }
+                  value={selectedIslandId ?? ""}
+                  onChange={(e) => setSelectedIslandId(Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-xs font-semibold text-on-surface focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all cursor-pointer"
                 >
-                  {collections.map((col) => (
+                  {islands.map((col) => (
                     <option key={col.id} value={col.id}>
                       {col.name} ({col.brickCount ?? 0} bricks)
                     </option>
                   ))}
                 </select>
                 <p className="text-[11px] text-outline px-1">
-                  Bricks will be merged into this collection. Existing duplicates
+                  Bricks will be merged into this island. Existing duplicates
                   are safely skipped.
                 </p>
               </div>
             ) : (
               <div className="space-y-1">
                 <PlainTextInput
-                  id="input-import-new-collection-name"
-                  value={newCollectionName}
-                  onChange={setNewCollectionName}
+                  id="input-import-new-island-name"
+                  value={newIslandName}
+                  onChange={setNewIslandName}
                   placeholder="e.g. Travel Vocabulary, Slang"
                   className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-2 focus:ring-primary/40 focus:border-primary text-xs font-semibold text-on-surface outline-none transition-all"
                 />
                 <p className="text-[11px] text-outline px-1">
-                  A new collection will be created with these bricks.
+                  A new island will be created with these bricks.
                 </p>
               </div>
             )}
@@ -393,8 +389,8 @@ export default function ImportCollectionModal({
               disabled={
                 !file ||
                 isImporting ||
-                (mode === "new" && !newCollectionName.trim()) ||
-                (mode === "existing" && !selectedCollectionId)
+                (mode === "new" && !newIslandName.trim()) ||
+                (mode === "existing" && !selectedIslandId)
               }
               className="flex-2 py-2.5 px-4 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary/95 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
             >

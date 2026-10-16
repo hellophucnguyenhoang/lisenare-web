@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type Collection } from "@/types";
+import { type Island } from "@/types";
 import {
   PlusCircle,
   FolderPlus,
@@ -8,47 +8,43 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-interface SaveToCollectionModalProps {
+interface SaveToIslandModalProps {
   isOpen: boolean;
-  mode?: "brick" | "collection";
+  mode?: "brick" | "island";
   brick?: { nativeText?: string; targetText?: string } | null;
-  collectionToCopy?: { collection_id: number; collection_name: string } | null;
-  collections: Collection[];
+  islandToCopy?: { island_id: number; island_name: string } | null;
+  islands: Island[];
   isSaving?: boolean;
-  onSave: (collectionId: number) => void;
+  onSave: (islandId: number) => void;
   onCreateAndSave?: (name: string) => void;
   onClose: () => void;
 }
 
-function SaveToCollectionModalContent({
+function SaveToIslandModalContent({
   mode = "brick",
   brick,
-  collectionToCopy,
-  collections,
+  islandToCopy,
+  islands,
   isSaving = false,
   onSave,
   onCreateAndSave,
   onClose,
-}: Omit<SaveToCollectionModalProps, "isOpen">) {
-  const isCollectionMode = mode === "collection";
-  const [showCreateInput, setShowCreateInput] = useState(collections.length === 0);
-  const [newCollectionName, setNewCollectionName] = useState(
-    isCollectionMode && collectionToCopy?.collection_name
-      ? collectionToCopy.collection_name
-      : "",
+}: Omit<SaveToIslandModalProps, "isOpen">) {
+  const isIslandMode = mode === "island";
+  const [showCreateInput, setShowCreateInput] = useState(islands.length === 0);
+  const [newIslandName, setNewIslandName] = useState(
+    isIslandMode && islandToCopy?.island_name ? islandToCopy.island_name : "",
   );
 
-  if (!isCollectionMode && !brick) return null;
-  if (isCollectionMode && !collectionToCopy) return null;
+  if (!isIslandMode && !brick) return null;
+  if (isIslandMode && !islandToCopy) return null;
 
-  const displayText =
-    brick?.targetText || brick?.nativeText || "this brick";
-  const sourceCollectionName =
-    collectionToCopy?.collection_name || "this collection";
+  const displayText = brick?.targetText || brick?.nativeText || "this brick";
+  const sourceIslandName = islandToCopy?.island_name || "this island";
 
   const handleCreateSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    const trimmed = newCollectionName.trim();
+    const trimmed = newIslandName.trim();
     if (!trimmed || isSaving || !onCreateAndSave) return;
     onCreateAndSave(trimmed);
   };
@@ -78,7 +74,7 @@ function SaveToCollectionModalContent({
         </div>
 
         <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
-          {isCollectionMode ? (
+          {isIslandMode ? (
             <FolderPlus className="w-5 h-5" />
           ) : (
             <PlusCircle className="w-5 h-5" />
@@ -86,26 +82,28 @@ function SaveToCollectionModalContent({
         </div>
 
         <h3 className="text-lg font-bold text-primary mb-1 font-display">
-          {isCollectionMode ? "Add this collection" : "Add this brick"}
+          {isIslandMode ? "Add this island" : "Add this brick"}
         </h3>
         <p className="text-xs text-on-surface-variant mb-4 px-2 leading-relaxed">
-          {isCollectionMode ? (
+          {isIslandMode ? (
             <>
-              Choose an existing collection to add all bricks from{" "}
-              <strong className="text-on-surface">"{sourceCollectionName}"</strong> into, or create a new one:
+              Choose an existing island to add all bricks from{" "}
+              <strong className="text-on-surface">"{sourceIslandName}"</strong>{" "}
+              into, or create a new one:
             </>
           ) : (
             <>
-              Choose an existing collection to save{" "}
-              <strong className="text-on-surface">"{displayText}"</strong> into, or create a new one:
+              Choose an existing island to save{" "}
+              <strong className="text-on-surface">"{displayText}"</strong> into,
+              or create a new one:
             </>
           )}
         </p>
 
-        {/* Existing Collections List: Shown FIRST for 1-tap save */}
-        {collections.length > 0 ? (
+        {/* Existing Islands List: Shown FIRST for 1-tap save */}
+        {islands.length > 0 ? (
           <div className="space-y-2 mb-3 max-h-56 sm:max-h-64 overflow-y-auto pr-1 text-left">
-            {collections.map((col) => (
+            {islands.map((col) => (
               <button
                 key={col.id}
                 type="button"
@@ -119,7 +117,8 @@ function SaveToCollectionModalContent({
                     {col.name}
                   </span>
                   <span className="text-[11px] text-outline font-normal">
-                    {col.brickCount ?? 0} {col.brickCount === 1 ? "brick" : "bricks"}
+                    {col.brickCount ?? 0}{" "}
+                    {col.brickCount === 1 ? "brick" : "bricks"}
                   </span>
                 </div>
                 {isSaving ? (
@@ -134,20 +133,20 @@ function SaveToCollectionModalContent({
           </div>
         ) : (
           <div className="p-4 bg-surface-container/30 border border-dashed border-outline-variant/60 rounded-2xl mb-4 text-xs text-on-surface-variant">
-            You don't have any collections yet. Create your first collection below:
+            You don't have any islands yet. Create your first island below:
           </div>
         )}
 
-        {/* Create New Collection Section */}
+        {/* Create New Island Section */}
         <div className="mb-4 text-left">
-          {collections.length > 0 && !showCreateInput ? (
+          {islands.length > 0 && !showCreateInput ? (
             <button
               type="button"
               onClick={() => setShowCreateInput(true)}
               className="w-full py-2.5 px-3.5 border border-dashed border-outline-variant/80 hover:border-primary hover:bg-primary/5 rounded-2xl text-xs font-bold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5 cursor-pointer min-h-[42px]"
             >
               <Plus className="w-3.5 h-3.5 text-primary" />
-              <span>Or create a new collection</span>
+              <span>Or create a new island</span>
             </button>
           ) : (
             <form
@@ -155,19 +154,19 @@ function SaveToCollectionModalContent({
               className="p-3.5 bg-surface-container/40 border border-outline-variant/60 rounded-2xl space-y-3 animate-in fade-in duration-150"
             >
               <label className="text-[11px] font-bold text-on-surface-variant block">
-                New Collection Name
+                New Island Name
               </label>
               <input
                 type="text"
-                value={newCollectionName}
-                onChange={(e) => setNewCollectionName(e.target.value)}
-                placeholder="Collection name..."
+                value={newIslandName}
+                onChange={(e) => setNewIslandName(e.target.value)}
+                placeholder="Island name..."
                 disabled={isSaving}
                 className="w-full px-3.5 py-2.5 text-xs bg-surface-container-lowest border border-outline-variant/60 rounded-xl text-on-surface focus:border-primary focus:outline-none transition-colors"
-                autoFocus={collections.length > 0}
+                autoFocus={islands.length > 0}
               />
               <div className="flex items-center gap-2">
-                {collections.length > 0 && (
+                {islands.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setShowCreateInput(false)}
@@ -178,7 +177,7 @@ function SaveToCollectionModalContent({
                 )}
                 <button
                   type="submit"
-                  disabled={!newCollectionName.trim() || isSaving}
+                  disabled={!newIslandName.trim() || isSaving}
                   className="flex-1 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-50 text-center"
                 >
                   {isSaving ? "Saving..." : "Create & Save"}
@@ -187,17 +186,16 @@ function SaveToCollectionModalContent({
             </form>
           )}
         </div>
-
       </div>
     </div>
   );
 }
 
-export default function SaveToCollectionModal(props: SaveToCollectionModalProps) {
+export default function SaveToIslandModal(props: SaveToIslandModalProps) {
   if (!props.isOpen) return null;
   return (
-    <SaveToCollectionModalContent
-      key={`${props.mode ?? "brick"}-${props.collectionToCopy?.collection_id ?? props.brick?.targetText ?? "item"}`}
+    <SaveToIslandModalContent
+      key={`${props.mode ?? "brick"}-${props.islandToCopy?.island_id ?? props.brick?.targetText ?? "item"}`}
       {...props}
     />
   );

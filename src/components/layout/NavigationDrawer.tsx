@@ -10,7 +10,7 @@ interface NavigationDrawerProps {
 }
 
 const NAV_ITEMS = [
-  { id: "practice" as const, label: "Practice", icon: Mic },
+  { id: "retrieval" as const, label: "Retrieval", icon: Mic },
   { id: "bricks" as const, label: "Bricks", icon: Blocks },
   { id: "discover" as const, label: "Discover", icon: Compass },
   { id: "profile" as const, label: "Profile", icon: User },
@@ -57,7 +57,9 @@ export default function NavigationDrawer({
         onClick={onClose}
         aria-hidden="true"
         className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       />
 

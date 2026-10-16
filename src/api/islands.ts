@@ -1,9 +1,9 @@
 import { request } from "./client";
-import type { Collection } from "@/types";
+import type { Island } from "@/types";
 
 // ── API response type (snake_case from server) ──────────
 
-interface CollectionReadApi {
+interface IslandReadApi {
   id: number;
   name: string;
   description: string | null;
@@ -16,7 +16,7 @@ interface CollectionReadApi {
 
 // ── Mapper ──────────────────────────────────────────────
 
-function toCollection(api: CollectionReadApi): Collection {
+function toIsland(api: IslandReadApi): Island {
   return {
     id: api.id,
     name: api.name,
@@ -29,17 +29,17 @@ function toCollection(api: CollectionReadApi): Collection {
 
 // ── Service functions ───────────────────────────────────
 
-export async function listCollections() {
-  const data = await request<CollectionReadApi[]>("/collections");
-  return data.map(toCollection);
+export async function listIslands() {
+  const data = await request<IslandReadApi[]>("/islands");
+  return data.map(toIsland);
 }
 
-export async function createCollection(data: {
+export async function createIsland(data: {
   name: string;
   description?: string | null;
   tags?: string[];
 }) {
-  const api = await request<CollectionReadApi>("/collections", {
+  const api = await request<IslandReadApi>("/islands", {
     method: "POST",
     body: {
       name: data.name,
@@ -47,31 +47,31 @@ export async function createCollection(data: {
       tags: data.tags || [],
     },
   });
-  return toCollection(api);
+  return toIsland(api);
 }
 
-export async function updateCollection(
-  collectionId: number,
+export async function updateIsland(
+  islandId: number,
   data: {
     name?: string | null;
     description?: string | null;
     tags?: string[] | null;
   },
 ) {
-  const api = await request<CollectionReadApi>(`/collections/${collectionId}`, {
+  const api = await request<IslandReadApi>(`/islands/${islandId}`, {
     method: "PATCH",
     body: data,
   });
-  return toCollection(api);
+  return toIsland(api);
 }
 
-export async function deleteCollection(collectionId: number) {
-  await request<void>(`/collections/${collectionId}`, {
+export async function deleteIsland(islandId: number) {
+  await request<void>(`/islands/${islandId}`, {
     method: "DELETE",
   });
 }
 
-// ── Export / Import Collection ──────────────────────────
+// ── Export / Import Island ──────────────────────────
 
 export interface BrickExport {
   native_text: string;
@@ -85,24 +85,22 @@ export interface BrickExport {
   is_private?: boolean;
 }
 
-export interface AddCollectionResult {
+export interface AddIslandResult {
   added: number;
   skipped: number;
 }
 
-export async function exportCollection(
-  collectionId: number,
-): Promise<BrickExport[]> {
-  return request<BrickExport[]>(`/collections/${collectionId}/export`);
+export async function exportIsland(islandId: number): Promise<BrickExport[]> {
+  return request<BrickExport[]>(`/islands/${islandId}/export`);
 }
 
-export async function importCollection(
-  collectionId: number,
+export async function importIsland(
+  islandId: number,
   file: File | Blob,
-): Promise<AddCollectionResult> {
+): Promise<AddIslandResult> {
   const formData = new FormData();
   formData.append("file", file);
-  return request<AddCollectionResult>(`/collections/${collectionId}/import`, {
+  return request<AddIslandResult>(`/islands/${islandId}/import`, {
     method: "POST",
     body: formData,
   });

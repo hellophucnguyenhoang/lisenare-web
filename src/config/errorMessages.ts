@@ -17,8 +17,8 @@ export const ERROR_MESSAGES: Record<string, string> = {
   INVALID_OTP:
     "The verification code you entered is invalid. Please double-check it.",
 
-  // Collections Management
-  COLLECTION_ALREADY_EXISTS: "You already have this collection.",
+  // Islands Management
+  COLLECTION_ALREADY_EXISTS: "You already have this island.",
 
   // Bricks Management
   BRICK_EDIT_FORBIDDEN: "You do not have permission to modify this item.",

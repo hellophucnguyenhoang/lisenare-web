@@ -45,13 +45,13 @@ interface InstructionContent {
 
 const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
   en: {
-    pageTitle: "5 Steps to Practice",
-    backAria: "Go back to practice",
-    introTitle: "How to Practice",
+    pageTitle: "5 Steps to Retrieval",
+    backAria: "Go back to retrieval",
+    introTitle: "How to Retrieval",
     introDescription:
       "Follow these 5 simple steps for every sentence (brick) to build real fluency.",
     addBrickButton: "Add Brick",
-    backButton: "Back to Practice",
+    backButton: "Back to Retrieval",
     steps: [
       {
         step: "Step 1",
@@ -217,17 +217,17 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
   },
 };
 
-interface PracticeInstructionsPageProps {
+interface RetrievalInstructionsPageProps {
   onBack: () => void;
   onNavigateToAddBrick?: () => void;
   backButtonLabel?: string;
 }
 
-export default function PracticeInstructionsPage({
+export default function RetrievalInstructionsPage({
   onBack,
   onNavigateToAddBrick,
   backButtonLabel,
-}: PracticeInstructionsPageProps) {
+}: RetrievalInstructionsPageProps) {
   const [lang, setLang] = useState<InstructionLang>(() => {
     const saved = localStorage.getItem("lisenare_instruction_lang");
     if (saved === "en" || saved === "vi" || saved === "ja") {

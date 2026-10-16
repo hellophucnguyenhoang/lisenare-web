@@ -22,10 +22,10 @@ import {
 } from "lucide-react";
 import { useSearchContextBricks } from "@/hooks/useContextSearch";
 import { useLearnerMe } from "@/hooks/useLearner";
-import { useCollections, useCreateCollection } from "@/hooks/useCollections";
+import { useIslands, useCreateIsland } from "@/hooks/useIslands";
 import {
   useAddBrickFrom,
-  useAddBricksFromCollection,
+  useAddBricksFromIsland,
   useDeleteBrick,
   useForgetBrick,
 } from "@/hooks/useBricks";
@@ -36,14 +36,14 @@ import {
 } from "@/api/bricks";
 import { playShortAudio } from "@/utils/audio";
 import { type Brick, type AuthMode } from "@/types";
-import SaveToCollectionModal from "@/components/bricks/SaveToCollectionModal";
+import SaveToIslandModal from "@/components/bricks/SaveToIslandModal";
 import BrickDetailModal from "@/components/bricks/BrickDetailModal";
 import ReportBrickModal from "@/components/bricks/ReportBrickModal";
 import { toast } from "sonner";
 
 interface SearchPageProps {
   onBack: () => void;
-  onNavigateToPractice?: (brickId?: number) => void;
+  onNavigateToRetrieval?: (brickId?: number) => void;
   onNavigateToEditBrick?: (brick: Brick) => void;
   onOpenAuth?: (mode: AuthMode) => void;
 }
@@ -55,7 +55,7 @@ const RECOMMENDATION_PAGE_SIZE = 6;
 
 export default function SearchPage({
   onBack,
-  onNavigateToPractice,
+  onNavigateToRetrieval,
   onNavigateToEditBrick,
   onOpenAuth,
 }: SearchPageProps) {
@@ -100,16 +100,16 @@ export default function SearchPage({
     target_text: string;
     native_text: string;
   } | null>(null);
-  const [savingCollection, setSavingCollection] = useState<{
-    collection_id: number;
-    collection_name: string;
+  const [savingIsland, setSavingIsland] = useState<{
+    island_id: number;
+    island_name: string;
   } | null>(null);
 
-  const { data: collections = [] } = useCollections(isLoggedIn);
+  const { data: islands = [] } = useIslands(isLoggedIn);
   const queryClient = useQueryClient();
   const addBrickMutation = useAddBrickFrom();
-  const addBricksFromCollectionMutation = useAddBricksFromCollection();
-  const createCollectionMutation = useCreateCollection();
+  const addBricksFromIslandMutation = useAddBricksFromIsland();
+  const createIslandMutation = useCreateIsland();
   const deleteBrickMutation = useDeleteBrick();
   const forgetBrickMutation = useForgetBrick();
   const [openMenuBrickId, setOpenMenuBrickId] = useState<number | null>(null);
@@ -312,25 +312,25 @@ export default function SearchPage({
     setPage(1);
   };
 
-  const handleOpenAddCollection = (collection: {
-    collection_id: number;
-    collection_name: string;
+  const handleOpenAddIsland = (island: {
+    island_id: number;
+    island_name: string;
   }) => {
     if (!isLoggedIn) {
-      toast.error("Please sign in to add collections.");
+      toast.error("Please sign in to add islands.");
       onOpenAuth?.("login");
       return;
     }
-    setSavingCollection(collection);
+    setSavingIsland(island);
   };
 
-  const handleSaveToCollection = (collectionId: number) => {
+  const handleSaveToIsland = (islandId: number) => {
     if (!savingBrick) return;
     addBrickMutation.mutate(
-      { brickId: savingBrick.brick_id, collectionId },
+      { brickId: savingBrick.brick_id, islandId },
       {
         onSuccess: () => {
-          toast.success("Brick added to collection!");
+          toast.success("Brick added to island!");
           void createBrickInteraction({
             session_id: sessionId,
             brick_id: savingBrick.brick_id,
@@ -351,29 +351,27 @@ export default function SearchPage({
     );
   };
 
-  const handleSaveCollectionToTarget = (targetCollectionId: number) => {
-    if (!savingCollection) return;
-    addBricksFromCollectionMutation.mutate(
+  const handleSaveIslandToTarget = (targetIslandId: number) => {
+    if (!savingIsland) return;
+    addBricksFromIslandMutation.mutate(
       {
-        collectionId: savingCollection.collection_id,
-        targetCollectionId,
+        islandId: savingIsland.island_id,
+        targetIslandId,
       },
       {
         onSuccess: (result) => {
           if (result.added === 0) {
             toast.info(
-              "All bricks from this collection are already in your collection.",
+              "All bricks from this island are already in your island.",
             );
           } else if (result.skipped > 0) {
             toast.success(
-              `Added ${result.added} new bricks to your collection (${result.skipped} skipped as duplicates).`,
+              `Added ${result.added} new bricks to your island (${result.skipped} skipped as duplicates).`,
             );
           } else {
-            toast.success(
-              `Added all ${result.added} bricks to your collection!`,
-            );
+            toast.success(`Added all ${result.added} bricks to your island!`);
           }
-          setSavingCollection(null);
+          setSavingIsland(null);
           setDetailBrickId(null);
         },
         onError: (err: unknown) => {
@@ -381,9 +379,7 @@ export default function SearchPage({
             | { detail?: string; message?: string }
             | undefined;
           toast.error(
-            errorObj?.detail ||
-              errorObj?.message ||
-              "Failed to add collection.",
+            errorObj?.detail || errorObj?.message || "Failed to add island.",
           );
         },
       },
@@ -392,20 +388,20 @@ export default function SearchPage({
 
   const handleCreateAndSave = async (name: string) => {
     try {
-      const created = await createCollectionMutation.mutateAsync({
+      const created = await createIslandMutation.mutateAsync({
         name,
         description: "",
         tags: [],
       });
-      if (savingCollection) {
-        handleSaveCollectionToTarget(created.id);
+      if (savingIsland) {
+        handleSaveIslandToTarget(created.id);
       } else if (savingBrick) {
-        handleSaveToCollection(created.id);
+        handleSaveToIsland(created.id);
       }
     } catch (err: unknown) {
       const errorObj = err as { detail?: string; message?: string } | undefined;
       toast.error(
-        errorObj?.detail || errorObj?.message || "Failed to create collection.",
+        errorObj?.detail || errorObj?.message || "Failed to create island.",
       );
     }
   };
@@ -434,7 +430,7 @@ export default function SearchPage({
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
           Sign in to search vocabulary, receive personalized recommendations,
-          and save bricks to your collections.
+          and save bricks to your islands.
         </p>
         {onOpenAuth && (
           <button
@@ -630,8 +626,8 @@ export default function SearchPage({
                             });
                           }}
                           className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all active:scale-95 cursor-pointer"
-                          title="Add to collection"
-                          aria-label="Add to collection"
+                          title="Add to island"
+                          aria-label="Add to island"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -810,7 +806,7 @@ export default function SearchPage({
             <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-10 text-center bg-surface-container-lowest/50">
               <p className="text-sm font-bold text-on-surface mb-1">
                 {activeTab === "yours"
-                  ? "No matching bricks in your collection"
+                  ? "No matching bricks in your island"
                   : "No public bricks found"}
               </p>
               <p className="text-xs text-on-surface-variant max-w-sm mx-auto mb-4">
@@ -951,8 +947,8 @@ export default function SearchPage({
                                 });
                               }}
                               className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all active:scale-95 cursor-pointer"
-                              title="Add to collection"
-                              aria-label="Add to collection"
+                              title="Add to island"
+                              aria-label="Add to island"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
@@ -975,18 +971,18 @@ export default function SearchPage({
                           </>
                         )}
 
-                        {brick.is_own && onNavigateToPractice && (
+                        {brick.is_own && onNavigateToRetrieval && (
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              onNavigateToPractice(brick.brick_id);
+                              onNavigateToRetrieval(brick.brick_id);
                             }}
                             className="px-3 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer ml-1"
-                            title="Practice this brick"
+                            title="Retrieval this brick"
                           >
                             <Play className="w-3.5 h-3.5 text-primary" />
-                            <span>Practice</span>
+                            <span>Retrieval</span>
                           </button>
                         )}
                       </div>
@@ -1045,22 +1041,22 @@ export default function SearchPage({
 
       {/* Brick Detail Modal */}
       <BrickDetailModal
-        isOpen={Boolean(detailBrickId) && !savingBrick && !savingCollection}
+        isOpen={Boolean(detailBrickId) && !savingBrick && !savingIsland}
         brickId={detailBrickId}
         onClose={() => setDetailBrickId(null)}
-        onPractice={onNavigateToPractice}
+        onRetrieval={onNavigateToRetrieval}
         onEdit={onNavigateToEditBrick}
-        onAddToCollection={(brick) => setSavingBrick(brick)}
-        onAddCollection={handleOpenAddCollection}
+        onAddToIsland={(brick) => setSavingBrick(brick)}
+        onAddIsland={handleOpenAddIsland}
         isLoggedIn={isLoggedIn}
         currentLearnerId={learner?.id}
         onOpenAuth={onOpenAuth}
       />
 
-      {/* Add Brick or Collection Modal */}
-      <SaveToCollectionModal
-        isOpen={Boolean(savingBrick || savingCollection)}
-        mode={savingCollection ? "collection" : "brick"}
+      {/* Add Brick or Island Modal */}
+      <SaveToIslandModal
+        isOpen={Boolean(savingBrick || savingIsland)}
+        mode={savingIsland ? "island" : "brick"}
         brick={
           savingBrick
             ? {
@@ -1069,24 +1065,24 @@ export default function SearchPage({
               }
             : null
         }
-        collectionToCopy={savingCollection}
-        collections={collections}
+        islandToCopy={savingIsland}
+        islands={islands}
         isSaving={
           addBrickMutation.isPending ||
-          addBricksFromCollectionMutation.isPending ||
-          createCollectionMutation.isPending
+          addBricksFromIslandMutation.isPending ||
+          createIslandMutation.isPending
         }
-        onSave={(targetCollectionId) => {
-          if (savingCollection) {
-            handleSaveCollectionToTarget(targetCollectionId);
+        onSave={(targetIslandId) => {
+          if (savingIsland) {
+            handleSaveIslandToTarget(targetIslandId);
           } else if (savingBrick) {
-            handleSaveToCollection(targetCollectionId);
+            handleSaveToIsland(targetIslandId);
           }
         }}
         onCreateAndSave={handleCreateAndSave}
         onClose={() => {
           setSavingBrick(null);
-          setSavingCollection(null);
+          setSavingIsland(null);
         }}
       />
 

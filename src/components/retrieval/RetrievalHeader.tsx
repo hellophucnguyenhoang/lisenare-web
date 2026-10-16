@@ -1,4 +1,4 @@
-interface PracticeHeaderProps {
+interface RetrievalHeaderProps {
   finishedCount: number;
   elapsedSeconds?: number;
   isAnswerRevealed: boolean;
@@ -16,12 +16,12 @@ function formatTimer(seconds: number): string {
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
-export default function PracticeHeader({
+export default function RetrievalHeader({
   finishedCount,
   elapsedSeconds = 0,
   isAnswerRevealed,
   hasSubmittedThisTurn,
-}: PracticeHeaderProps) {
+}: RetrievalHeaderProps) {
   return (
     <div className="flex items-center gap-2 sm:gap-3 bg-surface-container/60 border border-outline-variant/40 rounded-xl px-2.5 py-1 text-xs text-on-surface-variant shadow-2xs">
       {/* Finished count & Timer */}

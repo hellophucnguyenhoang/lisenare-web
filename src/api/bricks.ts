@@ -11,8 +11,8 @@ export interface BrickCreateJsonData {
   context?: string | null;
   kind?: string;
   is_private?: boolean;
-  collection_id?: number;
-  collection_name?: string;
+  island_id?: number;
+  island_name?: string;
   tags?: string[];
 }
 
@@ -24,19 +24,19 @@ export interface BrickUpdateJsonData {
   context?: string | null;
   kind?: string | null;
   is_private?: boolean | null;
-  collection_id?: number | null;
+  island_id?: number | null;
   tags?: string[] | null;
 }
 
 export interface AddBrickRequest {
-  collection_id: number;
+  island_id: number;
 }
 
-export interface AddCollectionRequest {
-  target_collection_id: number;
+export interface AddIslandRequest {
+  target_island_id: number;
 }
 
-export interface AddCollectionResult {
+export interface AddIslandResult {
   added: number;
   skipped: number;
 }
@@ -55,7 +55,7 @@ interface BrickReadApi {
   target_audio_path: string;
   last_edit_at: string;
   creator_id: number;
-  collection_id: number;
+  island_id: number;
   tags?: string[];
   learned?: boolean;
 }
@@ -71,18 +71,18 @@ export interface BrickInteractionCreate {
 export interface BrickCreator {
   id: number;
   name: string;
-  practice_lang?: string;
+  retrieval_lang?: string;
 }
 
 export interface BrickDetail extends Brick {
-  collectionName: string;
+  islandName: string;
   creatorId: number;
   creator: BrickCreator;
   reaction: string | null;
 }
 
 interface BrickDetailApi extends BrickReadApi {
-  collection_name?: string;
+  island_name?: string;
   creator: BrickCreator;
   reaction?: string | null;
 }
@@ -95,7 +95,7 @@ interface BrickPageApi {
 // ── Query params ────────────────────────────────────────
 
 export interface BrickListParams {
-  collection_ids?: number[];
+  island_ids?: number[];
   status?: "LEARNED" | "NOT_LEARNED";
   kind?: "word" | "sentence";
   tags?: string[];
@@ -119,7 +119,7 @@ function toBrick(api: BrickReadApi): Brick {
     isPrivate: api.is_private,
     lastEditAt: api.last_edit_at,
     tags: api.tags || [],
-    collectionId: api.collection_id,
+    islandId: api.island_id,
     learned: api.learned ?? false,
   };
 }
@@ -127,7 +127,7 @@ function toBrick(api: BrickReadApi): Brick {
 function toBrickDetail(api: BrickDetailApi): BrickDetail {
   return {
     ...toBrick(api),
-    collectionName: api.collection_name || "",
+    islandName: api.island_name || "",
     creatorId: api.creator_id,
     creator: api.creator,
     reaction: api.reaction || null,
@@ -138,10 +138,8 @@ function toBrickDetail(api: BrickDetailApi): BrickDetail {
 
 export async function listBricks(params?: BrickListParams) {
   const q = new URLSearchParams();
-  if (params?.collection_ids) {
-    params.collection_ids.forEach((id) =>
-      q.append("collection_ids", String(id)),
-    );
+  if (params?.island_ids) {
+    params.island_ids.forEach((id) => q.append("island_ids", String(id)));
   }
   if (params?.status) q.set("status", params.status);
   if (params?.kind) q.set("kind", params.kind);
@@ -178,28 +176,28 @@ export async function deleteBrick(brickId: number) {
 }
 
 export interface NextBrickParams {
-  collectionIds?: number[];
+  islandIds?: number[];
   brickId?: number | null;
 }
 
 export async function getNextBrick(
-  paramsOrCollectionIds?: NextBrickParams | number[],
+  paramsOrIslandIds?: NextBrickParams | number[],
   maybeBrickId?: number | null,
 ) {
   const q = new URLSearchParams();
-  let collectionIds: number[] | undefined;
+  let islandIds: number[] | undefined;
   let brickId: number | null | undefined;
 
-  if (Array.isArray(paramsOrCollectionIds)) {
-    collectionIds = paramsOrCollectionIds;
+  if (Array.isArray(paramsOrIslandIds)) {
+    islandIds = paramsOrIslandIds;
     brickId = maybeBrickId;
-  } else if (paramsOrCollectionIds) {
-    collectionIds = paramsOrCollectionIds.collectionIds;
-    brickId = paramsOrCollectionIds.brickId;
+  } else if (paramsOrIslandIds) {
+    islandIds = paramsOrIslandIds.islandIds;
+    brickId = paramsOrIslandIds.brickId;
   }
 
-  if (collectionIds && collectionIds.length > 0) {
-    collectionIds.forEach((id) => q.append("collection_ids", String(id)));
+  if (islandIds && islandIds.length > 0) {
+    islandIds.forEach((id) => q.append("island_ids", String(id)));
   }
   if (brickId != null) {
     q.set("brick_id", String(brickId));
@@ -230,39 +228,36 @@ export async function getBrickAudioUrl(brickId: number): Promise<string> {
 }
 
 /**
- * Copies a brick into the learner's collection.
+ * Copies a brick into the learner's island.
  * Calls POST /api/bricks/add-from/{brick_id}
  */
 export async function addBrickFrom(
   brickId: number,
-  collectionId: number,
+  islandId: number,
 ): Promise<Brick> {
   const api = await request<BrickReadApi>(`/bricks/add-from/${brickId}`, {
     method: "POST",
-    body: { collection_id: collectionId },
+    body: { island_id: islandId },
   });
   return toBrick(api);
 }
 
 /**
- * Copies all public bricks from a collection into the learner's target collection.
- * Calls POST /api/bricks/add-from-collection/{collection_id}
+ * Copies all public bricks from an island into the learner's target island.
+ * Calls POST /api/bricks/add-from-island/{island_id}
  */
-export async function addBricksFromCollection(
-  collectionId: number,
-  targetCollectionId: number,
-): Promise<AddCollectionResult> {
-  return request<AddCollectionResult>(
-    `/bricks/add-from-collection/${collectionId}`,
-    {
-      method: "POST",
-      body: { target_collection_id: targetCollectionId },
-    },
-  );
+export async function addBricksFromIsland(
+  islandId: number,
+  targetIslandId: number,
+): Promise<AddIslandResult> {
+  return request<AddIslandResult>(`/bricks/add-from-island/${islandId}`, {
+    method: "POST",
+    body: { target_island_id: targetIslandId },
+  });
 }
 
 /**
- * Retrieves full details of a brick including creator and collection info.
+ * Retrieves full details of a brick including creator and island info.
  * Calls GET /api/bricks/{brick_id}
  */
 export async function getBrickDetail(brickId: number): Promise<BrickDetail> {
@@ -347,14 +342,14 @@ export interface BrickListeningPage {
 }
 
 export interface BrickListeningParams {
-  collection_ids?: number[];
+  island_ids?: number[];
   offset?: number;
   limit?: number;
   shuffle_page?: boolean;
 }
 
 /**
- * Retrieves bricks formatted specifically for listening practice with pagination.
+ * Retrieves bricks formatted specifically for listening retrieval with pagination.
  * Calls GET /api/bricks/listening
  */
 export async function getListeningBricks(
@@ -365,14 +360,9 @@ export async function getListeningBricks(
   if (params.limit !== undefined) q.set("limit", String(params.limit));
   if (params.shuffle_page !== undefined)
     q.set("shuffle_page", String(params.shuffle_page));
-  if (params.collection_ids && params.collection_ids.length > 0) {
-    params.collection_ids.forEach((id) =>
-      q.append("collection_ids", String(id)),
-    );
+  if (params.island_ids && params.island_ids.length > 0) {
+    params.island_ids.forEach((id) => q.append("island_ids", String(id)));
   }
   const qs = q.toString();
   return request<BrickListeningPage>(`/bricks/listening${qs ? `?${qs}` : ""}`);
 }
-
-
-

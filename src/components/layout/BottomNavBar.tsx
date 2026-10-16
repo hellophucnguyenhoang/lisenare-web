@@ -13,7 +13,7 @@ export default function BottomNavBar({
   clearSubviews,
 }: BottomNavBarProps) {
   const tabs = [
-    { id: "practice" as const, label: "Practice", icon: Mic },
+    { id: "retrieval" as const, label: "Retrieval", icon: Mic },
     { id: "bricks" as const, label: "Bricks", icon: Blocks },
     { id: "discover" as const, label: "Discover", icon: Compass },
     { id: "profile" as const, label: "Profile", icon: User },

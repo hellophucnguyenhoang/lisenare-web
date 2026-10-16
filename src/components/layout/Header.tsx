@@ -35,7 +35,7 @@ export default function Header({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { id: "practice" as const, label: "Practice" },
+    { id: "retrieval" as const, label: "Retrieval" },
     { id: "bricks" as const, label: "Bricks" },
     { id: "discover" as const, label: "Discover" },
   ];

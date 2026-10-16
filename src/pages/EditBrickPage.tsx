@@ -16,9 +16,9 @@ import BrickUnitTypeSelector, {
   type UnitType,
 } from "@/components/bricks/BrickUnitTypeSelector";
 import BrickTagsSection from "@/components/bricks/BrickTagsSection";
-import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
+import BrickIslandSelector from "@/components/bricks/BrickIslandSelector";
 import BrickPrivacyToggle from "@/components/bricks/BrickPrivacyToggle";
-import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
+import RetrievalInstructionsPage from "@/components/retrieval/RetrievalInstructionsPage";
 
 interface EditBrickPageProps {
   brick: Brick;
@@ -27,7 +27,7 @@ interface EditBrickPageProps {
 
 export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   const { data: learner } = useLearnerMe();
-  const learnerLang = (learner?.practice_lang || learner?.practiceLang) as
+  const learnerLang = (learner?.retrieval_lang || learner?.retrievalLang) as
     | string
     | undefined;
   const fallbackLang: TargetLang =
@@ -36,9 +36,9 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       : "en";
 
   const [showInstructions, setShowInstructions] = useState(false);
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    number | null
-  >(brick.collectionId);
+  const [selectedIslandId, setSelectedIslandId] = useState<number | null>(
+    brick.islandId,
+  );
 
   const [nativeText, setNativeText] = useState(brick.nativeText);
   const [targetText, setTargetText] = useState(brick.targetText);
@@ -95,12 +95,12 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   };
 
   const isFormValid = Boolean(
-    nativeText.trim() && targetText.trim() && selectedCollectionId,
+    nativeText.trim() && targetText.trim() && selectedIslandId,
   );
 
   const handleSave = () => {
-    if (!selectedCollectionId) {
-      toast.error("Please select a collection for this brick.");
+    if (!selectedIslandId) {
+      toast.error("Please select an island for this brick.");
       return;
     }
 
@@ -119,7 +119,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         target_pron: pronunciation.trim() || null,
         context: context.trim() || null,
         kind: kind,
-        collection_id: selectedCollectionId,
+        island_id: selectedIslandId,
         is_private: isPrivate,
         tags,
       }),
@@ -149,7 +149,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
 
   if (showInstructions) {
     return (
-      <PracticeInstructionsPage
+      <RetrievalInstructionsPage
         onBack={() => setShowInstructions(false)}
         backButtonLabel="Back to Edit Brick"
       />
@@ -177,18 +177,18 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           type="button"
           onClick={() => setShowInstructions(true)}
           className="p-2 -mr-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
-          aria-label="5 Steps to Practice"
-          title="5 Steps to Practice"
+          aria-label="5 Steps to Retrieval"
+          title="5 Steps to Retrieval"
         >
           <HelpCircle className="w-6 h-6" />
         </button>
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
-        {/* Collection Selector: choose, create, or edit collection */}
-        <BrickCollectionSelector
-          selectedCollectionId={selectedCollectionId}
-          onSelectCollection={setSelectedCollectionId}
+        {/* Island Selector: choose, create, or edit island */}
+        <BrickIslandSelector
+          selectedIslandId={selectedIslandId}
+          onSelectIsland={setSelectedIslandId}
         />
 
         {/* Core text inputs */}

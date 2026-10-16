@@ -1,6 +1,6 @@
 import { Volume2, Play, ArrowRight, X, RotateCcw, Loader2 } from "lucide-react";
 
-interface PracticeEvaluationModalProps {
+interface RetrievalEvaluationModalProps {
   score: number;
   passed: boolean;
   targetText: string;
@@ -13,7 +13,7 @@ interface PracticeEvaluationModalProps {
   isLoadingTargetAudio?: boolean;
 }
 
-export default function PracticeEvaluationModal({
+export default function RetrievalEvaluationModal({
   score,
   passed,
   targetText,
@@ -24,7 +24,7 @@ export default function PracticeEvaluationModal({
   onPlayLearnerAudio,
   hasLearnerAudio = false,
   isLoadingTargetAudio = false,
-}: PracticeEvaluationModalProps) {
+}: RetrievalEvaluationModalProps) {
   const percentage = Math.round(score * 100);
 
   return (
@@ -135,7 +135,7 @@ export default function PracticeEvaluationModal({
               className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface py-3.5 rounded-2xl font-bold border border-outline-variant/60 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Practice Again</span>
+              <span>Retrieval Again</span>
             </button>
           )}
         </div>

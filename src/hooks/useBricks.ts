@@ -1,4 +1,9 @@
-import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   listBricks,
   createBrick,
@@ -7,7 +12,7 @@ import {
   checkBrickExists,
   getNextBrick,
   addBrickFrom,
-  addBricksFromCollection,
+  addBricksFromIsland,
   getBrickDetail,
   getRecommendedBricks,
   createBrickInteraction,
@@ -129,31 +134,31 @@ export function useAddBrickFrom() {
   return useMutation({
     mutationFn: ({
       brickId,
-      collectionId,
+      islandId,
     }: {
       brickId: number;
-      collectionId: number;
-    }) => addBrickFrom(brickId, collectionId),
+      islandId: number;
+    }) => addBrickFrom(brickId, islandId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bricks"] });
-      qc.invalidateQueries({ queryKey: ["collections"] });
+      qc.invalidateQueries({ queryKey: ["islands"] });
     },
   });
 }
 
-export function useAddBricksFromCollection() {
+export function useAddBricksFromIsland() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({
-      collectionId,
-      targetCollectionId,
+      islandId,
+      targetIslandId,
     }: {
-      collectionId: number;
-      targetCollectionId: number;
-    }) => addBricksFromCollection(collectionId, targetCollectionId),
+      islandId: number;
+      targetIslandId: number;
+    }) => addBricksFromIsland(islandId, targetIslandId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bricks"] });
-      qc.invalidateQueries({ queryKey: ["collections"] });
+      qc.invalidateQueries({ queryKey: ["islands"] });
     },
   });
 }
@@ -234,10 +239,7 @@ export function useInfiniteListeningBricks(
     enabled,
     staleTime: params?.shuffle_page ? 0 : 60 * 1000,
     getNextPageParam: (lastPage, allPages) => {
-      const totalFetched = allPages.reduce(
-        (sum, p) => sum + p.items.length,
-        0,
-      );
+      const totalFetched = allPages.reduce((sum, p) => sum + p.items.length, 0);
       if (totalFetched >= lastPage.total) return undefined;
       return totalFetched;
     },
@@ -255,10 +257,3 @@ export function useListeningBricks(
     staleTime: 60 * 1000,
   });
 }
-
-
-
-
-
-
-
