@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { type Collection, type Brick } from "@/types";
+import { type Island, type Brick } from "@/types";
 import BrickCard from "@/components/bricks/BrickCard";
-import AddCollectionModal from "@/components/bricks/AddCollectionModal";
-import ImportCollectionModal from "@/components/bricks/ImportCollectionModal";
-import ListeningPracticeModal from "@/components/bricks/ListeningPracticeModal";
+import AddIslandModal from "@/components/bricks/AddIslandModal";
+import ImportIslandModal from "@/components/bricks/ImportIslandModal";
+import ListeningRetrievalModal from "@/components/bricks/ListeningRetrievalModal";
 import {
   Plus,
   Search,
@@ -21,12 +21,12 @@ import {
   Headphones,
 } from "lucide-react";
 import {
-  useCollections,
-  useDeleteCollection,
-  useUpdateCollection,
-  useCreateCollection,
-  useExportCollection,
-} from "@/hooks/useCollections";
+  useIslands,
+  useDeleteIsland,
+  useUpdateIsland,
+  useCreateIsland,
+  useExportIsland,
+} from "@/hooks/useIslands";
 import {
   useInfiniteBricks,
   useDeleteBrick,
@@ -38,9 +38,9 @@ import { useHeader } from "@/context/HeaderContext";
 import { toast } from "sonner";
 
 interface BricksPageProps {
-  onNavigateToAddBrick: (collectionId?: number) => void;
+  onNavigateToAddBrick: (islandId?: number) => void;
   onNavigateToEditBrick: (brick: Brick) => void;
-  onNavigateToPractice: (brickId?: number) => void;
+  onNavigateToRetrieval: (brickId?: number) => void;
   onNavigateToSearch: () => void;
   onOpenAuth?: (mode: AuthMode) => void;
 }
@@ -48,22 +48,18 @@ interface BricksPageProps {
 export default function BricksPage({
   onNavigateToAddBrick,
   onNavigateToEditBrick,
-  onNavigateToPractice,
+  onNavigateToRetrieval,
   onNavigateToSearch,
   onOpenAuth,
 }: BricksPageProps) {
   const { data: learner } = useLearnerMe();
   const isLoggedIn = Boolean(learner);
 
-  // Collection filter state
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    number | null
-  >(null);
-  const [showCollectionDropdown, setShowCollectionDropdown] = useState(false);
-  const [showCollectionModal, setShowCollectionModal] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(
-    null,
-  );
+  // Island filter state
+  const [selectedIslandId, setSelectedIslandId] = useState<number | null>(null);
+  const [showIslandDropdown, setShowIslandDropdown] = useState(false);
+  const [showIslandModal, setShowIslandModal] = useState(false);
+  const [editingIsland, setEditingIsland] = useState<Island | null>(null);
   const [showListeningModal, setShowListeningModal] = useState(false);
 
   // Sort and filter state
@@ -88,8 +84,8 @@ export default function BricksPage({
   }, []);
 
   // Hooks
-  const { data: collections = [], isLoading: isLoadingCollections } =
-    useCollections(isLoggedIn);
+  const { data: islands = [], isLoading: isLoadingIslands } =
+    useIslands(isLoggedIn);
 
   const {
     data: bricksPages,
@@ -99,7 +95,7 @@ export default function BricksPage({
     isFetchingNextPage,
   } = useInfiniteBricks(
     {
-      collection_ids: selectedCollectionId ? [selectedCollectionId] : undefined,
+      island_ids: selectedIslandId ? [selectedIslandId] : undefined,
       status: statusFilter ?? undefined,
       kind: kindFilter ?? undefined,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
@@ -122,10 +118,10 @@ export default function BricksPage({
 
   const availableTags = useMemo(() => {
     const tagSet = new Set<string>();
-    collections.forEach((c) => c.tags?.forEach((t) => tagSet.add(t.trim())));
+    islands.forEach((c) => c.tags?.forEach((t) => tagSet.add(t.trim())));
     allBricks.forEach((b) => b.tags?.forEach((t) => tagSet.add(t.trim())));
     return Array.from(tagSet).filter(Boolean).sort();
-  }, [collections, allBricks]);
+  }, [islands, allBricks]);
 
   const handleToggleTag = (tag: string) => {
     const clean = tag.replace(/^#/, "").trim();
@@ -155,36 +151,34 @@ export default function BricksPage({
     setSortBy("NEWEST");
   };
 
-  const deleteCollection = useDeleteCollection();
-  const updateCollection = useUpdateCollection();
-  const createCollection = useCreateCollection();
+  const deleteIsland = useDeleteIsland();
+  const updateIsland = useUpdateIsland();
+  const createIsland = useCreateIsland();
   const deleteBrick = useDeleteBrick();
   const forgetBrick = useForgetBrick();
-  const exportCollection = useExportCollection();
+  const exportIsland = useExportIsland();
 
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importTargetCollectionId, setImportTargetCollectionId] = useState<
+  const [importTargetIslandId, setImportTargetIslandId] = useState<
     number | null
   >(null);
 
-  const handleExportCollection = async (col: Collection) => {
+  const handleExportIsland = async (col: Island) => {
     try {
       toast.info(`Exporting "${col.name}"...`);
-      const { data } = await exportCollection.mutateAsync({
-        collectionId: col.id,
-        collectionName: col.name,
+      const { data } = await exportIsland.mutateAsync({
+        islandId: col.id,
+        islandName: col.name,
       });
       toast.success(`Exported "${col.name}" (${data.length} bricks)`);
     } catch (err: unknown) {
-      console.error("Failed to export collection:", err);
+      console.error("Failed to export island:", err);
       toast.error(`Failed to export "${col.name}". Please try again.`);
     }
   };
 
-  const handleOpenImportModal = (targetCollectionId?: number | null) => {
-    setImportTargetCollectionId(
-      targetCollectionId ?? selectedCollectionId ?? null,
-    );
+  const handleOpenImportModal = (targetIslandId?: number | null) => {
+    setImportTargetIslandId(targetIslandId ?? selectedIslandId ?? null);
     setShowImportModal(true);
   };
 
@@ -198,7 +192,7 @@ export default function BricksPage({
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)
       ) {
-        setShowCollectionDropdown(false);
+        setShowIslandDropdown(false);
       }
       if (
         filterDropdownRef.current &&
@@ -230,40 +224,40 @@ export default function BricksPage({
     [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
 
-  const selectedCollection = selectedCollectionId
-    ? collections.find((c) => c.id === selectedCollectionId)
+  const selectedIsland = selectedIslandId
+    ? islands.find((c) => c.id === selectedIslandId)
     : null;
 
-  const handleAddCollection = (data: {
+  const handleAddIsland = (data: {
     name: string;
     description: string;
     tags: string[];
   }) => {
-    createCollection.mutate(data);
+    createIsland.mutate(data);
   };
 
-  const handleEditCollection = (
+  const handleEditIsland = (
     id: number,
     data: { name: string; description: string; tags: string[] },
   ) => {
-    updateCollection.mutate({ collectionId: id, data });
+    updateIsland.mutate({ islandId: id, data });
   };
 
-  const handleDeleteCollection = (id: number) => {
+  const handleDeleteIsland = (id: number) => {
     if (
-      confirm(`Delete this collection? All bricks inside will also be deleted.`)
+      confirm(`Delete this island? All bricks inside will also be deleted.`)
     ) {
-      deleteCollection.mutate(id);
-      if (selectedCollectionId === id) {
-        setSelectedCollectionId(null);
+      deleteIsland.mutate(id);
+      if (selectedIslandId === id) {
+        setSelectedIslandId(null);
       }
     }
   };
 
-  // Determine which collection to add brick to
+  // Determine which island to add brick to
   const handleAddBrick = useCallback(() => {
-    onNavigateToAddBrick(selectedCollectionId ?? undefined);
-  }, [onNavigateToAddBrick, selectedCollectionId]);
+    onNavigateToAddBrick(selectedIslandId ?? undefined);
+  }, [onNavigateToAddBrick, selectedIslandId]);
 
   const { setHeaderContent } = useHeader();
 
@@ -306,8 +300,7 @@ export default function BricksPage({
           Your Bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Sign in to view, create, organize, and search your vocabulary
-          collections.
+          Sign in to view, create, organize, and search your vocabulary islands.
         </p>
         {onOpenAuth && (
           <button
@@ -331,7 +324,7 @@ export default function BricksPage({
             {totalBricks} Brick{totalBricks !== 1 ? "s" : ""}
           </h2>
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
-            {selectedCollection ? ` in "${selectedCollection.name}"` : ""}
+            {selectedIsland ? ` in "${selectedIsland.name}"` : ""}
             {kindFilter === "word"
               ? " • Words"
               : kindFilter === "sentence"
@@ -353,13 +346,13 @@ export default function BricksPage({
           </p>
         </div>
 
-        {selectedCollection && (
+        {selectedIsland && (
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setShowListeningModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/15 border border-primary/30 rounded-xl text-xs font-bold text-primary transition-all active:scale-95 shadow-2xs cursor-pointer"
-              title={`Listen to "${selectedCollection.name}"`}
+              title={`Listen to "${selectedIsland.name}"`}
             >
               <Headphones className="w-3.5 h-3.5" />
               <span>Listen</span>
@@ -367,10 +360,10 @@ export default function BricksPage({
 
             <button
               type="button"
-              onClick={() => handleExportCollection(selectedCollection)}
-              disabled={exportCollection.isPending}
+              onClick={() => handleExportIsland(selectedIsland)}
+              disabled={exportIsland.isPending}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
-              title={`Export "${selectedCollection.name}" to JSON`}
+              title={`Export "${selectedIsland.name}" to JSON`}
             >
               <Upload className="w-3.5 h-3.5 text-primary" />
               <span>Export</span>
@@ -378,9 +371,9 @@ export default function BricksPage({
 
             <button
               type="button"
-              onClick={() => handleOpenImportModal(selectedCollection.id)}
+              onClick={() => handleOpenImportModal(selectedIsland.id)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
-              title={`Import JSON into "${selectedCollection.name}"`}
+              title={`Import JSON into "${selectedIsland.name}"`}
             >
               <Download className="w-3.5 h-3.5 text-primary" />
               <span>Import</span>
@@ -389,71 +382,71 @@ export default function BricksPage({
         )}
       </section>
 
-      {/* Filter Bar: Collection selector + Sort controls + Search Button */}
+      {/* Filter Bar: Island selector + Sort controls + Search Button */}
       <div className="sticky top-14 sm:top-16 z-20 bg-surface/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 mb-5 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-3 shadow-2xs transition-all">
-        {/* Collection Filter Dropdown */}
+        {/* Island Filter Dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
-            onClick={() => setShowCollectionDropdown(!showCollectionDropdown)}
+            onClick={() => setShowIslandDropdown(!showIslandDropdown)}
             className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-all cursor-pointer min-w-45 justify-between ${
-              selectedCollectionId
+              selectedIslandId
                 ? "bg-primary/5 border-primary/30 text-primary"
                 : "bg-surface-container-lowest border-outline-variant/60 text-on-surface-variant"
             }`}
           >
             <span className="truncate text-xs">
-              {selectedCollection?.name || "All Collections"}
+              {selectedIsland?.name || "All Islands"}
             </span>
             <ChevronDown
               className={`w-4 h-4 shrink-0 transition-transform ${
-                showCollectionDropdown ? "rotate-180" : ""
+                showIslandDropdown ? "rotate-180" : ""
               }`}
             />
           </button>
 
-          {showCollectionDropdown && (
+          {showIslandDropdown && (
             <div className="absolute left-0 top-full mt-1.5 z-30 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-80 overflow-y-auto">
-              {/* "All Collections" option */}
+              {/* "All Islands" option */}
               <button
                 type="button"
                 onClick={() => {
-                  setSelectedCollectionId(null);
-                  setShowCollectionDropdown(false);
+                  setSelectedIslandId(null);
+                  setShowIslandDropdown(false);
                 }}
                 className={`w-full px-4 py-2.5 text-left text-xs font-semibold flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                  !selectedCollectionId
+                  !selectedIslandId
                     ? "text-primary bg-primary/5"
                     : "text-on-surface"
                 }`}
               >
-                <span>All Collections</span>
-                {!selectedCollectionId && (
+                <span>All Islands</span>
+                {!selectedIslandId && (
                   <Check className="w-4 h-4 text-primary shrink-0" />
                 )}
               </button>
 
               <div className="h-px bg-outline-variant/30 mx-3" />
 
-              {isLoadingCollections ? (
+              {isLoadingIslands ? (
                 <div className="p-4 flex justify-center">
                   <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : (
-                collections.map((col) => (
+                islands.map((col) => (
                   <div
                     key={col.id}
                     className={`w-full px-3.5 py-1.5 flex items-center justify-between transition-colors hover:bg-surface-container/60 ${
-                      selectedCollectionId === col.id
+                      selectedIslandId === col.id
                         ? "text-primary bg-primary/5 font-semibold"
                         : "text-on-surface"
                     }`}
                   >
-                    {/* Collection selection button */}
+                    {/* Island selection button */}
                     <button
                       type="button"
                       onClick={() => {
-                        setSelectedCollectionId(col.id);
-                        setShowCollectionDropdown(false);
+                        setSelectedIslandId(col.id);
+                        setShowIslandDropdown(false);
                       }}
                       className="flex-1 flex flex-col min-w-0 pr-2 py-1 text-left cursor-pointer"
                     >
@@ -471,8 +464,8 @@ export default function BricksPage({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedCollectionId(col.id);
-                          setShowCollectionDropdown(false);
+                          setSelectedIslandId(col.id);
+                          setShowIslandDropdown(false);
                           setShowListeningModal(true);
                         }}
                         className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
@@ -481,18 +474,18 @@ export default function BricksPage({
                       >
                         <Headphones className="w-3.5 h-3.5" />
                       </button>
-                      {selectedCollectionId === col.id && (
+                      {selectedIslandId === col.id && (
                         <Check className="w-4 h-4 text-primary shrink-0 mr-0.5" />
                       )}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setEditingCollection(col);
-                          setShowCollectionDropdown(false);
+                          setEditingIsland(col);
+                          setShowIslandDropdown(false);
                         }}
                         className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
-                        title="Edit collection"
+                        title="Edit island"
                         aria-label={`Edit ${col.name}`}
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -501,7 +494,7 @@ export default function BricksPage({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleExportCollection(col);
+                          handleExportIsland(col);
                         }}
                         className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
                         title={`Export "${col.name}" to JSON`}
@@ -513,7 +506,7 @@ export default function BricksPage({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowCollectionDropdown(false);
+                          setShowIslandDropdown(false);
                           handleOpenImportModal(col.id);
                         }}
                         className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
@@ -526,11 +519,11 @@ export default function BricksPage({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setShowCollectionDropdown(false);
-                          handleDeleteCollection(col.id);
+                          setShowIslandDropdown(false);
+                          handleDeleteIsland(col.id);
                         }}
                         className="p-1.5 rounded-lg text-outline hover:text-error hover:bg-error/10 active:scale-95 transition-all cursor-pointer"
-                        title="Delete collection"
+                        title="Delete island"
                         aria-label={`Delete ${col.name}`}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -542,30 +535,30 @@ export default function BricksPage({
 
               <div className="h-px bg-outline-variant/30 mx-3" />
 
-              {/* Create new collection inline */}
+              {/* Create new island inline */}
               <button
                 type="button"
                 onClick={() => {
-                  setShowCollectionDropdown(false);
-                  setShowCollectionModal(true);
+                  setShowIslandDropdown(false);
+                  setShowIslandModal(true);
                 }}
                 className="w-full px-4 py-2 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4" />
-                <span>New Collection</span>
+                <span>New Island</span>
               </button>
 
-              {/* Import collection inline */}
+              {/* Import island inline */}
               <button
                 type="button"
                 onClick={() => {
-                  setShowCollectionDropdown(false);
+                  setShowIslandDropdown(false);
                   handleOpenImportModal(null);
                 }}
                 className="w-full px-4 py-2 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer border-t border-outline-variant/20"
               >
                 <Download className="w-4 h-4" />
-                <span>Import Collection (JSON)</span>
+                <span>Import Island (JSON)</span>
               </button>
             </div>
           )}
@@ -580,8 +573,8 @@ export default function BricksPage({
             onClick={() => setShowListeningModal(true)}
             className="flex items-center gap-1.5 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
             title={
-              selectedCollection
-                ? `Listen to "${selectedCollection.name}"`
+              selectedIsland
+                ? `Listen to "${selectedIsland.name}"`
                 : "Listen to all bricks"
             }
           >
@@ -1000,8 +993,8 @@ export default function BricksPage({
                     },
                   });
                 }}
-                onSelectBrick={() => onNavigateToPractice(brick.id)}
-                onStudyBrick={() => onNavigateToPractice(brick.id)}
+                onSelectBrick={() => onNavigateToRetrieval(brick.id)}
+                onStudyBrick={() => onNavigateToRetrieval(brick.id)}
                 onSelectTag={handleToggleTag}
               />
             ))}
@@ -1020,42 +1013,42 @@ export default function BricksPage({
         </>
       )}
 
-      {/* Add / Edit Collection Modal */}
-      {(showCollectionModal || editingCollection) && (
-        <AddCollectionModal
+      {/* Add / Edit Island Modal */}
+      {(showIslandModal || editingIsland) && (
+        <AddIslandModal
           onClose={() => {
-            setShowCollectionModal(false);
-            setEditingCollection(null);
+            setShowIslandModal(false);
+            setEditingIsland(null);
           }}
-          onAddCollection={handleAddCollection}
-          onEditCollection={handleEditCollection}
-          onExportCollection={handleExportCollection}
-          collectionToEdit={editingCollection || undefined}
+          onAddIsland={handleAddIsland}
+          onEditIsland={handleEditIsland}
+          onExportIsland={handleExportIsland}
+          islandToEdit={editingIsland || undefined}
         />
       )}
 
-      {/* Import Collection Modal */}
+      {/* Import Island Modal */}
       {showImportModal && (
-        <ImportCollectionModal
+        <ImportIslandModal
           isOpen={showImportModal}
           onClose={() => {
             setShowImportModal(false);
-            setImportTargetCollectionId(null);
+            setImportTargetIslandId(null);
           }}
-          collections={collections}
-          defaultCollectionId={importTargetCollectionId}
+          islands={islands}
+          defaultIslandId={importTargetIslandId}
           onSuccess={(targetColId) => {
-            setSelectedCollectionId(targetColId);
+            setSelectedIslandId(targetColId);
           }}
         />
       )}
 
-      {/* Listening Practice Modal */}
-      <ListeningPracticeModal
+      {/* Listening Retrieval Modal */}
+      <ListeningRetrievalModal
         isOpen={showListeningModal}
         onClose={() => setShowListeningModal(false)}
-        collectionId={selectedCollectionId}
-        collectionName={selectedCollection?.name}
+        islandId={selectedIslandId}
+        islandName={selectedIsland?.name}
       />
 
       {/* Floating Scroll to Top Button */}

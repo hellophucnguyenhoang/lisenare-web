@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { type AuthMode, type PracticeLang } from "@/types";
-import { useLearnerMe, useUpdatePracticeLang } from "@/hooks/useLearner";
+import { type AuthMode, type RetrievalLang } from "@/types";
+import { useLearnerMe, useUpdateRetrievalLang } from "@/hooks/useLearner";
 import { useLearningStats, useLearningTimeseries } from "@/hooks/useStats";
 import { useHeader } from "@/context/HeaderContext";
 import EmailManagerModal from "@/components/profile/EmailManagerModal";
@@ -11,7 +11,7 @@ import ChangeNameModal from "@/components/profile/ChangeNameModal";
 import ProfileHeaderCard from "@/components/profile/ProfileHeaderCard";
 import GuestProfileView from "@/components/profile/GuestProfileView";
 import LearningMetricsGrid from "@/components/profile/LearningMetricsGrid";
-import PracticeActivityCard from "@/components/profile/PracticeActivityCard";
+import RetrievalActivityCard from "@/components/profile/RetrievalActivityCard";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
 import TargetLanguageSelector from "@/components/profile/TargetLanguageSelector";
 
@@ -30,7 +30,7 @@ export default function ProfilePage({
     refetch: refetchLearner,
     isFetching: fetchingLearner,
   } = useLearnerMe();
-  const updatePracticeLang = useUpdatePracticeLang();
+  const updateRetrievalLang = useUpdateRetrievalLang();
   const isLoggedIn = Boolean(learner);
 
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
@@ -88,20 +88,20 @@ export default function ProfilePage({
   const learnerName = learner?.name || "Learner";
   const learnerEmail = learner?.email || "";
   const isEmailVerified = learner?.isEmailVerified ?? Boolean(learnerEmail);
-  const currentPracticeLang = (learner?.practice_lang ||
-    learner?.practiceLang ||
-    "en") as PracticeLang;
+  const currentRetrievalLang = (learner?.retrieval_lang ||
+    learner?.retrievalLang ||
+    "en") as RetrievalLang;
 
-  const handleSelectPracticeLang = (newLang: PracticeLang) => {
-    if (newLang === currentPracticeLang) return;
-    updatePracticeLang.mutate(newLang, {
+  const handleSelectRetrievalLang = (newLang: RetrievalLang) => {
+    if (newLang === currentRetrievalLang) return;
+    updateRetrievalLang.mutate(newLang, {
       onSuccess: () => {
         const langName =
           newLang === "ja"
             ? "Japanese"
             : newLang === "vi"
-            ? "Vietnam"
-            : "English";
+              ? "Vietnam"
+              : "English";
         toast.success(`Target language updated to ${langName}`);
       },
       onError: () => {
@@ -119,17 +119,17 @@ export default function ProfilePage({
       return;
     }
     const flag =
-      currentPracticeLang === "ja"
+      currentRetrievalLang === "ja"
         ? "🇯🇵"
-        : currentPracticeLang === "vi"
-        ? "🇻🇳"
-        : "🇺🇸";
+        : currentRetrievalLang === "vi"
+          ? "🇻🇳"
+          : "🇺🇸";
     const name =
-      currentPracticeLang === "ja"
+      currentRetrievalLang === "ja"
         ? "Japanese"
-        : currentPracticeLang === "vi"
-        ? "Vietnam"
-        : "English";
+        : currentRetrievalLang === "vi"
+          ? "Vietnam"
+          : "English";
 
     setHeaderContent(
       <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl">
@@ -138,7 +138,7 @@ export default function ProfilePage({
       </div>,
     );
     return () => setHeaderContent(null);
-  }, [isLoggedIn, currentPracticeLang, setHeaderContent]);
+  }, [isLoggedIn, currentRetrievalLang, setHeaderContent]);
 
   if (loadingLearner) {
     return (
@@ -169,16 +169,16 @@ export default function ProfilePage({
 
       {/* Minimal Target Language Selector */}
       <TargetLanguageSelector
-        currentLang={currentPracticeLang}
-        onSelectLang={handleSelectPracticeLang}
-        isUpdating={updatePracticeLang.isPending}
+        currentLang={currentRetrievalLang}
+        onSelectLang={handleSelectRetrievalLang}
+        isUpdating={updateRetrievalLang.isPending}
       />
 
       {/* Real Learning Metrics Grid from /brick-memories/stats */}
       <LearningMetricsGrid stats={stats} isLoading={loadingStats} />
 
       {/* Real Learning Timeseries Section from /brick-memories/stats/timeseries */}
-      <PracticeActivityCard
+      <RetrievalActivityCard
         metric={timeseriesMetric}
         onMetricChange={setTimeseriesMetric}
         days={timeseriesDays}

@@ -5,7 +5,7 @@ import { type DiscoverVideo } from "@/types";
 interface VideoCardProps {
   video: DiscoverVideo;
   onWatch: (video: DiscoverVideo) => void;
-  onSaveToCollection: (video: DiscoverVideo) => void;
+  onSaveToIsland: (video: DiscoverVideo) => void;
 }
 
 function formatTime(seconds: number): string {
@@ -17,7 +17,7 @@ function formatTime(seconds: number): string {
 export default function VideoCard({
   video,
   onWatch,
-  onSaveToCollection,
+  onSaveToIsland,
 }: VideoCardProps) {
   const [showTranslation, setShowTranslation] = useState(false);
 
@@ -133,7 +133,7 @@ export default function VideoCard({
 
             <button
               type="button"
-              onClick={() => onSaveToCollection(video)}
+              onClick={() => onSaveToIsland(video)}
               className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary/10 hover:bg-primary/20 text-primary font-bold rounded-xl text-xs transition-all active:scale-95 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />

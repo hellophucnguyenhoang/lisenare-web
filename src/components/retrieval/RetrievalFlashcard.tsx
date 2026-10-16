@@ -4,7 +4,7 @@ import { type Brick } from "@/types";
 import { useForcedAlignment } from "@/hooks/useBricks";
 import { type WordSegmentSecond } from "@/api/evaluation";
 
-interface PracticeFlashcardProps {
+interface RetrievalFlashcardProps {
   activeBrick: Brick;
   isRevealed: boolean;
   isLoadingAudio?: boolean;
@@ -13,14 +13,14 @@ interface PracticeFlashcardProps {
   onEditBrick?: () => void;
 }
 
-export default function PracticeFlashcard({
+export default function RetrievalFlashcard({
   activeBrick,
   isRevealed,
   isLoadingAudio = false,
   onToggleReveal,
   onPlayAudio,
   onEditBrick,
-}: PracticeFlashcardProps) {
+}: RetrievalFlashcardProps) {
   const { data: alignmentSegments } = useForcedAlignment(
     activeBrick.id,
     Boolean(activeBrick.id),
@@ -63,11 +63,10 @@ export default function PracticeFlashcard({
   return (
     <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-5 sm:p-8 flex flex-col items-center text-center relative overflow-hidden transition-all">
       <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 flex items-center gap-1 z-10">
-
         {onEditBrick && (
           <button
             type="button"
-            id="btn-practice-edit-brick"
+            id="btn-retrieval-edit-brick"
             onClick={onEditBrick}
             className="p-2 text-outline hover:text-primary hover:bg-surface-container rounded-xl transition-all active:scale-95 cursor-pointer"
             title="Edit this brick"
@@ -93,11 +92,15 @@ export default function PracticeFlashcard({
       <div className="flex items-center justify-center gap-3 my-2">
         <button
           type="button"
-          id="btn-practice-listen-audio"
+          id="btn-retrieval-listen-audio"
           onClick={() => onPlayAudio()}
           disabled={isLoadingAudio}
           className="p-3.5 bg-primary/10 text-primary hover:bg-primary/20 rounded-full active:scale-90 transition-all shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
-          title={isLoadingAudio ? "Loading audio..." : "Listen to target pronunciation"}
+          title={
+            isLoadingAudio
+              ? "Loading audio..."
+              : "Listen to target pronunciation"
+          }
           aria-label="Listen to target pronunciation"
         >
           {isLoadingAudio ? (
@@ -109,7 +112,7 @@ export default function PracticeFlashcard({
 
         <button
           type="button"
-          id="btn-practice-toggle-reveal"
+          id="btn-retrieval-toggle-reveal"
           onClick={onToggleReveal}
           className={`p-3.5 rounded-full transition-all active:scale-90 shadow-xs cursor-pointer ${
             isRevealed

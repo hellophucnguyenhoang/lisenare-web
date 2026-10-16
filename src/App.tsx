@@ -9,7 +9,7 @@ import { type ActiveTab, type AuthMode, type Subview } from "@/types";
 import BricksPage from "@/pages/BricksPage";
 import SearchPage from "@/pages/SearchPage";
 import DiscoverPage from "@/pages/DiscoverPage";
-import PracticePage from "@/pages/PracticePage";
+import RetrievalPage from "@/pages/RetrievalPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AddBrickPage from "@/pages/AddBrickPage";
 import EditBrickPage from "@/pages/EditBrickPage";
@@ -41,15 +41,15 @@ function AppContent() {
   const [hasInitializedTab, setHasInitializedTab] = useState(false);
   const [subview, setSubview] = useState<Subview>(null);
   const [authModalMode, setAuthModalMode] = useState<AuthMode | null>(null);
-  const [practiceBrickId, setPracticeBrickId] = useState<number | null>(null);
-  const [practiceFinishedCount, setPracticeFinishedCount] = useState(0);
-  const [practiceElapsedSeconds, setPracticeElapsedSeconds] = useState(0);
+  const [retrievalBrickId, setRetrievalBrickId] = useState<number | null>(null);
+  const [retrievalFinishedCount, setRetrievalFinishedCount] = useState(0);
+  const [retrievalElapsedSeconds, setRetrievalElapsedSeconds] = useState(0);
 
   // Set initial tab on load/reload based on authentication state
   useEffect(() => {
     if (!hasInitializedTab && !isCheckingAuth) {
       if (learner) {
-        setActiveTab("practice");
+        setActiveTab("retrieval");
       } else {
         setActiveTab("profile");
       }
@@ -66,9 +66,9 @@ function AppContent() {
       queryClient.clear();
       queryClient.setQueryData(["learner", "me"], null);
       setHeaderContent(null);
-      setPracticeBrickId(null);
-      setPracticeFinishedCount(0);
-      setPracticeElapsedSeconds(0);
+      setRetrievalBrickId(null);
+      setRetrievalFinishedCount(0);
+      setRetrievalElapsedSeconds(0);
       setSubview(null);
       setActiveTab("profile");
       toast.success("Logged out successfully");
@@ -88,7 +88,7 @@ function AppContent() {
     return (
       <>
         <AddBrickPage
-          collectionId={subview.collectionId}
+          islandId={subview.islandId}
           onBack={() => setSubview(null)}
         />
         <Toaster position="bottom-center" richColors />
@@ -110,10 +110,10 @@ function AppContent() {
       <>
         <SearchPage
           onBack={() => setSubview(null)}
-          onNavigateToPractice={(brickId) => {
-            setPracticeBrickId(brickId ?? null);
+          onNavigateToRetrieval={(brickId) => {
+            setRetrievalBrickId(brickId ?? null);
             setSubview(null);
-            setActiveTab("practice");
+            setActiveTab("retrieval");
           }}
           onNavigateToEditBrick={(brick) => {
             setSubview({ type: "editBrick", brick });
@@ -130,15 +130,15 @@ function AppContent() {
       case "bricks":
         return (
           <BricksPage
-            onNavigateToAddBrick={(collectionId) => {
-              setSubview({ type: "addBrick", collectionId });
+            onNavigateToAddBrick={(islandId) => {
+              setSubview({ type: "addBrick", islandId });
             }}
             onNavigateToEditBrick={(brick) => {
               setSubview({ type: "editBrick", brick });
             }}
-            onNavigateToPractice={(brickId) => {
-              setPracticeBrickId(brickId ?? null);
-              setActiveTab("practice");
+            onNavigateToRetrieval={(brickId) => {
+              setRetrievalBrickId(brickId ?? null);
+              setActiveTab("retrieval");
             }}
             onNavigateToSearch={() => setSubview({ type: "search" })}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
@@ -146,21 +146,21 @@ function AppContent() {
         );
       case "discover":
         return <DiscoverPage />;
-      case "practice":
+      case "retrieval":
         return (
-          <PracticePage
-            targetBrickId={practiceBrickId}
-            onClearTargetBrickId={() => setPracticeBrickId(null)}
+          <RetrievalPage
+            targetBrickId={retrievalBrickId}
+            onClearTargetBrickId={() => setRetrievalBrickId(null)}
             onNavigateToAddBrick={() => setSubview({ type: "addBrick" })}
             onNavigateToEditBrick={(brick) =>
               setSubview({ type: "editBrick", brick })
             }
-            finishedCount={practiceFinishedCount}
+            finishedCount={retrievalFinishedCount}
             onIncrementFinishedCount={() =>
-              setPracticeFinishedCount((prev) => prev + 1)
+              setRetrievalFinishedCount((prev) => prev + 1)
             }
-            elapsedSeconds={practiceElapsedSeconds}
-            onTickTimer={() => setPracticeElapsedSeconds((prev) => prev + 1)}
+            elapsedSeconds={retrievalElapsedSeconds}
+            onTickTimer={() => setRetrievalElapsedSeconds((prev) => prev + 1)}
             onOpenAuth={(mode) => setAuthModalMode(mode)}
           />
         );
@@ -180,18 +180,18 @@ function AppContent() {
       <AppHeader
         activeTab={activeTab}
         setActiveTab={(tab) => {
-          if (!learner && (tab === "practice" || tab === "bricks")) {
+          if (!learner && (tab === "retrieval" || tab === "bricks")) {
             setAuthModalMode("login");
             return;
           }
-          if (tab === "practice") {
-            setPracticeBrickId(null);
+          if (tab === "retrieval") {
+            setRetrievalBrickId(null);
           }
           setActiveTab(tab);
         }}
         clearSubviews={() => setSubview(null)}
         isLoggedIn={Boolean(learner)}
-        onClearPracticeBrickId={() => setPracticeBrickId(null)}
+        onClearRetrievalBrickId={() => setRetrievalBrickId(null)}
       />
 
       {/* Main screen area dedicated strictly to displaying the scrollable content */}
@@ -204,7 +204,7 @@ function AppContent() {
         initialMode={authModalMode || "login"}
         onClose={() => setAuthModalMode(null)}
         onSuccess={() => {
-          setActiveTab("practice");
+          setActiveTab("retrieval");
         }}
       />
 

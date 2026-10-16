@@ -1,44 +1,40 @@
 import { useState } from "react";
 import { Folder, FolderPlus, Pencil, ChevronDown, Check } from "lucide-react";
 import {
-  useCollections,
-  useCreateCollection,
-  useUpdateCollection,
-} from "@/hooks/useCollections";
-import { type Collection } from "@/types";
-import AddCollectionModal from "./AddCollectionModal";
+  useIslands,
+  useCreateIsland,
+  useUpdateIsland,
+} from "@/hooks/useIslands";
+import { type Island } from "@/types";
+import AddIslandModal from "./AddIslandModal";
 
-interface BrickCollectionSelectorProps {
-  selectedCollectionId: number | null;
-  onSelectCollection: (id: number) => void;
+interface BrickIslandSelectorProps {
+  selectedIslandId: number | null;
+  onSelectIsland: (id: number) => void;
 }
 
-export default function BrickCollectionSelector({
-  selectedCollectionId,
-  onSelectCollection,
-}: BrickCollectionSelectorProps) {
-  const { data: collections = [], isLoading } = useCollections();
-  const createCollection = useCreateCollection();
-  const updateCollection = useUpdateCollection();
+export default function BrickIslandSelector({
+  selectedIslandId,
+  onSelectIsland,
+}: BrickIslandSelectorProps) {
+  const { data: islands = [], isLoading } = useIslands();
+  const createIsland = useCreateIsland();
+  const updateIsland = useUpdateIsland();
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(
-    null,
-  );
+  const [editingIsland, setEditingIsland] = useState<Island | null>(null);
 
-  const selectedCollection = collections.find(
-    (c) => c.id === selectedCollectionId,
-  );
+  const selectedIsland = islands.find((c) => c.id === selectedIslandId);
 
   const handleCreate = (data: {
     name: string;
     description: string;
     tags: string[];
   }) => {
-    createCollection.mutate(data, {
+    createIsland.mutate(data, {
       onSuccess: (newCol) => {
-        onSelectCollection(newCol.id);
+        onSelectIsland(newCol.id);
         setShowAddModal(false);
       },
     });
@@ -48,11 +44,11 @@ export default function BrickCollectionSelector({
     id: number,
     data: { name: string; description: string; tags: string[] },
   ) => {
-    updateCollection.mutate(
-      { collectionId: id, data },
+    updateIsland.mutate(
+      { islandId: id, data },
       {
         onSuccess: () => {
-          setEditingCollection(null);
+          setEditingIsland(null);
         },
       },
     );
@@ -61,7 +57,7 @@ export default function BrickCollectionSelector({
   return (
     <div className="space-y-1.5">
       <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-        To Collection <span className="text-error">*</span>
+        To Island <span className="text-error">*</span>
       </label>
 
       <div className="flex items-center gap-2">
@@ -76,8 +72,8 @@ export default function BrickCollectionSelector({
               <Folder className="w-4 h-4 text-primary shrink-0" />
               <span className="truncate text-on-surface">
                 {isLoading
-                  ? "Loading collections..."
-                  : selectedCollection?.name || "Choose a collection"}
+                  ? "Loading islands..."
+                  : selectedIsland?.name || "Choose an island"}
               </span>
             </div>
             <ChevronDown
@@ -89,27 +85,27 @@ export default function BrickCollectionSelector({
 
           {isOpen && (
             <div className="absolute left-0 top-full mt-1.5 z-50 w-full bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-xl max-h-64 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
-              {collections.length === 0 ? (
+              {islands.length === 0 ? (
                 <div className="p-4 text-center text-xs text-outline">
-                  No collections available yet.
+                  No islands available yet.
                 </div>
               ) : (
-                collections.map((col) => (
+                islands.map((col) => (
                   <button
                     key={col.id}
                     type="button"
                     onClick={() => {
-                      onSelectCollection(col.id);
+                      onSelectIsland(col.id);
                       setIsOpen(false);
                     }}
                     className={`w-full px-3.5 py-2.5 text-left text-xs font-medium flex items-center justify-between hover:bg-surface-container transition-colors ${
-                      selectedCollectionId === col.id
+                      selectedIslandId === col.id
                         ? "bg-primary/10 text-primary font-bold"
                         : "text-on-surface"
                     }`}
                   >
                     <span className="truncate">{col.name}</span>
-                    {selectedCollectionId === col.id && (
+                    {selectedIslandId === col.id && (
                       <Check className="w-4 h-4 text-primary shrink-0" />
                     )}
                   </button>
@@ -118,7 +114,7 @@ export default function BrickCollectionSelector({
 
               <div className="h-px bg-outline-variant/30 mx-2" />
 
-              {/* Create new collection trigger */}
+              {/* Create new island trigger */}
               <button
                 type="button"
                 onClick={() => {
@@ -128,47 +124,47 @@ export default function BrickCollectionSelector({
                 className="w-full px-3.5 py-2.5 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4" />
-                <span>Create New Collection</span>
+                <span>Create New Island</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Edit selected collection button */}
-        {selectedCollection && (
+        {/* Edit selected island button */}
+        {selectedIsland && (
           <button
             type="button"
-            onClick={() => setEditingCollection(selectedCollection)}
+            onClick={() => setEditingIsland(selectedIsland)}
             className="p-2.5 rounded-xl border border-outline-variant/60 bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary transition-all active:scale-95 cursor-pointer shrink-0"
-            title="Edit selected collection"
-            aria-label="Edit selected collection"
+            title="Edit selected island"
+            aria-label="Edit selected island"
           >
             <Pencil className="w-4 h-4" />
           </button>
         )}
 
-        {/* Create collection button */}
+        {/* Create island button */}
         <button
           type="button"
           onClick={() => setShowAddModal(true)}
           className="p-2.5 rounded-xl border border-outline-variant/60 bg-surface-container-low hover:bg-surface-container text-on-surface-variant hover:text-primary transition-all active:scale-95 cursor-pointer shrink-0"
-          title="Create a new collection"
-          aria-label="Create a new collection"
+          title="Create a new island"
+          aria-label="Create a new island"
         >
           <FolderPlus className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Add / Edit Collection Modals */}
-      {(showAddModal || editingCollection) && (
-        <AddCollectionModal
+      {/* Add / Edit Island Modals */}
+      {(showAddModal || editingIsland) && (
+        <AddIslandModal
           onClose={() => {
             setShowAddModal(false);
-            setEditingCollection(null);
+            setEditingIsland(null);
           }}
-          onAddCollection={handleCreate}
-          onEditCollection={handleEdit}
-          collectionToEdit={editingCollection || undefined}
+          onAddIsland={handleCreate}
+          onEditIsland={handleEdit}
+          islandToEdit={editingIsland || undefined}
         />
       )}
     </div>

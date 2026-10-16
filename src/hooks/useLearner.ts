@@ -6,23 +6,23 @@ import {
   type EmailChangeOTPParams,
   type EmailChangeParams,
 } from "@/api/auth";
-import type { Learner, PracticeLang } from "@/types";
+import type { Learner, RetrievalLang } from "@/types";
 
 interface LearnerDetailApi {
   id: number;
   name: string;
   email: string | null;
-  practice_lang?: string;
+  retrieval_lang?: string;
 }
 
 function toLearner(api: LearnerDetailApi): Learner {
-  const practice_lang = (api.practice_lang as PracticeLang) || "en";
+  const retrieval_lang = (api.retrieval_lang as RetrievalLang) || "en";
   return {
     id: api.id,
     name: api.name,
     email: api.email,
-    practice_lang,
-    practiceLang: practice_lang,
+    retrieval_lang,
+    retrievalLang: retrieval_lang,
   };
 }
 
@@ -48,22 +48,22 @@ export function useUpdateLearnerName() {
   });
 }
 
-export function useUpdatePracticeLang() {
+export function useUpdateRetrievalLang() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (practice_lang: PracticeLang) =>
+    mutationFn: (retrieval_lang: RetrievalLang) =>
       request<unknown>("/learners/me", {
         method: "PATCH",
-        body: { practice_lang },
+        body: { retrieval_lang },
       }),
-    onMutate: async (newLang: PracticeLang) => {
+    onMutate: async (newLang: RetrievalLang) => {
       await qc.cancelQueries({ queryKey: ["learner", "me"] });
       const previousLearner = qc.getQueryData<Learner>(["learner", "me"]);
       if (previousLearner) {
         qc.setQueryData<Learner>(["learner", "me"], {
           ...previousLearner,
-          practice_lang: newLang,
-          practiceLang: newLang,
+          retrieval_lang: newLang,
+          retrievalLang: newLang,
         });
       }
       return { previousLearner };
@@ -91,8 +91,7 @@ export function useChangePassword() {
 
 export function useSendEmailChangeOtp() {
   return useMutation({
-    mutationFn: (params: EmailChangeOTPParams) =>
-      apiSendEmailChangeOtp(params),
+    mutationFn: (params: EmailChangeOTPParams) => apiSendEmailChangeOtp(params),
   });
 }
 

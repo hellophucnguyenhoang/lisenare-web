@@ -9,7 +9,7 @@ interface AppHeaderProps {
   setActiveTab?: (tab: ActiveTab) => void;
   clearSubviews?: () => void;
   isLoggedIn?: boolean;
-  onClearPracticeBrickId?: () => void;
+  onClearRetrievalBrickId?: () => void;
 }
 
 export default function AppHeader({
@@ -17,14 +17,14 @@ export default function AppHeader({
   setActiveTab,
   clearSubviews,
   isLoggedIn = false,
-  onClearPracticeBrickId,
+  onClearRetrievalBrickId,
 }: AppHeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { headerContent } = useHeader();
 
   const handleLogoClick = () => {
-    setActiveTab?.(isLoggedIn ? "practice" : "profile");
-    onClearPracticeBrickId?.();
+    setActiveTab?.(isLoggedIn ? "retrieval" : "profile");
+    onClearRetrievalBrickId?.();
     clearSubviews?.();
   };
 
@@ -35,11 +35,11 @@ export default function AppHeader({
 
   const renderDefaultDynamicContent = () => {
     switch (activeTab) {
-      case "practice":
+      case "retrieval":
         return (
           <div className="flex items-center gap-1.5 text-xs text-primary font-bold bg-primary/10 px-2.5 py-1 rounded-xl">
             <Mic className="w-3.5 h-3.5" />
-            <span>Practice</span>
+            <span>Retrieval</span>
           </div>
         );
       case "bricks":

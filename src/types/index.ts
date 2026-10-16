@@ -1,4 +1,4 @@
-export interface Collection {
+export interface Island {
   id: number;
   name: string;
   description: string | null;
@@ -21,7 +21,7 @@ export interface Brick {
   isPrivate: boolean;
   lastEditAt: string;
   tags: string[];
-  collectionId: number;
+  islandId: number;
   learned: boolean;
 }
 
@@ -30,7 +30,7 @@ export interface Token {
   token_type: string;
 }
 
-export type PracticeLang = "en" | "ja" | "vi";
+export type RetrievalLang = "en" | "ja" | "vi";
 
 export interface Learner {
   id: number;
@@ -38,8 +38,8 @@ export interface Learner {
   email?: string | null;
   isEmailVerified?: boolean;
   avatarUrl?: string;
-  practice_lang?: PracticeLang | string;
-  practiceLang?: PracticeLang | string;
+  retrieval_lang?: RetrievalLang | string;
+  retrievalLang?: RetrievalLang | string;
 }
 
 export interface DiscoverVideo {
@@ -56,9 +56,9 @@ export interface DiscoverVideo {
   tags: string[];
 }
 
-export type ActiveTab = "practice" | "bricks" | "discover" | "profile";
+export type ActiveTab = "retrieval" | "bricks" | "discover" | "profile";
 export type Subview =
-  | { type: "addBrick"; collectionId?: number }
+  | { type: "addBrick"; islandId?: number }
   | { type: "editBrick"; brick: Brick }
   | { type: "search" }
   | null;

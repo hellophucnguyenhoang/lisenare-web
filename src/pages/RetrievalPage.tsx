@@ -9,18 +9,18 @@ import {
   getSupportedAudioMimeType,
 } from "@/utils/audio";
 import { transcribeAudio, compareSentences } from "@/api/evaluation";
-import PracticeHeader from "@/components/practice/PracticeHeader";
-import PracticeFlashcard from "@/components/practice/PracticeFlashcard";
-import PracticeInputSection from "@/components/practice/PracticeInputSection";
-import PracticeEvaluationModal from "@/components/practice/PracticeEvaluationModal";
-import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
+import RetrievalHeader from "@/components/retrieval/RetrievalHeader";
+import RetrievalFlashcard from "@/components/retrieval/RetrievalFlashcard";
+import RetrievalInputSection from "@/components/retrieval/RetrievalInputSection";
+import RetrievalEvaluationModal from "@/components/retrieval/RetrievalEvaluationModal";
+import RetrievalInstructionsPage from "@/components/retrieval/RetrievalInstructionsPage";
 import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { type Brick, type AuthMode } from "@/types";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useHeader } from "@/context/HeaderContext";
 
-interface PracticePageProps {
+interface RetrievalPageProps {
   onTypingModeChange?: (isTyping: boolean) => void;
   onNavigateToAddBrick?: () => void;
   onNavigateToEditBrick?: (brick: Brick) => void;
@@ -33,7 +33,7 @@ interface PracticePageProps {
   onOpenAuth?: (mode: AuthMode) => void;
 }
 
-export default function PracticePage({
+export default function RetrievalPage({
   onTypingModeChange,
   onNavigateToAddBrick,
   onNavigateToEditBrick,
@@ -44,7 +44,7 @@ export default function PracticePage({
   elapsedSeconds: propElapsedSeconds,
   onTickTimer,
   onOpenAuth,
-}: PracticePageProps) {
+}: RetrievalPageProps) {
   const [localFinishedCount, setLocalFinishedCount] = useState(0);
   const [localElapsedSeconds, setLocalElapsedSeconds] = useState(0);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -87,7 +87,7 @@ export default function PracticePage({
   const [typedAnswer, setTypedAnswer] = useState("");
   const [showTypeInput, setShowTypeInput] = useState<boolean>(() => {
     try {
-      return localStorage.getItem("preferred_practice_mode") === "keyboard";
+      return localStorage.getItem("preferred_retrieval_mode") === "keyboard";
     } catch {
       return false;
     }
@@ -97,7 +97,7 @@ export default function PracticePage({
     setShowTypeInput(isKeyboard);
     try {
       localStorage.setItem(
-        "preferred_practice_mode",
+        "preferred_retrieval_mode",
         isKeyboard ? "keyboard" : "mic",
       );
     } catch {
@@ -127,7 +127,7 @@ export default function PracticePage({
     isLoading: isLoadingBrick,
     refetch,
   } = useQuery({
-    queryKey: ["bricks", "practice-next", currentBrickId],
+    queryKey: ["bricks", "retrieval-next", currentBrickId],
     queryFn: () => getNextBrick({ brickId: currentBrickId }),
     enabled: isLoggedIn,
     staleTime: 0,
@@ -163,14 +163,14 @@ export default function PracticePage({
 
   const { setHeaderContent } = useHeader();
 
-  // Dynamically update the fixed sticky header with real-time practice stats
+  // Dynamically update the fixed sticky header with real-time retrieval stats
   useEffect(() => {
     if (!isLoggedIn || !activeBrick) {
       setHeaderContent(null);
       return;
     }
     setHeaderContent(
-      <PracticeHeader
+      <RetrievalHeader
         finishedCount={finishedCount}
         elapsedSeconds={elapsedSeconds}
         isAnswerRevealed={isAnswerRevealed}
@@ -379,7 +379,7 @@ export default function PracticePage({
     if (currentBrickId != null) {
       setCurrentBrickId(null);
       onClearTargetBrickId?.();
-      qc.invalidateQueries({ queryKey: ["bricks", "practice-next"] });
+      qc.invalidateQueries({ queryKey: ["bricks", "retrieval-next"] });
     } else {
       const result = await refetch();
       if (!result.data) {
@@ -402,7 +402,7 @@ export default function PracticePage({
           Start Practicing Bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Sign in to your account to review vocabulary, practice pronunciation
+          Sign in to your account to review vocabulary, retrieval pronunciation
           with speech evaluation, and build your memory stability.
         </p>
         {onOpenAuth && (
@@ -411,7 +411,7 @@ export default function PracticePage({
             onClick={() => onOpenAuth("login")}
             className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
           >
-            Log In to Practice
+            Log In to Retrieval
           </button>
         )}
       </div>
@@ -428,7 +428,7 @@ export default function PracticePage({
 
   if (showInstructions) {
     return (
-      <PracticeInstructionsPage
+      <RetrievalInstructionsPage
         onBack={() => setShowInstructions(false)}
         onNavigateToAddBrick={onNavigateToAddBrick}
       />
@@ -464,13 +464,13 @@ export default function PracticePage({
         {/* Small Question leading to Text Instruction Page */}
         <button
           type="button"
-          id="btn-how-practice-works"
+          id="btn-how-retrieval-works"
           onClick={() => setShowInstructions(true)}
           className="mt-8 inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer group"
         >
           <HelpCircle className="w-4 h-4 text-outline group-hover:text-primary transition-colors" />
           <span className="underline underline-offset-4 font-medium">
-            How does practice work?
+            How does retrieval work?
           </span>
         </button>
       </div>
@@ -498,7 +498,7 @@ export default function PracticePage({
     >
       {/* Main Flashcard & Interactive Input section */}
       <div className="w-full max-w-full space-y-4 min-w-0">
-        <PracticeFlashcard
+        <RetrievalFlashcard
           activeBrick={activeBrick}
           isRevealed={isRevealed}
           isLoadingAudio={isLoadingAudio}
@@ -511,7 +511,7 @@ export default function PracticePage({
           }
         />
 
-        <PracticeInputSection
+        <RetrievalInputSection
           activeBrickId={activeBrick?.id}
           finishedCount={finishedCount}
           showTypeInput={showTypeInput}
@@ -533,7 +533,7 @@ export default function PracticePage({
 
       {/* Minimal Scoreboard & Evaluation Dialog */}
       {evaluationResult && (
-        <PracticeEvaluationModal
+        <RetrievalEvaluationModal
           score={evaluationResult.score}
           passed={evaluationResult.passed}
           targetText={evaluationResult.targetText}

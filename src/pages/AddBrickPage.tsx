@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Save, HelpCircle } from "lucide-react";
 import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
-import { useCollections } from "@/hooks/useCollections";
+import { useIslands } from "@/hooks/useIslands";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio } from "@/utils/audio";
@@ -13,21 +13,21 @@ import BrickUnitTypeSelector, {
   type UnitType,
 } from "@/components/bricks/BrickUnitTypeSelector";
 import BrickTagsSection from "@/components/bricks/BrickTagsSection";
-import BrickCollectionSelector from "@/components/bricks/BrickCollectionSelector";
+import BrickIslandSelector from "@/components/bricks/BrickIslandSelector";
 import BrickPrivacyToggle from "@/components/bricks/BrickPrivacyToggle";
-import PracticeInstructionsPage from "@/components/practice/PracticeInstructionsPage";
+import RetrievalInstructionsPage from "@/components/retrieval/RetrievalInstructionsPage";
 
 interface AddBrickPageProps {
-  collectionId?: number;
+  islandId?: number;
   onBack: () => void;
 }
 
 export default function AddBrickPage({
-  collectionId: initialCollectionId,
+  islandId: initialIslandId,
   onBack,
 }: AddBrickPageProps) {
   const { data: learner } = useLearnerMe();
-  const learnerLang = (learner?.practice_lang || learner?.practiceLang) as
+  const learnerLang = (learner?.retrieval_lang || learner?.retrievalLang) as
     | string
     | undefined;
   const preferredLang: TargetLang =
@@ -35,16 +35,14 @@ export default function AddBrickPage({
       ? learnerLang
       : "en";
 
-  const { data: collections = [] } = useCollections();
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    number | null
-  >(initialCollectionId ?? null);
+  const { data: islands = [] } = useIslands();
+  const [selectedIslandId, setSelectedIslandId] = useState<number | null>(
+    initialIslandId ?? null,
+  );
 
-  const effectiveCollectionId =
-    selectedCollectionId ??
-    (collections.length > 0
-      ? (initialCollectionId ?? collections[0].id)
-      : null);
+  const effectiveIslandId =
+    selectedIslandId ??
+    (islands.length > 0 ? (initialIslandId ?? islands[0].id) : null);
 
   const [showInstructions, setShowInstructions] = useState(false);
   const [nativeText, setNativeText] = useState("");
@@ -112,15 +110,12 @@ export default function AddBrickPage({
   };
 
   const isFormValid = Boolean(
-    nativeText.trim() &&
-    targetText.trim() &&
-    effectiveCollectionId &&
-    audioBlob,
+    nativeText.trim() && targetText.trim() && effectiveIslandId && audioBlob,
   );
 
   const handleSave = () => {
-    if (!effectiveCollectionId) {
-      toast.error("Please choose or create a collection for this brick.");
+    if (!effectiveIslandId) {
+      toast.error("Please choose or create an island for this brick.");
       return;
     }
 
@@ -145,7 +140,7 @@ export default function AddBrickPage({
         context: context.trim() || null,
         kind: kind,
         is_private: isPrivate,
-        collection_id: effectiveCollectionId,
+        island_id: effectiveIslandId,
         tags,
       }),
     );
@@ -168,7 +163,7 @@ export default function AddBrickPage({
 
   if (showInstructions) {
     return (
-      <PracticeInstructionsPage
+      <RetrievalInstructionsPage
         onBack={() => setShowInstructions(false)}
         backButtonLabel="Back to Add Brick"
       />
@@ -193,18 +188,18 @@ export default function AddBrickPage({
           type="button"
           onClick={() => setShowInstructions(true)}
           className="p-2 -mr-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
-          aria-label="5 Steps to Practice"
-          title="5 Steps to Practice"
+          aria-label="5 Steps to Retrieval"
+          title="5 Steps to Retrieval"
         >
           <HelpCircle className="w-6 h-6" />
         </button>
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
-        {/* Collection Selector: choose, create, or edit collection */}
-        <BrickCollectionSelector
-          selectedCollectionId={effectiveCollectionId}
-          onSelectCollection={setSelectedCollectionId}
+        {/* Island Selector: choose, create, or edit island */}
+        <BrickIslandSelector
+          selectedIslandId={effectiveIslandId}
+          onSelectIsland={setSelectedIslandId}
         />
 
         {/* Languages inputs */}

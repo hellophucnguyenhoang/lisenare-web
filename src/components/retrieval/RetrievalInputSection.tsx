@@ -12,7 +12,7 @@ import {
 import AudioWaveform from "@/components/common/AudioWaveform";
 import PlainTextInput from "@/components/common/PlainTextInput";
 
-interface PracticeInputSectionProps {
+interface RetrievalInputSectionProps {
   activeBrickId?: number;
   finishedCount?: number;
   showTypeInput: boolean;
@@ -31,7 +31,7 @@ interface PracticeInputSectionProps {
   onOpenInstructions?: () => void;
 }
 
-export default function PracticeInputSection({
+export default function RetrievalInputSection({
   activeBrickId,
   finishedCount,
   showTypeInput,
@@ -48,7 +48,7 @@ export default function PracticeInputSection({
   showNextButton,
   onNext,
   onOpenInstructions,
-}: PracticeInputSectionProps) {
+}: RetrievalInputSectionProps) {
   const inputRef = useRef<HTMLDivElement>(null);
 
   // Auto focus input when moving to next brick, changing active brick, or toggling typing mode
@@ -95,7 +95,7 @@ export default function PracticeInputSection({
 
   return (
     <div className="w-full max-w-full space-y-4 min-w-0">
-      {/* Practice Instruction Banner */}
+      {/* Retrieval Instruction Banner */}
       <div className="flex items-center justify-center gap-1.5">
         <p className="text-xs text-primary font-medium">
           {showTypeInput
@@ -107,8 +107,8 @@ export default function PracticeInputSection({
             type="button"
             onClick={onOpenInstructions}
             className="text-primary/70 hover:text-primary transition-colors p-0.5 rounded-full hover:bg-primary/10 cursor-pointer inline-flex items-center justify-center"
-            title="How to practice"
-            aria-label="How to practice"
+            title="How to retrieval"
+            aria-label="How to retrieval"
           >
             <HelpCircle className="w-3.5 h-3.5" />
           </button>
@@ -279,7 +279,7 @@ export default function PracticeInputSection({
       {showNextButton && (
         <button
           type="button"
-          id="btn-practice-next-brick"
+          id="btn-retrieval-next-brick"
           onClick={onNext}
           className="w-full bg-primary text-on-primary py-3.5 rounded-xl shadow-md active:scale-98 transition-all hover:shadow-lg flex items-center justify-center gap-2 font-bold animate-in fade-in duration-300 cursor-pointer text-sm"
         >

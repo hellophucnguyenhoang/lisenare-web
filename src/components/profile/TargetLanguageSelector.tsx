@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { Languages, ChevronDown, Check, Loader2 } from "lucide-react";
-import { type PracticeLang } from "@/types";
+import { type RetrievalLang } from "@/types";
 
 interface TargetLanguageSelectorProps {
-  currentLang: PracticeLang;
-  onSelectLang: (lang: PracticeLang) => void;
+  currentLang: RetrievalLang;
+  onSelectLang: (lang: RetrievalLang) => void;
   isUpdating?: boolean;
 }
 
 interface LanguageOption {
-  code: PracticeLang;
+  code: RetrievalLang;
   name: string;
   flag: string;
 }
