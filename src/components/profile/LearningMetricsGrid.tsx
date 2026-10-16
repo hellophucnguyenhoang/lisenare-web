@@ -58,7 +58,21 @@ function InfoTooltip({ text }: { text: string }) {
   );
 }
 
-type DueUnit = "hours" | "minutes" | "seconds";
+type DueUnit = "days" | "hours" | "minutes" | "seconds";
+
+const UNIT_PILL_LABEL: Record<DueUnit, string> = {
+  days: "days",
+  hours: "hours",
+  minutes: "mins",
+  seconds: "secs",
+};
+
+const UNIT_TITLE: Record<DueUnit, string> = {
+  days: "View in days",
+  hours: "View in hours",
+  minutes: "View in minutes",
+  seconds: "View in seconds",
+};
 
 function formatNextDueValue(
   seconds: number | null | undefined,
@@ -66,32 +80,66 @@ function formatNextDueValue(
 ): string {
   if (seconds == null || isNaN(seconds)) return "0";
   const val =
-    unit === "hours"
-      ? seconds / 3600
-      : unit === "minutes"
-        ? seconds / 60
-        : seconds;
+    unit === "days"
+      ? seconds / 86400
+      : unit === "hours"
+        ? seconds / 3600
+        : unit === "minutes"
+          ? seconds / 60
+          : seconds;
   return Number.isInteger(val)
     ? val.toString()
     : parseFloat(val.toFixed(4)).toString();
+}
+
+function getDefaultUnit(diffSeconds: number | null): DueUnit {
+  if (diffSeconds == null || diffSeconds <= 0) return "hours";
+  if (diffSeconds >= 86400) return "days";
+  if (diffSeconds >= 3600) return "hours";
+  if (diffSeconds >= 60) return "minutes";
+  return "seconds";
 }
 
 export default function LearningMetricsGrid({
   stats,
   isLoading,
 }: LearningMetricsGridProps) {
-  const [dueUnit, setDueUnit] = useState<DueUnit>("hours");
-
-  const cycleDueUnit = () => {
-    setDueUnit((prev) =>
-      prev === "hours" ? "minutes" : prev === "minutes" ? "seconds" : "hours",
-    );
-  };
+  const [userUnit, setUserUnit] = useState<DueUnit | null>(null);
 
   const dueMs = stats?.next_due ? new Date(stats.next_due).getTime() : null;
   const isOverdue = Boolean(dueMs && dueMs < Date.now());
   const diffSeconds = dueMs ? Math.abs(Date.now() - dueMs) / 1000 : null;
-  const formattedNextDue = formatNextDueValue(diffSeconds, dueUnit);
+
+  // Adaptively show 3 relevant units across 4 levels:
+  // - Large durations (>= 1 day): days, hours, mins
+  // - Smaller durations (< 1 day): hours, mins, secs
+  const availableUnits: DueUnit[] =
+    diffSeconds != null && diffSeconds >= 86400
+      ? ["days", "hours", "minutes"]
+      : ["hours", "minutes", "seconds"];
+
+  const activeUnit: DueUnit =
+    userUnit && availableUnits.includes(userUnit)
+      ? userUnit
+      : getDefaultUnit(diffSeconds);
+
+  const cycleDueUnit = () => {
+    const idx = availableUnits.indexOf(activeUnit);
+    setUserUnit(availableUnits[(idx + 1) % availableUnits.length]);
+  };
+
+  const formattedNextDue = formatNextDueValue(diffSeconds, activeUnit);
+
+  const unitBadge =
+    activeUnit === "days"
+      ? formattedNextDue === "1"
+        ? "day"
+        : "days"
+      : activeUnit === "hours"
+        ? "hrs"
+        : activeUnit === "minutes"
+          ? "mins"
+          : "secs";
 
   return (
     <section className="space-y-2">
@@ -157,7 +205,9 @@ export default function LearningMetricsGrid({
             type="button"
             onClick={cycleDueUnit}
             className="flex items-baseline justify-center gap-1 cursor-pointer select-none group transition-transform active:scale-95"
-            title={`Click to switch unit (hours, minutes, seconds) - ${
+            title={`Click to switch unit (${availableUnits
+              .map((u) => UNIT_PILL_LABEL[u])
+              .join(", ")}) - ${
               isOverdue ? "Overdue time" : "Remaining time"
             }`}
           >
@@ -177,58 +227,29 @@ export default function LearningMetricsGrid({
                   : "text-emerald-600"
               }`}
             >
-              {dueUnit === "hours"
-                ? "hrs"
-                : dueUnit === "minutes"
-                  ? "mins"
-                  : "secs"}
+              {unitBadge}
             </span>
           </button>
 
-          {/* Dynamic Unit Switcher */}
+          {/* Dynamic Unit Switcher (Adaptively shows 3 units from days, hours, mins, secs) */}
           <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-container rounded-lg my-1 border border-outline-variant/40">
-            <button
-              type="button"
-              onClick={() => setDueUnit("hours")}
-              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
-                dueUnit === "hours"
-                  ? isOverdue
-                    ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
-                    : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
-                  : "text-outline hover:text-on-surface"
-              }`}
-              title="View in hours"
-            >
-              hours
-            </button>
-            <button
-              type="button"
-              onClick={() => setDueUnit("minutes")}
-              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
-                dueUnit === "minutes"
-                  ? isOverdue
-                    ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
-                    : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
-                  : "text-outline hover:text-on-surface"
-              }`}
-              title="View in minutes"
-            >
-              mins
-            </button>
-            <button
-              type="button"
-              onClick={() => setDueUnit("seconds")}
-              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
-                dueUnit === "seconds"
-                  ? isOverdue
-                    ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
-                    : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
-                  : "text-outline hover:text-on-surface"
-              }`}
-              title="View in seconds"
-            >
-              secs
-            </button>
+            {availableUnits.map((unit) => (
+              <button
+                key={unit}
+                type="button"
+                onClick={() => setUserUnit(unit)}
+                className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
+                  activeUnit === unit
+                    ? isOverdue
+                      ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
+                      : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
+                    : "text-outline hover:text-on-surface"
+                }`}
+                title={UNIT_TITLE[unit]}
+              >
+                {UNIT_PILL_LABEL[unit]}
+              </button>
+            ))}
           </div>
 
           <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
