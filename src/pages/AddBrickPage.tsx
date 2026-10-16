@@ -165,14 +165,14 @@ export default function AddBrickPage({
     return (
       <RetrievalInstructionsPage
         onBack={() => setShowInstructions(false)}
-        backButtonLabel="Back to Add Brick"
+        backButtonLabel="Back to add brick"
       />
     );
   }
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 pt-6 pb-32 animate-in fade-in duration-300">
-      {/* Top Bar Navigation */}
+      {/* Top bar navigation */}
       <header className="flex items-center justify-between h-16 w-full max-w-lg mx-auto mb-6">
         <button
           onClick={onBack}
@@ -182,7 +182,7 @@ export default function AddBrickPage({
           <ArrowLeft className="w-6 h-6 text-primary" />
         </button>
         <h1 className="text-xl font-bold font-display text-primary">
-          Add New Brick
+          Add new brick
         </h1>
         <button
           type="button"
@@ -196,7 +196,7 @@ export default function AddBrickPage({
       </header>
 
       <main className="max-w-lg mx-auto space-y-6">
-        {/* Island Selector: choose, create, or edit island */}
+        {/* Island selector: choose, create, or edit island */}
         <BrickIslandSelector
           selectedIslandId={effectiveIslandId}
           onSelectIsland={setSelectedIslandId}
@@ -220,16 +220,16 @@ export default function AddBrickPage({
           isGeneratingAudio={textToSpeechMutation.isPending}
         />
 
-        {/* Pronunciation Recording / Preview section */}
+        {/* Pronunciation recording / Preview section */}
         <BrickAudioSection audioBlob={audioBlob} onAudioChange={setAudioBlob} />
 
-        {/* Kind Section: Word or Sentence */}
+        {/* Kind section: Word or Sentence */}
         <BrickUnitTypeSelector kind={kind} onChange={setUnitType} />
 
-        {/* Privacy Section */}
+        {/* Privacy section */}
         <BrickPrivacyToggle isPrivate={isPrivate} onChange={setIsPrivate} />
 
-        {/* Tags Section */}
+        {/* Tags section */}
         <BrickTagsSection tags={tags} onChange={setTags} />
 
         <div className="h-10"></div>
@@ -246,12 +246,12 @@ export default function AddBrickPage({
             {createBrick.isPending ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Saving Brick...</span>
+                <span>Saving brick...</span>
               </>
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                <span>Save Brick</span>
+                <span>Save brick</span>
               </>
             )}
           </button>

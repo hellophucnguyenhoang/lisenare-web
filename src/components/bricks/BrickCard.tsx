@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { type Brick } from "@/types";
-import { MoreVertical, Edit3, Trash2, RotateCcw, CheckCircle2 } from "lucide-react";
+import {
+  MoreVertical,
+  Edit3,
+  Trash2,
+  RotateCcw,
+  CheckCircle2,
+} from "lucide-react";
 
 interface BrickCardProps {
   brick: Brick;
@@ -71,7 +77,7 @@ export default function BrickCard({
                   className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4 text-outline" />
-                  <span>Edit Brick</span>
+                  <span>Edit brick</span>
                 </button>
               )}
               {onForgetBrick && (
@@ -91,7 +97,7 @@ export default function BrickCard({
                   className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
                 >
                   <RotateCcw className="w-4 h-4 text-outline" />
-                  <span>Forget Brick</span>
+                  <span>Forget brick</span>
                 </button>
               )}
               {onDeleteBrick && (
@@ -109,7 +115,7 @@ export default function BrickCard({
                   className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-error/10 flex items-center gap-2 text-error cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
-                  <span>Delete Brick</span>
+                  <span>Delete brick</span>
                 </button>
               )}
             </div>

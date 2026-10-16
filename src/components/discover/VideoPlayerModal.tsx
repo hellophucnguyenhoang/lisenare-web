@@ -37,7 +37,7 @@ export default function VideoPlayerModal({
         className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Modal Container */}
+      {/* Modal container  */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 z-10 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-outline-variant/50 bg-surface-container/40">
@@ -60,7 +60,7 @@ export default function VideoPlayerModal({
           </button>
         </div>
 
-        {/* Video Player */}
+        {/* Video player  */}
         <div className="relative aspect-video w-full bg-black">
           <iframe
             src={embedUrl}
@@ -71,11 +71,11 @@ export default function VideoPlayerModal({
           />
         </div>
 
-        {/* Content Info */}
+        {/* Content info  */}
         <div className="p-5 overflow-y-auto space-y-4">
           <div>
             <span className="text-[11px] font-semibold text-outline uppercase tracking-wider block mb-1">
-              Context Transcript ({video.channel})
+              Context transcript ({video.channel})
             </span>
             <blockquote className="text-base sm:text-lg font-bold font-display text-on-surface leading-snug">
               "{video.transcript}"
@@ -106,7 +106,7 @@ export default function VideoPlayerModal({
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary font-bold rounded-xl text-xs hover:bg-primary-container transition-all active:scale-95 cursor-pointer shadow-xs"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Save as Brick</span>
+                <span>Save as brick</span>
               </button>
             )}
           </div>

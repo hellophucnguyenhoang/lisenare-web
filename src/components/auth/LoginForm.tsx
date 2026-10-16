@@ -71,13 +71,13 @@ export default function LoginForm({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Header Title */}
+      {/* Header title */}
       <div className="text-center space-y-1.5">
         <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center mb-2 shadow-xs">
           <Lock className="w-6 h-6" />
         </div>
         <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
-          Welcome Back
+          Welcome back
         </h2>
         <p className="text-xs text-on-surface-variant font-medium">
           Continue building your bricks
@@ -85,7 +85,7 @@ export default function LoginForm({
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        {/* Username Input */}
+        {/* Username input */}
         <div className="space-y-1.5">
           <label
             htmlFor="login-username"
@@ -109,7 +109,7 @@ export default function LoginForm({
           </div>
         </div>
 
-        {/* Password Input with Show/Hide toggle */}
+        {/* Password input with Show/Hide toggle */}
         <div className="space-y-1.5">
           <div className="flex justify-between items-center">
             <label
@@ -124,7 +124,7 @@ export default function LoginForm({
               onClick={onSwitchToForgotPassword}
               className="text-xs font-bold text-primary hover:text-primary-container transition-colors cursor-pointer"
             >
-              Forgot Password?
+              Forgot password?
             </button>
           </div>
           <div className="relative flex items-center">
@@ -156,7 +156,7 @@ export default function LoginForm({
           </div>
         </div>
 
-        {/* Primary Log In Button */}
+        {/* Primary log in button */}
         <button
           type="submit"
           id="btn-login-submit"
@@ -169,7 +169,7 @@ export default function LoginForm({
               <span>Logging in...</span>
             </>
           ) : (
-            <span>Log In</span>
+            <span>Log in</span>
           )}
         </button>
       </form>
@@ -182,7 +182,7 @@ export default function LoginForm({
         </span>
       </div>
 
-      {/* Google Sign-in */}
+      {/* Google sign-in */}
       <button
         type="button"
         id="btn-google-login"

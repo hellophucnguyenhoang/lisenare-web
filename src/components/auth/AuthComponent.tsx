@@ -34,7 +34,7 @@ export default function AuthComponent({
         {/* Top accent line */}
         <div className="h-1.5 w-full bg-linear-to-r from-primary via-primary-fixed to-secondary" />
 
-        {/* Modal Close Button */}
+        {/* Modal close button */}
         {isModal && onClose && (
           <button
             id="btn-auth-close"
@@ -73,7 +73,7 @@ export default function AuthComponent({
           )}
         </div>
 
-        {/* Form View Container */}
+        {/* Form view container */}
         <div className="p-6 md:p-8 pt-2">
           {mode === "login" && (
             <LoginForm

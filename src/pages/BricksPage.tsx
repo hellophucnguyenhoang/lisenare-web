@@ -261,7 +261,7 @@ export default function BricksPage({
 
   const { setHeaderContent } = useHeader();
 
-  // Dynamically update the fixed sticky header with brick stats & Add Brick action
+  // Dynamically update the fixed sticky header with brick stats & Add brick action
   useEffect(() => {
     if (!isLoggedIn) {
       setHeaderContent(null);
@@ -279,7 +279,7 @@ export default function BricksPage({
           title="Add new brick"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-          <span>Add Brick</span>
+          <span>Add brick</span>
         </button>
       </div>,
     );
@@ -292,12 +292,12 @@ export default function BricksPage({
         <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
           <img
             src="/favicon.svg"
-            alt="Lisenare Logo"
+            alt="Lisenare logo"
             className="w-full h-full object-contain rounded-xl"
           />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
-          Your Bricks
+          Your bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
           Sign in to view, create, organize, and search your vocabulary islands.
@@ -308,7 +308,7 @@ export default function BricksPage({
             onClick={() => onOpenAuth("login")}
             className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
           >
-            Log In to View Bricks
+            Log in to view bricks
           </button>
         )}
       </div>
@@ -317,7 +317,7 @@ export default function BricksPage({
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-28 animate-in fade-in duration-300">
-      {/* Page Header */}
+      {/* Page header */}
       <section className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface">
@@ -333,7 +333,7 @@ export default function BricksPage({
             {statusFilter === "LEARNED"
               ? " • Learned"
               : statusFilter === "NOT_LEARNED"
-                ? " • Not Learned"
+                ? " • Not learned"
                 : ""}
             {selectedTags.length > 0
               ? ` • ${selectedTags.map((t) => `#${t}`).join(", ")}`
@@ -382,9 +382,9 @@ export default function BricksPage({
         )}
       </section>
 
-      {/* Filter Bar: Island selector + Sort controls + Search Button */}
+      {/* Filter bar: Island selector + Sort controls + Search button */}
       <div className="sticky top-14 sm:top-16 z-20 bg-surface/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 mb-5 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-3 shadow-2xs transition-all">
-        {/* Island Filter Dropdown */}
+        {/* Island filter dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowIslandDropdown(!showIslandDropdown)}
@@ -395,7 +395,7 @@ export default function BricksPage({
             }`}
           >
             <span className="truncate text-xs">
-              {selectedIsland?.name || "All Islands"}
+              {selectedIsland?.name || "All islands"}
             </span>
             <ChevronDown
               className={`w-4 h-4 shrink-0 transition-transform ${
@@ -406,7 +406,7 @@ export default function BricksPage({
 
           {showIslandDropdown && (
             <div className="absolute left-0 top-full mt-1.5 z-30 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg animate-in fade-in zoom-in-95 duration-150 max-h-80 overflow-y-auto">
-              {/* "All Islands" option */}
+              {/* "All islands" option */}
               <button
                 type="button"
                 onClick={() => {
@@ -419,7 +419,7 @@ export default function BricksPage({
                     : "text-on-surface"
                 }`}
               >
-                <span>All Islands</span>
+                <span>All islands</span>
                 {!selectedIslandId && (
                   <Check className="w-4 h-4 text-primary shrink-0" />
                 )}
@@ -545,7 +545,7 @@ export default function BricksPage({
                 className="w-full px-4 py-2 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4" />
-                <span>New Island</span>
+                <span>New island</span>
               </button>
 
               {/* Import island inline */}
@@ -558,15 +558,15 @@ export default function BricksPage({
                 className="w-full px-4 py-2 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer border-t border-outline-variant/20"
               >
                 <Download className="w-4 h-4" />
-                <span>Import Island (JSON)</span>
+                <span>Import island</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Right side: Listen Bricks + Sort & Filter + Search Button */}
+        {/* Right side: Listen bricks + Sort & Filter + Search button */}
         <div className="flex items-center gap-2">
-          {/* Listen Bricks Button */}
+          {/* Listen bricks button */}
           <button
             type="button"
             id="btn-listen-bricks"
@@ -579,10 +579,10 @@ export default function BricksPage({
             }
           >
             <Headphones className="w-4 h-4 text-primary" />
-            <span className="hidden sm:inline">Listen Bricks</span>
+            <span className="hidden sm:inline">Listen bricks</span>
           </button>
 
-          {/* Sort & Filter Dropdown Button (icon-only) */}
+          {/* Sort & Filter dropdown button (icon-only) */}
           <div className="relative" ref={filterDropdownRef}>
             <button
               type="button"
@@ -604,7 +604,7 @@ export default function BricksPage({
 
             {showFilterDropdown && (
               <div className="absolute right-0 top-full mt-1.5 z-30 w-64 sm:w-72 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-3 space-y-3 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
-                {/* Kind Filter */}
+                {/* Kind filter */}
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
                     Kind
@@ -655,7 +655,7 @@ export default function BricksPage({
 
                 <div className="h-px bg-outline-variant/30" />
 
-                {/* Status Filter */}
+                {/* Status filter */}
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
                     Status
@@ -703,7 +703,7 @@ export default function BricksPage({
                         : "text-on-surface"
                     }`}
                   >
-                    <span>Not Learned</span>
+                    <span>Not learned</span>
                     {statusFilter === "NOT_LEARNED" && (
                       <Check className="w-3.5 h-3.5 text-primary" />
                     )}
@@ -712,10 +712,10 @@ export default function BricksPage({
 
                 <div className="h-px bg-outline-variant/30" />
 
-                {/* Sort By */}
+                {/* Sort by */}
                 <div className="space-y-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
-                    Sort By
+                    Sort by
                   </span>
                   <button
                     type="button"
@@ -769,7 +769,7 @@ export default function BricksPage({
 
                 <div className="h-px bg-outline-variant/30" />
 
-                {/* Tags Filter */}
+                {/* Tags filter */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-outline flex items-center gap-1">
@@ -848,13 +848,13 @@ export default function BricksPage({
             )}
           </div>
 
-          {/* Search Bricks Button */}
+          {/* Search bricks Button */}
           <button
             type="button"
             id="btn-open-search"
             onClick={onNavigateToSearch}
             className="flex items-center gap-2 px-3.5 py-2.5 bg-surface-container-lowest hover:bg-surface-container-high border border-outline-variant/60 hover:border-primary/40 text-on-surface font-semibold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-            title="Search Bricks"
+            title="Search bricks"
           >
             <Search className="w-4 h-4 text-primary" />
             <span className="hidden sm:inline">Search</span>
@@ -862,7 +862,7 @@ export default function BricksPage({
         </div>
       </div>
 
-      {/* Active Filter Chips Bar */}
+      {/* Active filter chips bar */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5 mb-5 p-2.5 bg-surface-container-low/60 border border-outline-variant/40 rounded-xl animate-in fade-in duration-150">
           <span className="text-[11px] font-semibold text-on-surface-variant mr-1">
@@ -884,7 +884,7 @@ export default function BricksPage({
           {statusFilter && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium">
               <span>
-                Status: {statusFilter === "LEARNED" ? "Learned" : "Not Learned"}
+                Status: {statusFilter === "LEARNED" ? "Learned" : "Not learned"}
               </span>
               <button
                 type="button"
@@ -935,7 +935,7 @@ export default function BricksPage({
         </div>
       )}
 
-      {/* Bricks Grid */}
+      {/* Bricks grid */}
       {isLoadingBricks ? (
         <div className="flex justify-center p-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -943,7 +943,7 @@ export default function BricksPage({
       ) : allBricks.length === 0 ? (
         <div className="border-2 border-dashed border-outline-variant/60 rounded-2xl p-10 text-center bg-surface-container-lowest/50">
           <h3 className="text-base font-bold text-on-surface">
-            {hasActiveFilters ? "No Bricks Found" : "No Bricks Yet"}
+            {hasActiveFilters ? "No bricks found" : "No bricks yet"}
           </h3>
           <p className="text-xs text-on-surface-variant max-w-sm mx-auto mt-1 mb-4">
             {hasActiveFilters
@@ -955,7 +955,7 @@ export default function BricksPage({
               onClick={handleResetFilters}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
             >
-              <span>Clear All Filters</span>
+              <span>Clear all filters</span>
             </button>
           ) : (
             <button
@@ -963,7 +963,7 @@ export default function BricksPage({
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:bg-primary/95 active:scale-95 transition-all shadow-sm cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Add Brick</span>
+              <span>Add brick</span>
             </button>
           )}
         </div>
@@ -1013,7 +1013,7 @@ export default function BricksPage({
         </>
       )}
 
-      {/* Add / Edit Island Modal */}
+      {/* Add / Edit island Modal */}
       {(showIslandModal || editingIsland) && (
         <AddIslandModal
           onClose={() => {
@@ -1027,7 +1027,7 @@ export default function BricksPage({
         />
       )}
 
-      {/* Import Island Modal */}
+      {/* Import island Modal */}
       {showImportModal && (
         <ImportIslandModal
           isOpen={showImportModal}
@@ -1043,7 +1043,7 @@ export default function BricksPage({
         />
       )}
 
-      {/* Listening Retrieval Modal */}
+      {/* Listening retrieval modal */}
       <ListeningRetrievalModal
         isOpen={showListeningModal}
         onClose={() => setShowListeningModal(false)}
@@ -1051,7 +1051,7 @@ export default function BricksPage({
         islandName={selectedIsland?.name}
       />
 
-      {/* Floating Scroll to Top Button */}
+      {/* Floating scroll to Top button */}
       {showScrollTop && (
         <button
           type="button"

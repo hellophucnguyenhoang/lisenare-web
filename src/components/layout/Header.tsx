@@ -111,7 +111,7 @@ export default function Header({
           </div>
         </div>
 
-        {/* Desktop Responsive Header Navigation Items */}
+        {/* Desktop responsive header navigation items */}
         <div className="flex items-center gap-3">
           <div className="hidden md:flex gap-8 mr-2">
             {navItems.map((item) => {
@@ -136,7 +136,7 @@ export default function Header({
             })}
           </div>
 
-          {/* Header Action / Auth Button with Personal Info Popover */}
+          {/* Header action / Auth button with personal info popover */}
           <div className="relative" ref={menuRef}>
             {!isLoggedIn ? (
               <button
@@ -145,7 +145,7 @@ export default function Header({
                 className="px-4 py-2 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary-container transition-all active:scale-95 cursor-pointer flex items-center gap-1.5"
               >
                 <UserIcon className="w-3.5 h-3.5" />
-                Sign In
+                Sign in
               </button>
             ) : (
               <button
@@ -172,7 +172,7 @@ export default function Header({
               </button>
             )}
 
-            {/* Logged-In Learner Information & Logout Popover Dropdown */}
+            {/* Logged-in learner information & logout popover dropdown */}
             {isLoggedIn && isMenuOpen && (
               <div
                 id="header-learner-dropdown"
@@ -240,11 +240,11 @@ export default function Header({
                     onClick={handleNavigateToProfile}
                     className="text-[11px] font-bold text-primary hover:underline cursor-pointer flex items-center gap-0.5"
                   >
-                    View Profile <ArrowRight className="w-3 h-3" />
+                    View profile <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
 
-                {/* Menu Action Items */}
+                {/* Menu action items */}
                 <div className="mt-3 pt-2 border-t border-outline-variant/30 flex flex-col gap-1">
                   <button
                     type="button"
@@ -267,11 +267,11 @@ export default function Header({
                   >
                     <div className="flex items-center gap-2">
                       <UserIcon className="w-4 h-4 text-outline" />
-                      <span>Switch Account</span>
+                      <span>Switch account</span>
                     </div>
                   </button>
 
-                  {/* Logout Button */}
+                  {/* Logout button */}
                   <button
                     type="button"
                     id="btn-dropdown-logout"
@@ -279,7 +279,7 @@ export default function Header({
                     className="w-full mt-1 px-3 py-2 text-left rounded-xl bg-error-container/10 hover:bg-error-container/30 text-error text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <LogOut className="w-4 h-4 text-error" />
-                    <span>Log Out</span>
+                    <span>Log out</span>
                   </button>
                 </div>
               </div>

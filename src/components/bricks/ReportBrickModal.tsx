@@ -62,8 +62,14 @@ export default function ReportBrickModal({
           onClose();
         },
         onError: (err: unknown) => {
-          const errorObj = err as { detail?: string; message?: string } | undefined;
-          toast.error(errorObj?.detail || errorObj?.message || "Failed to submit report. Please try again.");
+          const errorObj = err as
+            | { detail?: string; message?: string }
+            | undefined;
+          toast.error(
+            errorObj?.detail ||
+              errorObj?.message ||
+              "Failed to submit report. Please try again.",
+          );
         },
       },
     );
@@ -77,7 +83,7 @@ export default function ReportBrickModal({
         className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
       />
 
-      {/* Modal Card */}
+      {/* Modal card  */}
       <div className="relative w-full max-w-sm sm:max-w-md bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-6 shadow-2xl z-10 animate-in zoom-in-95 fade-in duration-200 space-y-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
@@ -87,10 +93,10 @@ export default function ReportBrickModal({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold font-display text-on-surface">
-                Report Brick
+                Report brick
               </h2>
               {targetText && (
-                <p className="text-xs text-on-surface-variant truncate max-w-[200px] sm:max-w-[250px]">
+                <p className="text-xs text-on-surface-variant truncate max-w-50 sm:max-w-62.5">
                   &ldquo;{targetText}&rdquo;
                 </p>
               )}
@@ -121,9 +127,7 @@ export default function ReportBrickModal({
                   <button
                     key={reason}
                     type="button"
-                    onClick={() =>
-                      setSelectedReason(isSelected ? "" : reason)
-                    }
+                    onClick={() => setSelectedReason(isSelected ? "" : reason)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 cursor-pointer ${
                       isSelected
                         ? "bg-rose-500/15 text-rose-600 border border-rose-500/30 font-semibold"
@@ -176,7 +180,7 @@ export default function ReportBrickModal({
               ) : (
                 <>
                   <Flag className="w-3.5 h-3.5" />
-                  <span>Submit Report</span>
+                  <span>Submit report </span>
                 </>
               )}
             </button>

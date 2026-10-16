@@ -129,20 +129,20 @@ export default function BrickDetailModal({
         className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       />
 
-      {/* Modal Card */}
+      {/* Modal card  */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-3xl p-6 sm:p-7 w-full max-w-lg shadow-2xl animate-in zoom-in duration-200 z-10 max-h-[90vh] overflow-y-auto">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-3 pb-4 border-b border-outline-variant/40">
           <div>
             {!isLoggedIn ? (
               <span className="text-xs font-semibold text-outline">
-                Brick Detail
+                Brick detail
               </span>
             ) : detail ? (
               isOwner ? (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20">
                   <UserCheck className="w-3.5 h-3.5" />
-                  <span>Your Brick</span>
+                  <span>Your brick</span>
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-surface-container text-on-surface-variant">
@@ -157,7 +157,7 @@ export default function BrickDetailModal({
               )
             ) : (
               <span className="text-xs font-semibold text-outline">
-                Brick Detail
+                Brick detail
               </span>
             )}
           </div>
@@ -172,12 +172,12 @@ export default function BrickDetailModal({
           </button>
         </div>
 
-        {/* Unauthenticated View */}
+        {/* Unauthenticated view  */}
         {!isLoggedIn ? (
           <div className="py-10 text-center space-y-3">
             <User className="w-10 h-10 text-outline mx-auto opacity-50" />
             <h3 className="text-base font-bold text-on-surface">
-              Sign In Required
+              Sign in required
             </h3>
             <p className="text-xs text-on-surface-variant max-w-xs mx-auto">
               Please sign in to view the complete details and creator
@@ -191,11 +191,11 @@ export default function BrickDetailModal({
               }}
               className="mt-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
             >
-              Sign In
+              Sign in
             </button>
           </div>
         ) : isLoadingDetail ? (
-          /* Loading State */
+          /* Loading state  */
           <div className="py-16 flex flex-col items-center justify-center gap-3">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             <span className="text-xs text-on-surface-variant font-medium">
@@ -203,7 +203,7 @@ export default function BrickDetailModal({
             </span>
           </div>
         ) : isError || !detail ? (
-          /* Error State */
+          /* Error state  */
           <div className="py-10 text-center space-y-3">
             <p className="text-sm font-semibold text-error">
               {error instanceof Error
@@ -219,13 +219,13 @@ export default function BrickDetailModal({
             </button>
           </div>
         ) : (
-          /* Loaded Detail Content */
+          /* Loaded detail content */
           <div className="space-y-6 pt-5">
             {/* Target sentence with Audio button below text */}
             <div className="bg-surface-container/30 border border-outline-variant/40 rounded-2xl p-5 space-y-3">
               <div className="space-y-1.5">
                 <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-                  Target Sentence
+                  Target sentence
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold font-display text-primary leading-snug">
                   {detail.targetText}
@@ -287,10 +287,10 @@ export default function BrickDetailModal({
               </div>
             </div>
 
-            {/* Native Sentence */}
+            {/* Native sentence  */}
             <div>
               <span className="text-[10px] font-bold text-outline uppercase tracking-wider block mb-1">
-                Native Sentence
+                Native sentence
               </span>
               <p className="text-base font-semibold text-on-surface">
                 {detail.nativeText}
@@ -312,7 +312,7 @@ export default function BrickDetailModal({
               </div>
             )}
 
-            {/* Island Info Box with "Add this island" button */}
+            {/* Island info box with "Add this island" button */}
             {detail.islandName && (
               <div className="p-4 bg-surface-container/30 border border-outline-variant/60 rounded-2xl space-y-3">
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -343,13 +343,13 @@ export default function BrickDetailModal({
                     title={`Add "${detail.islandName}" to your island`}
                   >
                     <FolderPlus className="w-4 h-4" />
-                    <span>Add this Island</span>
+                    <span>Add this island</span>
                   </button>
                 )}
               </div>
             )}
 
-            {/* Metadata Badges (Language, Tags) */}
+            {/* Metadata badges  (Language, Tags) */}
             <div className="space-y-2 pt-2 border-t border-outline-variant/30">
               <div className="flex flex-wrap items-center gap-3 text-xs text-on-surface-variant">
                 {detail.targetLang && (
@@ -378,7 +378,7 @@ export default function BrickDetailModal({
               )}
             </div>
 
-            {/* Action Buttons Footer */}
+            {/* Action buttons footer */}
             <div className="pt-4 border-t border-outline-variant/40">
               {isOwner ? (
                 <div className="flex items-center justify-between gap-3">

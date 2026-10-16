@@ -30,7 +30,7 @@ export default function RetrievalEvaluationModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/50 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-200">
       <div className="bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 w-full max-w-md p-6 flex flex-col items-center text-center relative animate-in zoom-in-95 duration-300">
-        {/* Top Close icon */}
+        {/* Top close icon */}
         <button
           type="button"
           id="btn-close-evaluation"
@@ -42,7 +42,7 @@ export default function RetrievalEvaluationModal({
           <X className="w-5 h-5" />
         </button>
 
-        {/* Minimal Score Circle */}
+        {/* Minimal score circle */}
         <div className="flex items-center justify-center my-3">
           <div
             className={`w-24 h-24 rounded-full border-4 flex flex-col items-center justify-center shadow-xs transition-transform ${
@@ -57,13 +57,13 @@ export default function RetrievalEvaluationModal({
           </div>
         </div>
 
-        {/* Comparison Cards: Target and Learner sentences with audio buttons */}
+        {/* Comparison cards: Target and Learner sentences with audio buttons */}
         <div className="w-full space-y-3 my-3 text-left">
-          {/* Target Sentence Card */}
+          {/* Target sentence card */}
           <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs">
             <div className="space-y-0.5 flex-1 min-w-0">
               <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-                Target Sentence
+                Target sentence
               </span>
               <p className="text-sm font-semibold text-primary wrap-break-word">
                 {targetText}
@@ -78,9 +78,9 @@ export default function RetrievalEvaluationModal({
               title={
                 isLoadingTargetAudio
                   ? "Loading audio..."
-                  : "Listen to Target Audio"
+                  : "Listen to target audio"
               }
-              aria-label="Listen to Target Audio"
+              aria-label="Listen to target audio"
             >
               {isLoadingTargetAudio ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -90,11 +90,11 @@ export default function RetrievalEvaluationModal({
             </button>
           </div>
 
-          {/* Learner Sentence Card */}
+          {/* Learner sentence card */}
           <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs">
             <div className="space-y-0.5 flex-1 min-w-0">
               <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-                Your Sentence
+                Your sentence
               </span>
               <p className="text-sm font-semibold text-on-surface wrap-break-word">
                 {learnerText || "(No speech detected)"}
@@ -106,8 +106,8 @@ export default function RetrievalEvaluationModal({
                 id="btn-eval-learner-audio"
                 onClick={onPlayLearnerAudio}
                 className="p-2.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-xl transition-all active:scale-90 cursor-pointer shrink-0"
-                title="Listen to Your Audio"
-                aria-label="Listen to Your Audio"
+                title="Listen to your audio"
+                aria-label="Listen to your audio"
               >
                 <Play className="w-4 h-4 fill-secondary" />
               </button>
@@ -115,7 +115,7 @@ export default function RetrievalEvaluationModal({
           </div>
         </div>
 
-        {/* Action Button: Next Brick only if score >= 0.8 */}
+        {/* Action button: Next brick only if score >= 0.8 */}
         <div className="w-full pt-2">
           {passed ? (
             <button
@@ -124,7 +124,7 @@ export default function RetrievalEvaluationModal({
               onClick={onNext}
               className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-bold shadow-md hover:bg-primary/95 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
             >
-              <span>Next Brick</span>
+              <span>Next brick</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
@@ -135,7 +135,7 @@ export default function RetrievalEvaluationModal({
               className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface py-3.5 rounded-2xl font-bold border border-outline-variant/60 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Retrieval Again</span>
+              <span>Retrieval again</span>
             </button>
           )}
         </div>

@@ -41,7 +41,7 @@ export default function BrickPrivacyToggle({
           </div>
           <div className="min-w-0">
             <span className="text-sm font-bold text-on-surface block">
-              Private Brick
+              Private brick
             </span>
             <p className="text-xs text-on-surface-variant leading-relaxed mt-0.5">
               {isPrivate

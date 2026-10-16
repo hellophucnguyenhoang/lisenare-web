@@ -70,7 +70,7 @@ export default function ChangeNameModal({
         className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200"
       />
 
-      {/* Modal Container */}
+      {/* Modal container */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/60 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
@@ -80,7 +80,7 @@ export default function ChangeNameModal({
             </div>
             <div>
               <h3 className="text-base font-bold font-display text-on-surface">
-                Edit Display Name
+                Edit display name
               </h3>
               <p className="text-[11px] text-outline">
                 Update how your name appears across Lisenare
@@ -97,7 +97,7 @@ export default function ChangeNameModal({
           </button>
         </div>
 
-        {/* Error Alert */}
+        {/* Error alert */}
         {errorMessage && (
           <div className="mt-4 p-3 bg-error-container/40 border border-error/30 rounded-xl flex items-start gap-2.5 animate-in fade-in duration-200">
             <AlertCircle className="w-4 h-4 text-error shrink-0 mt-0.5" />
@@ -107,13 +107,18 @@ export default function ChangeNameModal({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-5" autoComplete="off" noValidate>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 mt-5"
+          autoComplete="off"
+          noValidate
+        >
           <div className="space-y-1.5">
             <label
               htmlFor="edit-display-name"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              Display Name
+              Display name
             </label>
             <div className="relative flex items-center">
               <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -130,7 +135,7 @@ export default function ChangeNameModal({
             </div>
           </div>
 
-          {/* Submit Buttons */}
+          {/* Submit buttons */}
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-outline-variant/30">
             <button
               type="button"
@@ -151,7 +156,7 @@ export default function ChangeNameModal({
                   <span>Saving...</span>
                 </>
               ) : (
-                <span>Save Name</span>
+                <span>Save name</span>
               )}
             </button>
           </div>

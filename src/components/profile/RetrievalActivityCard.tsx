@@ -31,7 +31,7 @@ export default function RetrievalActivityCard({
         <div>
           <h3 className="text-sm font-bold font-display text-on-surface flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-primary" />
-            Retrieval Activity
+            Retrieval activity
           </h3>
           <p className="text-xs text-on-surface-variant font-medium mt-0.5">
             {metric === "total_learning"
@@ -46,7 +46,7 @@ export default function RetrievalActivityCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Metric Toggle */}
+          {/* Metric toggle */}
           <div className="flex items-center bg-surface-container/60 border border-outline-variant/40 rounded-lg p-0.5 text-xs">
             <button
               type="button"
@@ -72,7 +72,7 @@ export default function RetrievalActivityCard({
             </button>
           </div>
 
-          {/* Timeframe Switcher */}
+          {/* Timeframe switcher */}
           <div className="flex items-center bg-surface-container/60 border border-outline-variant/40 rounded-lg p-0.5 text-xs">
             {(
               [
@@ -99,7 +99,7 @@ export default function RetrievalActivityCard({
         </div>
       </div>
 
-      {/* Chart Area */}
+      {/* Chart area */}
       {isLoading ? (
         <div className="h-36 flex items-center justify-center">
           <Loader2 className="w-6 h-6 text-primary animate-spin" />

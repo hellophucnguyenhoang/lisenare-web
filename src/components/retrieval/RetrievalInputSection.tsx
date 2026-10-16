@@ -95,7 +95,7 @@ export default function RetrievalInputSection({
 
   return (
     <div className="w-full max-w-full space-y-4 min-w-0">
-      {/* Retrieval Instruction Banner */}
+      {/* Retrieval instruction banner */}
       <div className="flex items-center justify-center gap-1.5">
         <p className="text-xs text-primary font-medium">
           {showTypeInput
@@ -115,7 +115,7 @@ export default function RetrievalInputSection({
         )}
       </div>
 
-      {/* Keyboard Typing Mode Form */}
+      {/* Keyboard typing mode form */}
       {showTypeInput && (
         <form
           onSubmit={onSubmitTypedAnswer}
@@ -182,7 +182,7 @@ export default function RetrievalInputSection({
         </form>
       )}
 
-      {/* Pronunciation Recording Mode */}
+      {/* Pronunciation recording mode */}
       {!showTypeInput && (
         <div className="flex flex-col items-center gap-3 w-full">
           {isEvaluating ? (
@@ -206,7 +206,7 @@ export default function RetrievalInputSection({
           ) : (
             <div className="flex flex-col items-center gap-3 w-full">
               <div className="w-full flex items-center justify-center gap-6 py-1">
-                {/* Left Slot: Fixed 44x44px for Trash / Cancel Button */}
+                {/* Left slot: Fixed 44x44px for trash / cancel button */}
                 <div className="w-11 h-11 shrink-0 flex items-center justify-center">
                   {isRecording && (
                     <button
@@ -222,7 +222,7 @@ export default function RetrievalInputSection({
                   )}
                 </div>
 
-                {/* Center Slot: Persistent Main Action Button (Mic / Submit) */}
+                {/* Center slot: Persistent main action button (Mic / Submit) */}
                 <button
                   type="button"
                   id={isRecording ? "btn-submit-recording" : "btn-record-mic"}
@@ -244,7 +244,7 @@ export default function RetrievalInputSection({
                   )}
                 </button>
 
-                {/* Right Slot: Fixed 44x44px for Keyboard Toggle */}
+                {/* Right slot: Fixed 44x44px for keyboard toggle */}
                 <div className="w-11 h-11 shrink-0 flex items-center justify-center">
                   {!isRecording && (
                     <button
@@ -264,7 +264,7 @@ export default function RetrievalInputSection({
               {/* Waveform */}
               <AudioWaveform isRecording={isRecording} />
 
-              {/* Fixed-Height Instruction Caption */}
+              {/* Fixed-Height instruction caption */}
               <div className="h-5 flex items-center justify-center">
                 <p className="text-xs text-on-surface-variant font-medium select-none transition-opacity duration-200">
                   {isRecording && "Tap checkmark to submit or trash to cancel"}
@@ -283,7 +283,7 @@ export default function RetrievalInputSection({
           onClick={onNext}
           className="w-full bg-primary text-on-primary py-3.5 rounded-xl shadow-md active:scale-98 transition-all hover:shadow-lg flex items-center justify-center gap-2 font-bold animate-in fade-in duration-300 cursor-pointer text-sm"
         >
-          <span>Next Brick</span>
+          <span>Next brick</span>
           <ArrowRight className="w-5 h-5" />
         </button>
       )}

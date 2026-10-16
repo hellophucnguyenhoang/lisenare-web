@@ -1,4 +1,10 @@
-import { Edit3, Mail, CheckCircle2, AlertCircle, RotateCcw } from "lucide-react";
+import {
+  Edit3,
+  Mail,
+  CheckCircle2,
+  AlertCircle,
+  RotateCcw,
+} from "lucide-react";
 import { maskEmail } from "@/utils/maskEmail";
 
 interface ProfileHeaderCardProps {
@@ -24,7 +30,7 @@ export default function ProfileHeaderCard({
     <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-xs">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-          {/* Profile Picture */}
+          {/* Profile picture */}
           <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
             <img
               src="https://placecats.com/300/300"
@@ -33,79 +39,78 @@ export default function ProfileHeaderCard({
             />
           </div>
 
-        {/* Learner Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg sm:text-xl font-bold font-display text-on-surface truncate">
-              {learnerName}
-            </h2>
-            <button
-              type="button"
-              id="btn-edit-name-header"
-              onClick={onOpenNameModal}
-              className="p-1 rounded-lg text-outline hover:text-primary hover:bg-surface-container transition-colors cursor-pointer"
-              title="Edit name"
-              aria-label="Edit display name"
-            >
-              <Edit3 className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Learner info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold font-display text-on-surface truncate">
+                {learnerName}
+              </h2>
+              <button
+                type="button"
+                id="btn-edit-name-header"
+                onClick={onOpenNameModal}
+                className="p-1 rounded-lg text-outline hover:text-primary hover:bg-surface-container transition-colors cursor-pointer"
+                title="Edit name"
+                aria-label="Edit display name"
+              >
+                <Edit3 className="w-4 h-4" />
+              </button>
+            </div>
 
-          <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant">
-            {learnerEmail ? (
-              <button
-                type="button"
-                onClick={onOpenEmailModal}
-                className="group flex items-center gap-1.5 hover:text-primary transition-colors truncate cursor-pointer"
-                title={
-                  isEmailVerified
-                    ? "Email verified - click to manage"
-                    : "Email unverified - click to verify"
-                }
-              >
-                <Mail className="w-3.5 h-3.5 text-outline group-hover:text-primary transition-colors shrink-0" />
-                <span className="truncate">{maskEmail(learnerEmail)}</span>
-                {isEmailVerified ? (
-                  <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md shrink-0">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md shrink-0">
-                    <AlertCircle className="w-3 h-3" />
-                    Unverified
-                  </span>
-                )}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenEmailModal}
-                className="text-xs text-primary font-medium hover:underline cursor-pointer flex items-center gap-1.5"
-              >
-                <Mail className="w-3.5 h-3.5" />
-                + Add email
-              </button>
-            )}
+            <div className="flex items-center gap-2 mt-1 text-xs text-on-surface-variant">
+              {learnerEmail ? (
+                <button
+                  type="button"
+                  onClick={onOpenEmailModal}
+                  className="group flex items-center gap-1.5 hover:text-primary transition-colors truncate cursor-pointer"
+                  title={
+                    isEmailVerified
+                      ? "Email verified - click to manage"
+                      : "Email unverified - click to verify"
+                  }
+                >
+                  <Mail className="w-3.5 h-3.5 text-outline group-hover:text-primary transition-colors shrink-0" />
+                  <span className="truncate">{maskEmail(learnerEmail)}</span>
+                  {isEmailVerified ? (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded-md shrink-0">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-md shrink-0">
+                      <AlertCircle className="w-3 h-3" />
+                      Unverified
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenEmailModal}
+                  className="text-xs text-primary font-medium hover:underline cursor-pointer flex items-center gap-1.5"
+                >
+                  <Mail className="w-3.5 h-3.5" />+ Add email
+                </button>
+              )}
+            </div>
           </div>
         </div>
+        {onReload && (
+          <button
+            type="button"
+            id="btn-reload-profile-card"
+            onClick={onReload}
+            disabled={isReloading}
+            className="p-2.5 text-outline hover:text-primary hover:bg-surface-container rounded-2xl transition-all active:scale-90 cursor-pointer shrink-0 disabled:opacity-50"
+            title="Reload profile data"
+            aria-label="Reload profile data"
+          >
+            <RotateCcw
+              className={`w-4 h-4 ${isReloading ? "animate-spin text-primary" : ""}`}
+            />
+          </button>
+        )}
       </div>
-      {onReload && (
-        <button
-          type="button"
-          id="btn-reload-profile-card"
-          onClick={onReload}
-          disabled={isReloading}
-          className="p-2.5 text-outline hover:text-primary hover:bg-surface-container rounded-2xl transition-all active:scale-90 cursor-pointer shrink-0 disabled:opacity-50"
-          title="Reload profile data"
-          aria-label="Reload profile data"
-        >
-          <RotateCcw
-            className={`w-4 h-4 ${isReloading ? "animate-spin text-primary" : ""}`}
-          />
-        </button>
-      )}
-    </div>
     </section>
   );
 }

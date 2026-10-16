@@ -394,12 +394,12 @@ export default function RetrievalPage({
         <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
           <img
             src="/favicon.svg"
-            alt="Lisenare Logo"
+            alt="Lisenare logo"
             className="w-full h-full object-contain rounded-xl"
           />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold font-display text-on-surface mb-2">
-          Start Practicing Bricks
+          Start practicing bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
           Sign in to your account to review vocabulary, retrieval pronunciation
@@ -411,7 +411,7 @@ export default function RetrievalPage({
             onClick={() => onOpenAuth("login")}
             className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
           >
-            Log In to Retrieval
+            Log in to retrieval
           </button>
         )}
       </div>
@@ -440,7 +440,7 @@ export default function RetrievalPage({
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
         {/* Title */}
         <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface tracking-tight mb-2">
-          Next Brick?
+          Next brick?
         </h2>
 
         {/* Subtitle */}
@@ -448,7 +448,7 @@ export default function RetrievalPage({
           Add a new brick and start practicing.
         </p>
 
-        {/* Add Brick Button */}
+        {/* Add brick button */}
         {onNavigateToAddBrick && (
           <button
             type="button"
@@ -457,11 +457,11 @@ export default function RetrievalPage({
             className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-on-primary font-bold text-sm shadow-md shadow-primary/20 hover:bg-primary/95 active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="w-5 h-5 stroke-[2.5]" />
-            <span>Add Brick</span>
+            <span>Add brick</span>
           </button>
         )}
 
-        {/* Small Question leading to Text Instruction Page */}
+        {/* Small question leading to Text instruction page */}
         <button
           type="button"
           id="btn-how-retrieval-works"
@@ -496,7 +496,7 @@ export default function RetrievalPage({
           : "justify-center"
       }`}
     >
-      {/* Main Flashcard & Interactive Input section */}
+      {/* Main flashcard & Interactive input section */}
       <div className="w-full max-w-full space-y-4 min-w-0">
         <RetrievalFlashcard
           activeBrick={activeBrick}
@@ -531,7 +531,7 @@ export default function RetrievalPage({
         />
       </div>
 
-      {/* Minimal Scoreboard & Evaluation Dialog */}
+      {/* Minimal scoreboard & Evaluation dialog */}
       {evaluationResult && (
         <RetrievalEvaluationModal
           score={evaluationResult.score}

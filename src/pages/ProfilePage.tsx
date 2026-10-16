@@ -156,7 +156,7 @@ export default function ProfilePage({
   // 2. LOGGED-IN VIEW
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 pb-24 animate-in fade-in duration-300 space-y-6">
-      {/* Learner Header Profile Card */}
+      {/* Learner header profile card */}
       <ProfileHeaderCard
         learnerName={learnerName}
         learnerEmail={learnerEmail}
@@ -167,17 +167,17 @@ export default function ProfilePage({
         isReloading={isReloading}
       />
 
-      {/* Minimal Target Language Selector */}
+      {/* Minimal target language selector */}
       <TargetLanguageSelector
         currentLang={currentRetrievalLang}
         onSelectLang={handleSelectRetrievalLang}
         isUpdating={updateRetrievalLang.isPending}
       />
 
-      {/* Real Learning Metrics Grid from /brick-memories/stats */}
+      {/* Real learning metrics grid from /brick-memories/stats */}
       <LearningMetricsGrid stats={stats} isLoading={loadingStats} />
 
-      {/* Real Learning Timeseries Section from /brick-memories/stats/timeseries */}
+      {/* Real learning timeseries section from /brick-memories/stats/timeseries */}
       <RetrievalActivityCard
         metric={timeseriesMetric}
         onMetricChange={setTimeseriesMetric}
@@ -187,7 +187,7 @@ export default function ProfilePage({
         isLoading={loadingTimeseries}
       />
 
-      {/* Account Settings Section */}
+      {/* Account settings section */}
       <AccountSettingsSection
         learnerEmail={learnerEmail}
         isEmailVerified={isEmailVerified}
@@ -197,20 +197,20 @@ export default function ProfilePage({
         onLogout={onLogout}
       />
 
-      {/* Email Management Modal */}
+      {/* Email management modal */}
       <EmailManagerModal
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
         currentLearner={learner}
       />
 
-      {/* Change Password Modal */}
+      {/* Change password modal */}
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
       />
 
-      {/* Change Name Modal */}
+      {/* Change name modal */}
       <ChangeNameModal
         isOpen={isNameModalOpen}
         currentName={learnerName}

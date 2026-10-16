@@ -71,7 +71,7 @@ export default function AppHeader({
       <header className="fixed top-0 left-0 w-full z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 shadow-2xs transition-all">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="h-14 sm:h-16 flex items-center justify-between gap-3">
-            {/* Top Left: Hamburger Menu Button + Logo */}
+            {/* Top left: Hamburger menu button + Logo */}
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 type="button"
@@ -87,12 +87,12 @@ export default function AppHeader({
               <div
                 onClick={handleLogoClick}
                 className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
-                title="Lisenare Home"
+                title="Lisenare home"
               >
                 <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-primary/20 shadow-2xs flex items-center justify-center p-1.5 transition-transform group-hover:scale-105 group-active:scale-95 overflow-hidden">
                   <img
                     src="/favicon.svg"
-                    alt="Lisenare Logo"
+                    alt="Lisenare logo"
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -102,7 +102,7 @@ export default function AppHeader({
               </div>
             </div>
 
-            {/* Dynamic Content Area (Top Right) */}
+            {/* Dynamic content area (top right) */}
             <div className="flex items-center justify-end min-w-0 shrink-0">
               {headerContent || renderDefaultDynamicContent()}
             </div>
@@ -110,7 +110,7 @@ export default function AppHeader({
         </div>
       </header>
 
-      {/* Collapsible Navigation Drawer */}
+      {/* Collapsible navigation drawer */}
       <NavigationDrawer
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}

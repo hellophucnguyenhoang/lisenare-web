@@ -17,16 +17,16 @@ export default function RetrievalResultsView({
 }: RetrievalResultsViewProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-on-surface/30 backdrop-blur-sm animate-in fade-in duration-300">
-      {/* Score Modal */}
+      {/* Score modal */}
       <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/60 p-8 flex flex-col items-center animate-in zoom-in-95 duration-300">
-        {/* Floating Trophy */}
+        {/* Floating trophy */}
         <div className="relative w-full h-24 flex justify-center items-center mb-4">
           <div className="p-4 bg-primary/5 rounded-full animate-bounce">
             <Trophy className="w-12 h-12 text-primary" />
           </div>
         </div>
 
-        {/* Circular Progress Ring */}
+        {/* Circular progress ring */}
         <div className="relative flex items-center justify-center mb-6">
           <svg className="w-36 h-36 transform -rotate-90">
             <circle
@@ -56,14 +56,14 @@ export default function RetrievalResultsView({
               {overallScore}%
             </span>
             <span className="text-[10px] font-bold text-on-surface-variant mt-1">
-              Overall Score
+              Overall score
             </span>
           </div>
         </div>
 
         {/* Success title */}
         <h2 className="font-headline-lg font-bold font-display text-primary mb-2 text-center text-2xl">
-          {overallScore >= 90 ? "Spectacular!" : "Great Job!"}
+          {overallScore >= 90 ? "Spectacular!" : "Great job!"}
         </h2>
         <p className="text-xs text-on-surface-variant text-center max-w-xs mb-8">
           You laid down beautiful vocabulary blocks! Keep up the daily retrieval
@@ -95,13 +95,13 @@ export default function RetrievalResultsView({
           </div>
         </div>
 
-        {/* Action Panel */}
+        {/* Action panel */}
         <div className="w-full flex flex-col gap-3">
           <button
             onClick={onNext}
             className="w-full bg-primary text-on-primary font-semibold py-4 rounded-xl shadow-md hover:bg-primary/95 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
-            <span>Retrieval Another set</span>
+            <span>Retrieval another set</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 
@@ -109,7 +109,7 @@ export default function RetrievalResultsView({
             onClick={onClose}
             className="w-full bg-primary/10 text-primary font-semibold py-3 rounded-xl hover:bg-primary/20 active:scale-95 transition-all"
           >
-            Go to Islands
+            Go to islands
           </button>
         </div>
       </div>

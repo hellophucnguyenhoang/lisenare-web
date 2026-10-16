@@ -112,11 +112,15 @@ export default function BrickAudioSection({
 
     if (previewAudioUrl) {
       setIsPlayingAudio(true);
-      playShortAudio(previewAudioUrl, undefined, () => setIsPlayingAudio(false));
+      playShortAudio(previewAudioUrl, undefined, () =>
+        setIsPlayingAudio(false),
+      );
     } else if (brickId !== undefined) {
       setIsLoadingAudio(true);
       try {
-        await playBrickAudio(brickId, undefined, () => setIsPlayingAudio(false));
+        await playBrickAudio(brickId, undefined, () =>
+          setIsPlayingAudio(false),
+        );
         setIsPlayingAudio(true);
       } catch {
         setIsPlayingAudio(false);
@@ -125,7 +129,9 @@ export default function BrickAudioSection({
       }
     } else if (existingAudioPath) {
       setIsPlayingAudio(true);
-      playShortAudio(existingAudioPath, undefined, () => setIsPlayingAudio(false));
+      playShortAudio(existingAudioPath, undefined, () =>
+        setIsPlayingAudio(false),
+      );
     }
   };
 
@@ -149,7 +155,7 @@ export default function BrickAudioSection({
 
   return (
     <section className="space-y-3">
-      {/* Hidden Audio File Input */}
+      {/* Hidden audio file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -159,12 +165,14 @@ export default function BrickAudioSection({
       />
 
       <h2 className="text-lg font-bold font-display text-on-surface px-1">
-        Target Sentence Audio
+        Target sentence audio
       </h2>
       <div className="bg-white p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex flex-col gap-4">
-        {/* Playable Audio Card with generous touch target */}
+        {/* Playable audio card with generous touch target */}
         <div
-          onClick={hasPlayableAudio && !isLoadingAudio ? handlePlayAudio : undefined}
+          onClick={
+            hasPlayableAudio && !isLoadingAudio ? handlePlayAudio : undefined
+          }
           className={`flex items-center justify-between w-full rounded-2xl p-3.5 sm:p-4 border transition-all select-none touch-manipulation [-webkit-tap-highlight-color:transparent] ${
             hasPlayableAudio
               ? "bg-surface-container-low hover:bg-surface-container border-outline-variant/40 shadow-xs cursor-pointer active:scale-[0.99]"
@@ -188,7 +196,9 @@ export default function BrickAudioSection({
                     ? "Stop audio"
                     : "Play pronunciation"
               }
-              aria-label={isPlayingAudio ? "Stop pronunciation" : "Play pronunciation"}
+              aria-label={
+                isPlayingAudio ? "Stop pronunciation" : "Play pronunciation"
+              }
             >
               {isLoadingAudio ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -215,7 +225,7 @@ export default function BrickAudioSection({
           )}
         </div>
 
-        {/* Action Buttons: Record New & Upload File */}
+        {/* Action buttons : Record new  & Upload file  */}
         <div className="grid grid-cols-2 gap-3 pt-1">
           <button
             type="button"
@@ -230,7 +240,7 @@ export default function BrickAudioSection({
             }`}
           >
             <Mic className="w-4 h-4" />
-            <span>{isRecording ? "Stop Recording" : "Record New"}</span>
+            <span>{isRecording ? "Stop recording " : "Record new "}</span>
           </button>
 
           <button
@@ -242,7 +252,7 @@ export default function BrickAudioSection({
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface text-on-surface-variant font-bold text-xs hover:bg-surface-container transition-all active:scale-95 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
           >
             <Upload className="w-4 h-4" />
-            <span>Upload File</span>
+            <span>Upload file </span>
           </button>
         </div>
       </div>

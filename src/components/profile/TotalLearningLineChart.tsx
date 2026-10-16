@@ -100,10 +100,10 @@ export default function TotalLearningLineChart({
           );
         })}
 
-        {/* Shaded Area under Line */}
+        {/* Shaded area under line */}
         <path d={areaPath} fill="url(#totalLearningAreaGrad)" />
 
-        {/* Main Trend Line */}
+        {/* Main trend line */}
         <path
           d={linePath}
           fill="none"
@@ -113,7 +113,7 @@ export default function TotalLearningLineChart({
           strokeLinejoin="round"
         />
 
-        {/* Active Hover Vertical Guide Line */}
+        {/* Active hover vertical guide line */}
         {hoveredPointIndex !== null && coords[hoveredPointIndex] && (
           <line
             x1={coords[hoveredPointIndex].x}
@@ -127,7 +127,7 @@ export default function TotalLearningLineChart({
           />
         )}
 
-        {/* Interactive Points and Hitboxes */}
+        {/* Interactive points and Hitboxes */}
         {coords.map((c, i) => {
           const isHovered = hoveredPointIndex === i;
           const showDot =
@@ -169,7 +169,7 @@ export default function TotalLearningLineChart({
           );
         })}
 
-        {/* X-axis Date Labels */}
+        {/* X-axis date labels */}
         {coords.map((c, i) => {
           const showLabel =
             coords.length <= 8 ||
@@ -193,7 +193,7 @@ export default function TotalLearningLineChart({
         })}
       </svg>
 
-      {/* Floating Tooltip */}
+      {/* Floating tooltip */}
       {hoveredPointIndex !== null && coords[hoveredPointIndex] && (
         <div
           className="absolute -top-5 z-20 pointer-events-none -translate-x-1/2 bg-on-surface text-surface text-[11px] font-bold px-2 py-0.5 rounded-lg shadow-md whitespace-nowrap transition-all duration-75"

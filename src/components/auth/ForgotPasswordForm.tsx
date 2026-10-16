@@ -121,7 +121,7 @@ export default function ForgotPasswordForm({
     }
   };
 
-  // Step 2: Submit OTP and New Password together
+  // Step 2: Submit OTP and New password together
   const handleResetPasswordSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -164,7 +164,7 @@ export default function ForgotPasswordForm({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      {/* Step Navigation Progress Indicator */}
+      {/* Step navigation Progress indicator */}
       <div className="flex items-center justify-between pb-1 border-b border-outline-variant/30">
         <button
           type="button"
@@ -198,7 +198,7 @@ export default function ForgotPasswordForm({
         </div>
       </div>
 
-      {/* STEP 1: Enter Username & Send OTP */}
+      {/* STEP 1: Enter username & Send OTP */}
       {step === 1 && (
         <div className="space-y-5 animate-in fade-in duration-200">
           <div className="text-center space-y-1.5">
@@ -206,7 +206,7 @@ export default function ForgotPasswordForm({
               <KeyRound className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
-              Reset Password
+              Reset password
             </h2>
             <p className="text-xs text-on-surface-variant font-medium">
               Step 1 of 2: Enter your username
@@ -257,7 +257,7 @@ export default function ForgotPasswordForm({
         </div>
       )}
 
-      {/* STEP 2: Unified Form with OTP + New Password submitted together */}
+      {/* STEP 2: Unified form with OTP + New password submitted together */}
       {step === 2 && (
         <div className="space-y-5 animate-in fade-in duration-200">
           <div className="text-center space-y-1.5">
@@ -265,7 +265,7 @@ export default function ForgotPasswordForm({
               <ShieldCheck className="w-6 h-6" />
             </div>
             <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
-              Set New Password
+              Set new password
             </h2>
             <p className="text-xs text-on-surface-variant font-medium">
               Step 2 of 2: Enter the 6-digit code and your new password
@@ -277,11 +277,11 @@ export default function ForgotPasswordForm({
             className="space-y-4"
             noValidate
           >
-            {/* 6 Digit Inline OTP Input Grid */}
+            {/* 6 Digit inline OTP input grid */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  6-Digit Verification Code
+                  6-Digit verification code
                 </label>
                 {resendCountdown > 0 ? (
                   <span className="text-[11px] text-outline font-medium">
@@ -323,13 +323,13 @@ export default function ForgotPasswordForm({
               </div>
             </div>
 
-            {/* New Password */}
+            {/* New password */}
             <div className="space-y-1.5 pt-1">
               <label
                 htmlFor="new-password"
                 className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
               >
-                New Password (min. 8 characters)
+                New password (min. 8 characters)
               </label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -363,13 +363,13 @@ export default function ForgotPasswordForm({
               </div>
             </div>
 
-            {/* Confirm New Password */}
+            {/* Confirm new password */}
             <div className="space-y-1.5">
               <label
                 htmlFor="confirm-new-password"
                 className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
               >
-                Confirm New Password
+                Confirm new password
               </label>
               <div className="relative flex items-center">
                 <div className="absolute left-3.5 pointer-events-none text-outline">
@@ -410,7 +410,7 @@ export default function ForgotPasswordForm({
               </div>
             </div>
 
-            {/* Reset Password Button */}
+            {/* Reset password button */}
             <button
               type="submit"
               id="btn-reset-password-submit"
@@ -428,7 +428,7 @@ export default function ForgotPasswordForm({
                   <span>Resetting password...</span>
                 </>
               ) : (
-                <span>Reset Password</span>
+                <span>Reset password</span>
               )}
             </button>
           </form>

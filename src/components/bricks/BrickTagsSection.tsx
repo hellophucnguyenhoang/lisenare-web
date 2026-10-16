@@ -66,7 +66,7 @@ export default function BrickTagsSection({
           </button>
         </div>
 
-        {/* Tag Pills */}
+        {/* Tag pills  */}
         {tags.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 pt-1">
             {tags.map((tag) => (
