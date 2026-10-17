@@ -4,6 +4,8 @@ import BrickCard from "@/components/bricks/BrickCard";
 import AddIslandModal from "@/components/bricks/AddIslandModal";
 import ImportIslandModal from "@/components/bricks/ImportIslandModal";
 import ListeningRetrievalModal from "@/components/bricks/ListeningRetrievalModal";
+import BricksFilterModal from "@/components/bricks/BricksFilterModal";
+import ExportIslandModal from "@/components/bricks/ExportIslandModal";
 import {
   Plus,
   Search,
@@ -16,7 +18,6 @@ import {
   Download,
   Upload,
   X,
-  Tag,
   ArrowUp,
   Headphones,
 } from "lucide-react";
@@ -25,7 +26,6 @@ import {
   useDeleteIsland,
   useUpdateIsland,
   useCreateIsland,
-  useExportIsland,
 } from "@/hooks/useIslands";
 import {
   useInfiniteBricks,
@@ -71,8 +71,7 @@ export default function BricksPage({
   const [statusFilter, setStatusFilter] = useState<BrickStatusFilter>(null);
   const [kindFilter, setUnitTypeFilter] = useState<UnitTypeFilter>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [tagInputText, setTagInputText] = useState("");
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -131,12 +130,10 @@ export default function BricksPage({
     );
   };
 
-  const handleAddCustomTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = tagInputText.replace(/^#/, "").trim();
+  const handleAddCustomTag = (tag: string) => {
+    const clean = tag.replace(/^#/, "").trim();
     if (clean && !selectedTags.includes(clean)) {
       setSelectedTags((prev) => [...prev, clean]);
-      setTagInputText("");
     }
   };
 
@@ -156,25 +153,14 @@ export default function BricksPage({
   const createIsland = useCreateIsland();
   const deleteBrick = useDeleteBrick();
   const forgetBrick = useForgetBrick();
-  const exportIsland = useExportIsland();
-
   const [showImportModal, setShowImportModal] = useState(false);
   const [importTargetIslandId, setImportTargetIslandId] = useState<
     number | null
   >(null);
+  const [exportingIsland, setExportingIsland] = useState<Island | null>(null);
 
-  const handleExportIsland = async (col: Island) => {
-    try {
-      toast.info(`Exporting "${col.name}"...`);
-      const { data } = await exportIsland.mutateAsync({
-        islandId: col.id,
-        islandName: col.name,
-      });
-      toast.success(`Exported "${col.name}" (${data.length} bricks)`);
-    } catch (err: unknown) {
-      console.error("Failed to export island:", err);
-      toast.error(`Failed to export "${col.name}". Please try again.`);
-    }
+  const handleOpenExportModal = (col: Island) => {
+    setExportingIsland(col);
   };
 
   const handleOpenImportModal = (targetIslandId?: number | null) => {
@@ -184,7 +170,6 @@ export default function BricksPage({
 
   // Refs for click-outside
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const filterDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -193,12 +178,6 @@ export default function BricksPage({
         !dropdownRef.current.contains(e.target as Node)
       ) {
         setShowIslandDropdown(false);
-      }
-      if (
-        filterDropdownRef.current &&
-        !filterDropdownRef.current.contains(e.target as Node)
-      ) {
-        setShowFilterDropdown(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -360,8 +339,7 @@ export default function BricksPage({
 
             <button
               type="button"
-              onClick={() => handleExportIsland(selectedIsland)}
-              disabled={exportIsland.isPending}
+              onClick={() => handleOpenExportModal(selectedIsland)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
               title={`Export "${selectedIsland.name}" to JSON`}
             >
@@ -494,7 +472,8 @@ export default function BricksPage({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleExportIsland(col);
+                          setShowIslandDropdown(false);
+                          handleOpenExportModal(col);
                         }}
                         className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
                         title={`Export "${col.name}" to JSON`}
@@ -582,271 +561,24 @@ export default function BricksPage({
             <span className="hidden sm:inline">Listen bricks</span>
           </button>
 
-          {/* Sort & Filter dropdown button (icon-only) */}
-          <div className="relative" ref={filterDropdownRef}>
-            <button
-              type="button"
-              id="btn-sort-filter"
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className={`relative p-2.5 border rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
-                hasActiveFilters
-                  ? "bg-primary/10 border-primary/40 text-primary"
-                  : "bg-surface-container-lowest hover:bg-surface-container-high border-outline-variant/60 hover:border-primary/40 text-on-surface"
-              }`}
-              title="Sort and filter"
-              aria-label="Sort and filter"
-            >
-              <SlidersHorizontal className="w-4 h-4 text-primary" />
-              {hasActiveFilters && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary ring-2 ring-surface" />
-              )}
-            </button>
-
-            {showFilterDropdown && (
-              <div className="absolute right-0 top-full mt-1.5 z-30 w-64 sm:w-72 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-3 space-y-3 animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto">
-                {/* Kind filter */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
-                    Kind
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setUnitTypeFilter(null)}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      kindFilter === null
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>All</span>
-                    {kindFilter === null && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUnitTypeFilter("word")}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      kindFilter === "word"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>Words</span>
-                    {kindFilter === "word" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUnitTypeFilter("sentence")}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      kindFilter === "sentence"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>Sentences</span>
-                    {kindFilter === "sentence" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                </div>
-
-                <div className="h-px bg-outline-variant/30" />
-
-                {/* Status filter */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
-                    Status
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter(null);
-                    }}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      statusFilter === null
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>All</span>
-                    {statusFilter === null && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter("LEARNED");
-                    }}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      statusFilter === "LEARNED"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>Learned</span>
-                    {statusFilter === "LEARNED" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setStatusFilter("NOT_LEARNED");
-                    }}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      statusFilter === "NOT_LEARNED"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>Not learned</span>
-                    {statusFilter === "NOT_LEARNED" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                </div>
-
-                <div className="h-px bg-outline-variant/30" />
-
-                {/* Sort by */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-outline px-2 block">
-                    Sort by
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortBy("NEWEST");
-                    }}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      sortBy === "NEWEST"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>Newest</span>
-                    {sortBy === "NEWEST" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortBy("AZ");
-                    }}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      sortBy === "AZ"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>A to Z</span>
-                    {sortBy === "AZ" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSortBy("ZA");
-                    }}
-                    className={`w-full px-2.5 py-1.5 text-xs font-medium rounded-lg flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer ${
-                      sortBy === "ZA"
-                        ? "text-primary bg-primary/10 font-semibold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span>Z to A</span>
-                    {sortBy === "ZA" && (
-                      <Check className="w-3.5 h-3.5 text-primary" />
-                    )}
-                  </button>
-                </div>
-
-                <div className="h-px bg-outline-variant/30" />
-
-                {/* Tags filter */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between px-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-outline flex items-center gap-1">
-                      <Tag className="w-3 h-3" />
-                      <span>Tags</span>
-                    </span>
-                    {selectedTags.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setSelectedTags([])}
-                        className="text-[10px] text-primary hover:underline cursor-pointer"
-                      >
-                        Clear tags
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Add custom tag input */}
-                  <form
-                    onSubmit={handleAddCustomTag}
-                    className="flex gap-1 px-1"
-                  >
-                    <input
-                      type="text"
-                      value={tagInputText}
-                      onChange={(e) => setTagInputText(e.target.value)}
-                      placeholder="Add tag filter..."
-                      className="grow px-2 py-1 text-xs bg-surface-container border border-outline-variant/60 rounded-lg outline-none focus:border-primary text-on-surface"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!tagInputText.trim()}
-                      className="px-2 py-1 bg-primary text-on-primary text-xs font-bold rounded-lg disabled:opacity-40 cursor-pointer"
-                    >
-                      +
-                    </button>
-                  </form>
-
-                  {/* Available tags chips */}
-                  {availableTags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto px-1 pt-1">
-                      {availableTags.map((tag) => {
-                        const isSelected = selectedTags.includes(tag);
-                        return (
-                          <button
-                            key={tag}
-                            type="button"
-                            onClick={() => handleToggleTag(tag)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors cursor-pointer ${
-                              isSelected
-                                ? "bg-primary text-on-primary font-bold shadow-2xs"
-                                : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant"
-                            }`}
-                          >
-                            #{tag}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {hasActiveFilters && (
-                  <>
-                    <div className="h-px bg-outline-variant/30" />
-                    <button
-                      type="button"
-                      onClick={handleResetFilters}
-                      className="w-full text-center py-1 text-xs text-primary font-semibold hover:underline cursor-pointer"
-                    >
-                      Reset all filters
-                    </button>
-                  </>
-                )}
-              </div>
+          {/* Sort & Filter button (opens modal) */}
+          <button
+            type="button"
+            id="btn-sort-filter"
+            onClick={() => setShowFilterModal(true)}
+            className={`relative p-2.5 border rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center ${
+              hasActiveFilters
+                ? "bg-primary/10 border-primary/40 text-primary"
+                : "bg-surface-container-lowest hover:bg-surface-container-high border-outline-variant/60 hover:border-primary/40 text-on-surface"
+            }`}
+            title="Sort and filter"
+            aria-label="Sort and filter"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-primary" />
+            {hasActiveFilters && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary ring-2 ring-surface" />
             )}
-          </div>
+          </button>
 
           {/* Search bricks Button */}
           <button
@@ -1022,8 +754,21 @@ export default function BricksPage({
           }}
           onAddIsland={handleAddIsland}
           onEditIsland={handleEditIsland}
-          onExportIsland={handleExportIsland}
+          onExportIsland={(col) => {
+            setShowIslandModal(false);
+            setEditingIsland(null);
+            handleOpenExportModal(col);
+          }}
           islandToEdit={editingIsland || undefined}
+        />
+      )}
+
+      {/* Export island modal */}
+      {exportingIsland && (
+        <ExportIslandModal
+          isOpen={Boolean(exportingIsland)}
+          onClose={() => setExportingIsland(null)}
+          island={exportingIsland}
         />
       )}
 
@@ -1049,6 +794,26 @@ export default function BricksPage({
         onClose={() => setShowListeningModal(false)}
         islandId={selectedIslandId}
         islandName={selectedIsland?.name}
+      />
+
+      {/* Sort & filter modal */}
+      <BricksFilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        kindFilter={kindFilter}
+        onKindFilterChange={setUnitTypeFilter}
+        selectedTags={selectedTags}
+        onToggleTag={handleToggleTag}
+        onAddCustomTag={handleAddCustomTag}
+        onClearTags={() => setSelectedTags([])}
+        availableTags={availableTags}
+        onResetFilters={handleResetFilters}
+        hasActiveFilters={hasActiveFilters}
+        totalBricks={totalBricks}
       />
 
       {/* Floating scroll to Top button */}
