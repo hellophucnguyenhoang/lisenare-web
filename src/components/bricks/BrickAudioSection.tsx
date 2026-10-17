@@ -240,7 +240,7 @@ export default function BrickAudioSection({
             }`}
           >
             <Mic className="w-4 h-4" />
-            <span>{isRecording ? "Stop recording " : "Record new "}</span>
+            <span>{isRecording ? "Stop recording" : "Record audio"}</span>
           </button>
 
           <button
@@ -252,7 +252,7 @@ export default function BrickAudioSection({
             className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface text-on-surface-variant font-bold text-xs hover:bg-surface-container transition-all active:scale-95 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
           >
             <Upload className="w-4 h-4" />
-            <span>Upload file </span>
+            <span>Upload file</span>
           </button>
         </div>
       </div>

@@ -230,7 +230,7 @@ export default function ImportIslandModal({
           {/* File picker  / Dropzone */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-              Island JSON File <span className="text-error">*</span>
+              Island JSON file <span className="text-error">*</span>
             </label>
 
             <input
@@ -403,7 +403,7 @@ export default function ImportIslandModal({
                 <>
                   <Check className="w-4 h-4" />
                   <span>
-                    Import {brickCount !== null ? `${brickCount} ` : ""}Bricks
+                    Import {brickCount !== null ? `${brickCount} ` : ""}bricks
                   </span>
                 </>
               )}

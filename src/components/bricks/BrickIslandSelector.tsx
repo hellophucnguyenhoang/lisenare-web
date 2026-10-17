@@ -124,7 +124,7 @@ export default function BrickIslandSelector({
                 className="w-full px-3.5 py-2.5 text-left text-xs font-semibold text-primary flex items-center gap-2 hover:bg-primary/5 transition-colors cursor-pointer"
               >
                 <FolderPlus className="w-4 h-4" />
-                <span>Create new sland</span>
+                <span>Create new island</span>
               </button>
             </div>
           )}

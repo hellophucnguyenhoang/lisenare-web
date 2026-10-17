@@ -135,7 +135,7 @@ export default function RetrievalEvaluationModal({
               className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface py-3.5 rounded-2xl font-bold border border-outline-variant/60 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Retrieval again</span>
+              <span>Try again</span>
             </button>
           )}
         </div>

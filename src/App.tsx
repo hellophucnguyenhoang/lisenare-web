@@ -89,6 +89,7 @@ function AppContent() {
       <>
         <AddBrickPage
           islandId={subview.islandId}
+          initialData={subview.initialData}
           onBack={() => setSubview(null)}
         />
         <Toaster position="bottom-center" richColors />

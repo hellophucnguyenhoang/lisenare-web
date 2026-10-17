@@ -180,7 +180,7 @@ function SaveToIslandModalContent({
                   disabled={!newIslandName.trim() || isSaving}
                   className="flex-1 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs cursor-pointer disabled:opacity-50 text-center"
                 >
-                  {isSaving ? "Saving..." : "Create & Save"}
+                  {isSaving ? "Saving..." : "Create & save"}
                 </button>
               </div>
             </form>

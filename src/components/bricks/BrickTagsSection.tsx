@@ -36,7 +36,7 @@ export default function BrickTagsSection({
     <section className="space-y-3">
       <div className="flex items-center justify-between px-1">
         <h2 className="text-lg font-bold font-display text-on-surface">
-          Tags (Optional)
+          Tags (optional)
         </h2>
       </div>
 

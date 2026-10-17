@@ -533,7 +533,7 @@ export default function ListeningRetrievalModal({
                     : "text-on-surface-variant hover:text-on-surface"
                 }`}
               >
-                {mode === "auto" ? "Auto-Play" : "Manual step "}
+                {mode === "auto" ? "Auto-play" : "Manual step"}
               </button>
             ))}
           </div>
@@ -584,7 +584,7 @@ export default function ListeningRetrievalModal({
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold font-display text-on-surface">
-                All done !
+                All done!
               </h3>
               <p className="text-xs text-outline max-w-xs">
                 You have listened through all {totalCount} bricks in this
@@ -597,7 +597,7 @@ export default function ListeningRetrievalModal({
                   className="px-5 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-sm hover:bg-primary/95 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  <span>Listen again </span>
+                  <span>Listen again</span>
                 </button>
                 <button
                   type="button"
@@ -739,7 +739,7 @@ export default function ListeningRetrievalModal({
                     onClick={handlePrevious}
                     disabled={currentIndex === 0}
                     className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                    title="Previous brick (Left arrow )"
+                    title="Previous brick (Left arrow)"
                     aria-label="Previous brick"
                   >
                     <SkipBack className="w-5 h-5" />
@@ -768,7 +768,7 @@ export default function ListeningRetrievalModal({
                       currentIndex >= order.length - 1
                     }
                     className="p-2.5 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                    title="Next brick (Right arrow )"
+                    title="Next brick (Right arrow)"
                     aria-label="Next brick"
                   >
                     <SkipForward className="w-5 h-5" />
@@ -793,7 +793,7 @@ export default function ListeningRetrievalModal({
               <div className="text-[10px] text-outline/80 text-center select-none hidden sm:block">
                 {playbackMode === "auto"
                   ? "Auto-advancing upon audio completion • Space to pause • E to show/hide • S to shuffle"
-                  : "Manual mode • Press next  or Right arrow  to advance • Space to play • E to show/hide"}
+                  : "Manual mode • Press next or right arrow to advance • Space to play • E to show/hide"}
               </div>
             </div>
           )}

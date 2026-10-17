@@ -148,7 +148,7 @@ export default function AddIslandModal({
               htmlFor="input-island-desc"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              Description (Optional)
+              Description (optional)
             </label>
             <textarea
               id="input-island-desc"
@@ -171,7 +171,7 @@ export default function AddIslandModal({
               htmlFor="input-island-tags"
               className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant"
             >
-              Tags (Optional)
+              Tags (optional)
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1 flex items-center">

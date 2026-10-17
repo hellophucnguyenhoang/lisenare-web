@@ -419,7 +419,7 @@ export default function EmailManagerModal({
                 <KeyRound className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-on-surface">
-                Enter 6-Digit code
+                Enter 6-digit code
               </h4>
               <p className="text-xs text-outline mt-0.5">
                 Sent to{" "}
@@ -476,7 +476,7 @@ export default function EmailManagerModal({
               ) : (
                 <CheckCircle2 className="w-4 h-4" />
               )}
-              Confirm & Update email
+              Confirm & update email
             </button>
           </form>
         )}

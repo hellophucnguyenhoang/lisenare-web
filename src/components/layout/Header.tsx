@@ -254,7 +254,7 @@ export default function Header({
                   >
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-primary" />
-                      <span>Account & Security</span>
+                      <span>Account & security</span>
                     </div>
                     <span className="text-[10px] text-outline">Manage</span>
                   </button>

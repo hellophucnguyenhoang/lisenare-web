@@ -117,7 +117,7 @@ export default function VideoCard({
             className="inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary font-semibold transition-colors cursor-pointer"
           >
             <Languages className="w-3.5 h-3.5 text-primary" />
-            <span>{showTranslation ? "Hide translation " : "Translation"}</span>
+            <span>{showTranslation ? "Hide translation" : "Translation"}</span>
           </button>
 
           <div className="flex items-center gap-2">

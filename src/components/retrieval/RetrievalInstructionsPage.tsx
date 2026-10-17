@@ -45,13 +45,13 @@ interface InstructionContent {
 
 const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
   en: {
-    pageTitle: "5 Steps to Retrieval",
+    pageTitle: "5 steps to retrieval",
     backAria: "Go back to retrieval",
-    introTitle: "How to Retrieval",
+    introTitle: "How to practice retrieval",
     introDescription:
       "Follow these 5 simple steps for every sentence (brick) to build real fluency.",
     addBrickButton: "Add brick",
-    backButton: "Back to Retrieval",
+    backButton: "Back to retrieval",
     steps: [
       {
         step: "Step 1",
@@ -73,7 +73,7 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
       },
       {
         step: "Step 3",
-        title: "Read the target sentence (Must understand 100%)",
+        title: "Read the target sentence (must understand 100%)",
         description:
           "Reveal and read the target sentence (the language you want to learn). Make sure you understand 100% of the words and meaning.",
         icon: BookOpen,
@@ -102,9 +102,9 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
     ],
   },
   vi: {
-    pageTitle: "5 Bước Luyện Tập",
+    pageTitle: "5 bước luyện tập",
     backAria: "Quay lại luyện tập",
-    introTitle: "Cách Luyện Tập",
+    introTitle: "Cách luyện tập",
     introDescription:
       "Thực hiện 5 bước đơn giản này cho mỗi câu (brick) để hình thành phản xạ tự nhiên.",
     addBrickButton: "Thêm brick đầu tiên",
@@ -140,7 +140,7 @@ const INSTRUCTION_CONTENT: Record<InstructionLang, InstructionContent> = {
       },
       {
         step: "Bước 4",
-        title: "Lặp lại Bước 1 cho đến khi thuần thục",
+        title: "Lặp lại bước 1 cho đến khi thuần thục",
         description:
           "Lặp lại Bước 1 mà không nhìn vào đáp án cho đến khi bạn có thể nói câu mục tiêu một cách trôi chảy và tự nhiên.",
         icon: RotateCcw,

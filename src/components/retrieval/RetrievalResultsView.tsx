@@ -101,7 +101,7 @@ export default function RetrievalResultsView({
             onClick={onNext}
             className="w-full bg-primary text-on-primary font-semibold py-4 rounded-xl shadow-md hover:bg-primary/95 transition-all active:scale-95 flex items-center justify-center gap-2"
           >
-            <span>Retrieval another set</span>
+            <span>Practice another set</span>
             <ArrowRight className="w-5 h-5" />
           </button>
 

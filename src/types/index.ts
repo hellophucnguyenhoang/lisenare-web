@@ -56,9 +56,22 @@ export interface DiscoverVideo {
   tags: string[];
 }
 
+export interface BrickInitialData {
+  nativeText?: string;
+  targetText?: string;
+  targetLang?: TargetLang | string;
+  pronunciation?: string | null;
+  context?: string | null;
+  kind?: string;
+  tags?: string[];
+  audioBlob?: Blob | null;
+  audioUrl?: string | null;
+  islandId?: number;
+}
+
 export type ActiveTab = "retrieval" | "bricks" | "discover" | "profile";
 export type Subview =
-  | { type: "addBrick"; islandId?: number }
+  | { type: "addBrick"; islandId?: number; initialData?: BrickInitialData }
   | { type: "editBrick"; brick: Brick }
   | { type: "search" }
   | null;

@@ -107,8 +107,8 @@ export default function RetrievalInputSection({
             type="button"
             onClick={onOpenInstructions}
             className="text-primary/70 hover:text-primary transition-colors p-0.5 rounded-full hover:bg-primary/10 cursor-pointer inline-flex items-center justify-center"
-            title="How to retrieval"
-            aria-label="How to retrieval"
+            title="How to practice retrieval"
+            aria-label="How to practice retrieval"
           >
             <HelpCircle className="w-3.5 h-3.5" />
           </button>

@@ -177,8 +177,8 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           type="button"
           onClick={() => setShowInstructions(true)}
           className="p-2 -mr-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
-          aria-label="5 Steps to Retrieval"
-          title="5 Steps to Retrieval"
+          aria-label="5 steps to retrieval"
+          title="5 steps to retrieval"
         >
           <HelpCircle className="w-6 h-6" />
         </button>

@@ -321,7 +321,7 @@ export default function BricksPage({
       <section className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface">
-            {totalBricks} Brick{totalBricks !== 1 ? "s" : ""}
+            {totalBricks} brick{totalBricks !== 1 ? "s" : ""}
           </h2>
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
             {selectedIsland ? ` in "${selectedIsland.name}"` : ""}
