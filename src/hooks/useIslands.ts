@@ -63,11 +63,18 @@ export function useExportIsland() {
     mutationFn: async ({
       islandId,
       islandName,
+      include_memory = true,
+      include_review_history = true,
     }: {
       islandId: number;
       islandName: string;
+      include_memory?: boolean;
+      include_review_history?: boolean;
     }): Promise<{ data: BrickExport[]; filename: string }> => {
-      const data = await exportIsland(islandId);
+      const data = await exportIsland(islandId, {
+        include_memory,
+        include_review_history,
+      });
       const safeName = islandName
         .trim()
         .toLowerCase()

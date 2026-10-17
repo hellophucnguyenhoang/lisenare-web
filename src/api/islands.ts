@@ -90,8 +90,24 @@ export interface AddIslandResult {
   skipped: number;
 }
 
-export async function exportIsland(islandId: number): Promise<BrickExport[]> {
-  return request<BrickExport[]>(`/islands/${islandId}/export`);
+export interface ExportIslandOptions {
+  include_memory?: boolean;
+  include_review_history?: boolean;
+}
+
+export async function exportIsland(
+  islandId: number,
+  options?: ExportIslandOptions,
+): Promise<BrickExport[]> {
+  const q = new URLSearchParams();
+  if (options?.include_memory !== undefined) {
+    q.set("include_memory", String(options.include_memory));
+  }
+  if (options?.include_review_history !== undefined) {
+    q.set("include_review_history", String(options.include_review_history));
+  }
+  const qs = q.toString();
+  return request<BrickExport[]>(`/islands/${islandId}/export${qs ? `?${qs}` : ""}`);
 }
 
 export async function importIsland(
