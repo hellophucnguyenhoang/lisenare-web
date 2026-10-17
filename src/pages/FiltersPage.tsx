@@ -79,7 +79,7 @@ export default function FiltersPage({
             <ArrowLeft className="w-6 h-6 text-on-surface" />
           </button>
           <h1 className="text-xl font-bold font-display text-on-surface">
-            Sort & Filter
+            Sort & filter
           </h1>
         </div>
         <button

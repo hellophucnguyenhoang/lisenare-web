@@ -402,7 +402,7 @@ export default function RetrievalPage({
           Start practicing bricks
         </h2>
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Sign in to your account to review vocabulary, retrieval pronunciation
+          Sign in to your account to review vocabulary, practice pronunciation
           with speech evaluation, and build your memory stability.
         </p>
         {onOpenAuth && (
@@ -411,7 +411,7 @@ export default function RetrievalPage({
             onClick={() => onOpenAuth("login")}
             className="py-3 px-6 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
           >
-            Log in to retrieval
+            Log in to practice
           </button>
         )}
       </div>

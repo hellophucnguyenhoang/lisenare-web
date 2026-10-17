@@ -3,6 +3,7 @@ import { useBrickDetail, useCheckBrickExists } from "@/hooks/useBricks";
 import { getBrickAudioUrl } from "@/api/bricks";
 import { playShortAudio, stopShortAudio } from "@/utils/audio";
 import { type Brick, type AuthMode } from "@/types";
+import { type InteractionType, type BrickDetail } from "@/api/bricks";
 import {
   X,
   Volume2,
@@ -20,7 +21,6 @@ import {
   Heart,
 } from "lucide-react";
 import { toast } from "sonner";
-import { type InteractionType } from "@/api/bricks";
 
 interface BrickDetailModalProps {
   isOpen: boolean;
@@ -28,11 +28,7 @@ interface BrickDetailModalProps {
   onClose: () => void;
   onRetrieval?: (brickId: number) => void;
   onEdit?: (brick: Brick) => void;
-  onAddToIsland?: (brick: {
-    brick_id: number;
-    target_text: string;
-    native_text: string;
-  }) => void;
+  onAddToIsland?: (brick: BrickDetail) => void;
   onAddIsland?: (island: { island_id: number; island_name: string }) => void;
   isLoggedIn?: boolean;
   currentLearnerId?: number;
@@ -426,11 +422,7 @@ export default function BrickDetailModal({
                   type="button"
                   id="btn-detail-add-this-brick"
                   onClick={() => {
-                    onAddToIsland?.({
-                      brick_id: detail.id,
-                      target_text: detail.targetText,
-                      native_text: detail.nativeText,
-                    });
+                    onAddToIsland?.(detail);
                   }}
                   className="w-full py-3 px-4 bg-primary hover:bg-primary/95 text-on-primary font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-xs cursor-pointer"
                 >

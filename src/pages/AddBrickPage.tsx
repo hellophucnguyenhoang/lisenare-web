@@ -4,8 +4,8 @@ import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
 import { useIslands } from "@/hooks/useIslands";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
-import { playShortAudio } from "@/utils/audio";
-import { type TargetLang } from "@/types";
+import { playShortAudio, resolveAudioUrl } from "@/utils/audio";
+import { type TargetLang, type BrickInitialData } from "@/types";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
@@ -19,12 +19,16 @@ import RetrievalInstructionsPage from "@/components/retrieval/RetrievalInstructi
 
 interface AddBrickPageProps {
   islandId?: number;
+  initialData?: BrickInitialData | null;
   onBack: () => void;
+  onSuccess?: () => void;
 }
 
 export default function AddBrickPage({
   islandId: initialIslandId,
+  initialData,
   onBack,
+  onSuccess,
 }: AddBrickPageProps) {
   const { data: learner } = useLearnerMe();
   const learnerLang = (learner?.retrieval_lang || learner?.retrievalLang) as
@@ -37,18 +41,29 @@ export default function AddBrickPage({
 
   const { data: islands = [] } = useIslands();
   const [selectedIslandId, setSelectedIslandId] = useState<number | null>(
-    initialIslandId ?? null,
+    initialData?.islandId ?? initialIslandId ?? null,
   );
 
   const effectiveIslandId =
     selectedIslandId ??
-    (islands.length > 0 ? (initialIslandId ?? islands[0].id) : null);
+    (islands.length > 0
+      ? (initialData?.islandId ?? initialIslandId ?? islands[0].id)
+      : null);
 
   const [showInstructions, setShowInstructions] = useState(false);
-  const [nativeText, setNativeText] = useState("");
-  const [targetText, setTargetText] = useState("");
-  const [targetLang, setTargetLang] = useState<TargetLang>(preferredLang);
-  const userChangedLangRef = useRef(false);
+  const [nativeText, setNativeText] = useState(initialData?.nativeText ?? "");
+  const [targetText, setTargetText] = useState(initialData?.targetText ?? "");
+  const [targetLang, setTargetLang] = useState<TargetLang>(() => {
+    if (
+      initialData?.targetLang === "en" ||
+      initialData?.targetLang === "ja" ||
+      initialData?.targetLang === "vi"
+    ) {
+      return initialData.targetLang as TargetLang;
+    }
+    return preferredLang;
+  });
+  const userChangedLangRef = useRef(Boolean(initialData?.targetLang));
 
   useEffect(() => {
     if (learnerLang && !userChangedLangRef.current) {
@@ -67,12 +82,39 @@ export default function AddBrickPage({
     setTargetLang(newLang);
   };
 
-  const [pronunciation, setPronunciation] = useState("");
-  const [context, setContext] = useState("");
-  const [kind, setUnitType] = useState<UnitType>("sentence");
-  const [tags, setTags] = useState<string[]>([]);
+  const [pronunciation, setPronunciation] = useState(
+    initialData?.pronunciation ?? "",
+  );
+  const [context, setContext] = useState(initialData?.context ?? "");
+  const [kind, setUnitType] = useState<UnitType>(
+    initialData?.kind === "word" ? "word" : "sentence",
+  );
+  const [tags, setTags] = useState<string[]>(initialData?.tags ?? []);
   const [isPrivate, setIsPrivate] = useState(true);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(
+    initialData?.audioBlob ?? null,
+  );
+
+  // Preload audio from existing brick if audioUrl is provided
+  useEffect(() => {
+    if (!initialData) return;
+    if (initialData.audioBlob) {
+      setAudioBlob(initialData.audioBlob);
+    } else if (initialData.audioUrl) {
+      const url = resolveAudioUrl(initialData.audioUrl);
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch initial audio");
+          return res.blob();
+        })
+        .then((blob) => {
+          setAudioBlob(blob);
+        })
+        .catch((err) => {
+          console.warn("Could not preload audio blob from brick:", err);
+        });
+    }
+  }, [initialData]);
 
   const createBrick = useCreateBrick();
   const checkExists = useCheckBrickExists(targetText);
@@ -148,15 +190,24 @@ export default function AddBrickPage({
 
     createBrick.mutate(formData, {
       onSuccess: () => {
-        toast.success("Brick created successfully!");
-        setNativeText("");
-        setTargetText("");
-        setPronunciation("");
-        setContext("");
-        setUnitType("sentence");
-        setTags([]);
-        setIsPrivate(true);
-        setAudioBlob(null);
+        toast.success(
+          initialData
+            ? "Brick added to your island!"
+            : "Brick created successfully!",
+        );
+        onSuccess?.();
+        if (initialData) {
+          onBack();
+        } else {
+          setNativeText("");
+          setTargetText("");
+          setPronunciation("");
+          setContext("");
+          setUnitType("sentence");
+          setTags([]);
+          setIsPrivate(true);
+          setAudioBlob(null);
+        }
       },
     });
   };
@@ -182,14 +233,14 @@ export default function AddBrickPage({
           <ArrowLeft className="w-6 h-6 text-primary" />
         </button>
         <h1 className="text-xl font-bold font-display text-primary">
-          Add new brick
+          {initialData ? "Add brick to your island" : "Add new brick"}
         </h1>
         <button
           type="button"
           onClick={() => setShowInstructions(true)}
           className="p-2 -mr-2 rounded-full hover:bg-surface-container text-outline hover:text-primary transition-all active:scale-95 cursor-pointer"
-          aria-label="5 Steps to Retrieval"
-          title="5 Steps to Retrieval"
+          aria-label="5 steps to retrieval"
+          title="5 steps to retrieval"
         >
           <HelpCircle className="w-6 h-6" />
         </button>
@@ -221,7 +272,11 @@ export default function AddBrickPage({
         />
 
         {/* Pronunciation recording / Preview section */}
-        <BrickAudioSection audioBlob={audioBlob} onAudioChange={setAudioBlob} />
+        <BrickAudioSection
+          audioBlob={audioBlob}
+          onAudioChange={setAudioBlob}
+          existingAudioPath={initialData?.audioUrl}
+        />
 
         {/* Kind section: Word or Sentence */}
         <BrickUnitTypeSelector kind={kind} onChange={setUnitType} />
@@ -251,7 +306,9 @@ export default function AddBrickPage({
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                <span>Save brick</span>
+                <span>
+                  {initialData ? "Save to your island" : "Save brick"}
+                </span>
               </>
             )}
           </button>

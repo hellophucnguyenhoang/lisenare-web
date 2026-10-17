@@ -225,7 +225,7 @@ export default function DiscoverPage() {
             <MousePointerClick className="w-4 h-4" />
           </div>
           <h3 className="text-xs sm:text-sm font-bold text-on-surface">
-            3. Tap to Translate & Explain
+            3. Tap to translate & explain
           </h3>
           <p className="text-xs text-on-surface-variant leading-relaxed">
             Click on any unfamiliar word in the transcript to reveal instant
@@ -284,7 +284,7 @@ export default function DiscoverPage() {
           </div>
 
           <div className="absolute bottom-3 left-3 text-white text-xs font-semibold drop-shadow-md">
-            Natural english phrasing & context
+            Natural English phrasing & context
           </div>
         </div>
 
@@ -293,7 +293,7 @@ export default function DiscoverPage() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-primary" />
-              Live transcript (Click any word)
+              Live transcript (click any word)
             </span>
             <span className="text-[11px] text-outline">English (US)</span>
           </div>

@@ -180,7 +180,7 @@ export default function ReportBrickModal({
               ) : (
                 <>
                   <Flag className="w-3.5 h-3.5" />
-                  <span>Submit report </span>
+                  <span>Submit report</span>
                 </>
               )}
             </button>

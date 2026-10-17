@@ -17,7 +17,7 @@ interface LanguageOption {
 const LANGUAGES: LanguageOption[] = [
   { code: "en", name: "English", flag: "🇺🇸" },
   { code: "ja", name: "Japanese", flag: "🇯🇵" },
-  { code: "vi", name: "Vietnam", flag: "🇻🇳" },
+  { code: "vi", name: "Vietnamese", flag: "🇻🇳" },
 ];
 
 export default function TargetLanguageSelector({

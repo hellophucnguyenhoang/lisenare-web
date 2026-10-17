@@ -24,7 +24,6 @@ import { useSearchContextBricks } from "@/hooks/useContextSearch";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useIslands, useCreateIsland } from "@/hooks/useIslands";
 import {
-  useAddBrickFrom,
   useAddBricksFromIsland,
   useDeleteBrick,
   useForgetBrick,
@@ -33,12 +32,15 @@ import {
   getRecommendedBricks,
   createBrickInteraction,
   getBrickDetail,
+  type BrickDetail,
 } from "@/api/bricks";
+import { type BrickContextSearch } from "@/api/contextSearch";
 import { playShortAudio } from "@/utils/audio";
-import { type Brick, type AuthMode } from "@/types";
+import { type Brick, type AuthMode, type BrickInitialData } from "@/types";
 import SaveToIslandModal from "@/components/bricks/SaveToIslandModal";
 import BrickDetailModal from "@/components/bricks/BrickDetailModal";
 import ReportBrickModal from "@/components/bricks/ReportBrickModal";
+import AddBrickPage from "@/pages/AddBrickPage";
 import { toast } from "sonner";
 
 interface SearchPageProps {
@@ -95,11 +97,11 @@ export default function SearchPage({
 
   // Modals state
   const [detailBrickId, setDetailBrickId] = useState<number | null>(null);
-  const [savingBrick, setSavingBrick] = useState<{
-    brick_id: number;
-    target_text: string;
-    native_text: string;
-  } | null>(null);
+  const [addingBrickData, setAddingBrickData] =
+    useState<BrickInitialData | null>(null);
+  const [pendingInteractionBrickId, setPendingInteractionBrickId] = useState<
+    number | null
+  >(null);
   const [savingIsland, setSavingIsland] = useState<{
     island_id: number;
     island_name: string;
@@ -107,7 +109,6 @@ export default function SearchPage({
 
   const { data: islands = [] } = useIslands(isLoggedIn);
   const queryClient = useQueryClient();
-  const addBrickMutation = useAddBrickFrom();
   const addBricksFromIslandMutation = useAddBricksFromIsland();
   const createIslandMutation = useCreateIsland();
   const deleteBrickMutation = useDeleteBrick();
@@ -324,31 +325,42 @@ export default function SearchPage({
     setSavingIsland(island);
   };
 
-  const handleSaveToIsland = (islandId: number) => {
-    if (!savingBrick) return;
-    addBrickMutation.mutate(
-      { brickId: savingBrick.brick_id, islandId },
-      {
-        onSuccess: () => {
-          toast.success("Brick added to island!");
-          void createBrickInteraction({
-            session_id: sessionId,
-            brick_id: savingBrick.brick_id,
-            interaction_type: "ADD",
-          });
-          setSavingBrick(null);
-          setDetailBrickId(null);
-        },
-        onError: (err: unknown) => {
-          const errorObj = err as
-            | { detail?: string; message?: string }
-            | undefined;
-          toast.error(
-            errorObj?.detail || errorObj?.message || "Failed to add brick.",
-          );
-        },
-      },
-    );
+  const handleOpenAddFromDetail = (detail: BrickDetail | Brick) => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in to add bricks.");
+      onOpenAuth?.("login");
+      return;
+    }
+    setDetailBrickId(null);
+    setAddingBrickData({
+      nativeText: detail.nativeText,
+      targetText: detail.targetText,
+      targetLang: detail.targetLang,
+      pronunciation: detail.targetPron,
+      context: detail.context,
+      kind: detail.kind,
+      tags: detail.tags,
+      audioUrl: detail.targetAudioPath,
+    });
+    setPendingInteractionBrickId(detail.id);
+  };
+
+  const handleAddSearchBrick = async (item: BrickContextSearch) => {
+    if (!isLoggedIn) {
+      toast.error("Please sign in to add bricks.");
+      onOpenAuth?.("login");
+      return;
+    }
+    try {
+      const detail = await getBrickDetail(item.brick_id);
+      handleOpenAddFromDetail(detail);
+    } catch {
+      setAddingBrickData({
+        nativeText: item.native_text,
+        targetText: item.target_text,
+      });
+      setPendingInteractionBrickId(item.brick_id);
+    }
   };
 
   const handleSaveIslandToTarget = (targetIslandId: number) => {
@@ -395,8 +407,6 @@ export default function SearchPage({
       });
       if (savingIsland) {
         handleSaveIslandToTarget(created.id);
-      } else if (savingBrick) {
-        handleSaveToIsland(created.id);
       }
     } catch (err: unknown) {
       const errorObj = err as { detail?: string; message?: string } | undefined;
@@ -442,6 +452,29 @@ export default function SearchPage({
           </button>
         )}
       </div>
+    );
+  }
+
+  if (addingBrickData) {
+    return (
+      <AddBrickPage
+        initialData={addingBrickData}
+        onBack={() => {
+          setAddingBrickData(null);
+          setPendingInteractionBrickId(null);
+        }}
+        onSuccess={() => {
+          if (pendingInteractionBrickId) {
+            void createBrickInteraction({
+              session_id: sessionId,
+              brick_id: pendingInteractionBrickId,
+              interaction_type: "ADD",
+            });
+          }
+          setAddingBrickData(null);
+          setPendingInteractionBrickId(null);
+        }}
+      />
     );
   }
 
@@ -619,15 +652,11 @@ export default function SearchPage({
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSavingBrick({
-                              brick_id: brick.id,
-                              target_text: brick.targetText,
-                              native_text: brick.nativeText,
-                            });
+                            handleOpenAddFromDetail(brick);
                           }}
                           className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all active:scale-95 cursor-pointer"
-                          title="Add to island"
-                          aria-label="Add to island"
+                          title="Add this brick"
+                          aria-label="Add this brick"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -693,7 +722,7 @@ export default function SearchPage({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container hover:bg-surface-container-high border border-outline-variant/60 text-xs font-semibold text-on-surface transition-all active:scale-95 cursor-pointer shadow-2xs"
             >
               <RotateCcw className="w-3.5 h-3.5 text-primary" />
-              <span>Back to Recommendations</span>
+              <span>Back to recommendations</span>
             </button>
           </div>
 
@@ -821,7 +850,7 @@ export default function SearchPage({
                   className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Globe className="w-3.5 h-3.5" />
-                  <span>View {publicBricks.length} in Public</span>
+                  <span>View {publicBricks.length} in public</span>
                 </button>
               )}
             </div>
@@ -940,15 +969,11 @@ export default function SearchPage({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSavingBrick({
-                                  brick_id: brick.brick_id,
-                                  target_text: brick.target_text,
-                                  native_text: brick.native_text,
-                                });
+                                void handleAddSearchBrick(brick);
                               }}
                               className="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all active:scale-95 cursor-pointer"
-                              title="Add to island"
-                              aria-label="Add to island"
+                              title="Add this brick"
+                              aria-label="Add this brick"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
@@ -979,10 +1004,10 @@ export default function SearchPage({
                               onNavigateToRetrieval(brick.brick_id);
                             }}
                             className="px-3 py-2 bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer ml-1"
-                            title="Retrieval this brick"
+                            title="Practice this brick"
                           >
                             <Play className="w-3.5 h-3.5 text-primary" />
-                            <span>Retrieval</span>
+                            <span>Practice</span>
                           </button>
                         )}
                       </div>
@@ -1041,47 +1066,35 @@ export default function SearchPage({
 
       {/* Brick detail modal */}
       <BrickDetailModal
-        isOpen={Boolean(detailBrickId) && !savingBrick && !savingIsland}
+        isOpen={Boolean(detailBrickId) && !savingIsland && !addingBrickData}
         brickId={detailBrickId}
         onClose={() => setDetailBrickId(null)}
         onRetrieval={onNavigateToRetrieval}
         onEdit={onNavigateToEditBrick}
-        onAddToIsland={(brick) => setSavingBrick(brick)}
+        onAddToIsland={handleOpenAddFromDetail}
         onAddIsland={handleOpenAddIsland}
         isLoggedIn={isLoggedIn}
         currentLearnerId={learner?.id}
         onOpenAuth={onOpenAuth}
       />
 
-      {/* Add brick or island Modal */}
+      {/* Add island Modal */}
       <SaveToIslandModal
-        isOpen={Boolean(savingBrick || savingIsland)}
-        mode={savingIsland ? "island" : "brick"}
-        brick={
-          savingBrick
-            ? {
-                targetText: savingBrick.target_text,
-                nativeText: savingBrick.native_text,
-              }
-            : null
-        }
+        isOpen={Boolean(savingIsland)}
+        mode="island"
         islandToCopy={savingIsland}
         islands={islands}
         isSaving={
-          addBrickMutation.isPending ||
           addBricksFromIslandMutation.isPending ||
           createIslandMutation.isPending
         }
         onSave={(targetIslandId) => {
           if (savingIsland) {
             handleSaveIslandToTarget(targetIslandId);
-          } else if (savingBrick) {
-            handleSaveToIsland(targetIslandId);
           }
         }}
         onCreateAndSave={handleCreateAndSave}
         onClose={() => {
-          setSavingBrick(null);
           setSavingIsland(null);
         }}
       />

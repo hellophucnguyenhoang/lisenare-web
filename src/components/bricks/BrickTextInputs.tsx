@@ -19,7 +19,7 @@ interface LanguageOption {
 const LANGUAGE_OPTIONS: LanguageOption[] = [
   { code: "en", name: "English", flag: "🇺🇸" },
   { code: "ja", name: "Japanese", flag: "🇯🇵" },
-  { code: "vi", name: "Vietnam", flag: "🇻🇳" },
+  { code: "vi", name: "Vietnamese", flag: "🇻🇳" },
 ];
 
 function InfoTooltip({ text }: { text: string }) {
@@ -126,10 +126,10 @@ export default function BrickTextInputs({
 
   return (
     <section className="bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-xs space-y-5">
-      {/* Native sentence  */}
+      {/* Native sentence */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Native sentence </span>
+          <span>Native sentence</span>
           <InfoTooltip text="Native text you want to express." />
         </label>
         <PlainTextInput
@@ -140,12 +140,12 @@ export default function BrickTextInputs({
         />
       </div>
 
-      {/* Target sentence  with integrated flag language chooser */}
+      {/* Target sentence with integrated flag language chooser */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-              <span>Target sentence </span>
+              <span>Target sentence</span>
               <InfoTooltip text="Target text you want to say." />
             </label>
 
@@ -251,7 +251,7 @@ export default function BrickTextInputs({
               title={
                 !targetText.trim()
                   ? "Enter target sentence first"
-                  : "Generate audio pronunciation using AI Text-to-Speech"
+                  : "Generate audio pronunciation using AI text-to-speech"
               }
             >
               {isGeneratingAudio ? (
@@ -262,7 +262,7 @@ export default function BrickTextInputs({
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <span>Auto-generate Audio</span>
+                  <span>Auto-generate audio</span>
                 </>
               )}
             </button>
@@ -270,10 +270,10 @@ export default function BrickTextInputs({
         )}
       </div>
 
-      {/* Target pronunciation  */}
+      {/* Target pronunciation */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Target pronunciation (Optional)</span>
+          <span>Target pronunciation (optional)</span>
           <InfoTooltip text="Optional pronunciation guide." />
         </label>
         <PlainTextInput
@@ -287,7 +287,7 @@ export default function BrickTextInputs({
       {/* Context */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Context (Optional)</span>
+          <span>Context (optional)</span>
           <InfoTooltip text="Optional scenario, context, or notes to help remember how it's used." />
         </label>
         <PlainTextInput

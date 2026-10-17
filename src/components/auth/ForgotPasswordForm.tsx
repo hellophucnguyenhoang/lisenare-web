@@ -179,7 +179,7 @@ export default function ForgotPasswordForm({
           className="flex items-center gap-1.5 text-xs font-bold text-outline hover:text-primary transition-colors py-1 cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          {step === 2 ? "Back" : "Back to Login"}
+          {step === 2 ? "Back" : "Back to login"}
         </button>
 
         <div className="flex items-center gap-1.5">
@@ -250,7 +250,7 @@ export default function ForgotPasswordForm({
                   <span>Sending OTP...</span>
                 </>
               ) : (
-                <span>Send OTP Code</span>
+                <span>Send OTP code</span>
               )}
             </button>
           </form>
@@ -281,7 +281,7 @@ export default function ForgotPasswordForm({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">
-                  6-Digit verification code
+                  6-digit verification code
                 </label>
                 {resendCountdown > 0 ? (
                   <span className="text-[11px] text-outline font-medium">
@@ -443,7 +443,7 @@ export default function ForgotPasswordForm({
           onClick={onSwitchToLogin}
           className="text-xs font-bold text-primary hover:underline transition-all cursor-pointer"
         >
-          Back to Login
+          Back to login
         </button>
       </div>
     </div>
