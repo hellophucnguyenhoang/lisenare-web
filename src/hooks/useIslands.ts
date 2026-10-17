@@ -9,7 +9,9 @@ import {
   type AddIslandResult,
   type BrickExport,
 } from "@/api/islands";
+import { RequestError } from "@/api/client";
 import { downloadJsonFile } from "@/utils/download";
+import { toast } from "sonner";
 
 export function useIslands(enabled = true) {
   return useQuery({
@@ -90,16 +92,37 @@ export function useExportIsland() {
 export function useImportIsland() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       islandId,
+      islandName,
       file,
     }: {
       islandId: number;
+      islandName?: string;
       file: File | Blob;
-    }): Promise<AddIslandResult> => importIsland(islandId, file),
-    onSuccess: () => {
+    }): Promise<{ result: AddIslandResult; islandName?: string; islandId: number }> => {
+      const result = await importIsland(islandId, file);
+      return { result, islandName, islandId };
+    },
+    onSuccess: ({ result, islandName }) => {
       qc.invalidateQueries({ queryKey: ["islands"] });
       qc.invalidateQueries({ queryKey: ["bricks"] });
+      const name = islandName ? `"${islandName}"` : "island";
+      toast.success(
+        `Imported to ${name}: ${result.added} added, ${result.skipped} skipped.`,
+      );
+    },
+    onError: (err: unknown) => {
+      console.error("Failed to import island:", err);
+      if (err instanceof RequestError && err.status === 524) {
+        qc.invalidateQueries({ queryKey: ["islands"] });
+        qc.invalidateQueries({ queryKey: ["bricks"] });
+        toast.info(
+          "Import is still processing on the server. Your bricks will appear shortly.",
+        );
+      } else {
+        toast.error("Failed to import island. Please check the file.");
+      }
     },
   });
 }
@@ -113,14 +136,29 @@ export function useImportToNewIsland() {
     }: {
       islandName: string;
       file: File | Blob;
-    }) => {
+    }): Promise<{ island: { id: number; name: string }; result: AddIslandResult }> => {
       const newCol = await createIsland({ name: islandName });
       const result = await importIsland(newCol.id, file);
       return { island: newCol, result };
     },
-    onSuccess: () => {
+    onSuccess: ({ island, result }) => {
       qc.invalidateQueries({ queryKey: ["islands"] });
       qc.invalidateQueries({ queryKey: ["bricks"] });
+      toast.success(
+        `Imported to "${island.name}": ${result.added} added, ${result.skipped} skipped.`,
+      );
+    },
+    onError: (err: unknown) => {
+      console.error("Failed to import island:", err);
+      if (err instanceof RequestError && err.status === 524) {
+        qc.invalidateQueries({ queryKey: ["islands"] });
+        qc.invalidateQueries({ queryKey: ["bricks"] });
+        toast.info(
+          "Import is still processing on the server. Your new island will appear shortly.",
+        );
+      } else {
+        toast.error("Failed to import island. Please check the file.");
+      }
     },
   });
 }
