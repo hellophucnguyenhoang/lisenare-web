@@ -26,6 +26,8 @@ import {
   useDeleteIsland,
   useUpdateIsland,
   useCreateIsland,
+  useImportIsland,
+  useImportToNewIsland,
 } from "@/hooks/useIslands";
 import {
   useInfiniteBricks,
@@ -153,6 +155,37 @@ export default function BricksPage({
   const createIsland = useCreateIsland();
   const deleteBrick = useDeleteBrick();
   const forgetBrick = useForgetBrick();
+  const importToExisting = useImportIsland();
+  const importToNew = useImportToNewIsland();
+
+  const handleImportToExisting = (
+    islandId: number,
+    file: File | Blob,
+    islandName: string,
+  ) => {
+    toast.info(`Importing bricks into "${islandName}" in the background...`);
+    importToExisting.mutate(
+      { islandId, islandName, file },
+      {
+        onSuccess: ({ islandId: targetId }) => {
+          setSelectedIslandId(targetId);
+        },
+      },
+    );
+  };
+
+  const handleImportToNew = (islandName: string, file: File | Blob) => {
+    toast.info(`Importing into new island "${islandName}" in the background...`);
+    importToNew.mutate(
+      { islandName, file },
+      {
+        onSuccess: ({ island }) => {
+          setSelectedIslandId(island.id);
+        },
+      },
+    );
+  };
+
   const [showImportModal, setShowImportModal] = useState(false);
   const [importTargetIslandId, setImportTargetIslandId] = useState<
     number | null
@@ -782,9 +815,8 @@ export default function BricksPage({
           }}
           islands={islands}
           defaultIslandId={importTargetIslandId}
-          onSuccess={(targetColId) => {
-            setSelectedIslandId(targetColId);
-          }}
+          onImportToExisting={handleImportToExisting}
+          onImportToNew={handleImportToNew}
         />
       )}
 

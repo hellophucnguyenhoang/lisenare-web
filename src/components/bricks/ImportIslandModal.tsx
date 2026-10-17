@@ -19,7 +19,12 @@ interface ImportIslandModalProps {
   onClose: () => void;
   islands: Island[];
   defaultIslandId?: number | null;
-  onSuccess?: (islandId: number) => void;
+  onImportToExisting?: (
+    islandId: number,
+    file: File | Blob,
+    islandName: string,
+  ) => void;
+  onImportToNew?: (islandName: string, file: File | Blob) => void;
 }
 
 export default function ImportIslandModal({
@@ -27,7 +32,8 @@ export default function ImportIslandModal({
   onClose,
   islands,
   defaultIslandId,
-  onSuccess,
+  onImportToExisting,
+  onImportToNew,
 }: ImportIslandModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [brickCount, setBrickCount] = useState<number | null>(null);
@@ -136,37 +142,28 @@ export default function ImportIslandModal({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!file) {
       toast.error("Please select a JSON file to import.");
       return;
     }
 
     if (mode === "new") {
-      if (!newIslandName.trim()) {
+      const trimmedName = newIslandName.trim();
+      if (!trimmedName) {
         toast.error("Please enter a name for the new island.");
         return;
       }
 
-      importToNew.mutate(
-        {
-          islandName: newIslandName.trim(),
-          file,
-        },
-        {
-          onSuccess: ({ island, result }) => {
-            toast.success(
-              `Imported to "${island.name}": ${result.added} added, ${result.skipped} skipped.`,
-            );
-            onSuccess?.(island.id);
-            onClose();
-          },
-          onError: (err: unknown) => {
-            console.error("Failed to import island:", err);
-            toast.error("Failed to import island. Please check the file.");
-          },
-        },
-      );
+      if (onImportToNew) {
+        onImportToNew(trimmedName, file);
+      } else {
+        toast.info(
+          `Importing into new island "${trimmedName}" in the background...`,
+        );
+        importToNew.mutate({ islandName: trimmedName, file });
+      }
+      onClose();
     } else {
       if (!selectedIslandId) {
         toast.error("Please select an island to import into.");
@@ -174,25 +171,19 @@ export default function ImportIslandModal({
       }
 
       const targetCol = islands.find((c) => c.id === selectedIslandId);
-      importToExisting.mutate(
-        {
+      const targetName = targetCol?.name || "island";
+
+      if (onImportToExisting) {
+        onImportToExisting(selectedIslandId, file, targetName);
+      } else {
+        toast.info(`Importing bricks into "${targetName}" in the background...`);
+        importToExisting.mutate({
           islandId: selectedIslandId,
+          islandName: targetName,
           file,
-        },
-        {
-          onSuccess: (result) => {
-            toast.success(
-              `Imported to "${targetCol?.name || "island"}": ${result.added} added, ${result.skipped} skipped.`,
-            );
-            onSuccess?.(selectedIslandId);
-            onClose();
-          },
-          onError: (err: unknown) => {
-            console.error("Failed to import island:", err);
-            toast.error("Failed to import island. Please check the file.");
-          },
-        },
-      );
+        });
+      }
+      onClose();
     }
   };
 
