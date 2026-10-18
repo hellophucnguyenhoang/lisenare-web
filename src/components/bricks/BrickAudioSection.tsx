@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, type ChangeEvent } from "react";
-import { Mic, Upload, Volume2, Loader2, Square } from "lucide-react";
+import { Mic, Upload, Volume2, Loader2, Square, Bot } from "lucide-react";
 import {
   playShortAudio,
   playBrickAudio,
@@ -15,6 +15,8 @@ interface BrickAudioSectionProps {
   onAudioChange: (blob: Blob | null) => void;
   existingAudioPath?: string | null;
   brickId?: number;
+  onTranscribeAudio?: () => void;
+  isTranscribingAudio?: boolean;
 }
 
 export default function BrickAudioSection({
@@ -22,6 +24,8 @@ export default function BrickAudioSection({
   onAudioChange,
   existingAudioPath,
   brickId,
+  onTranscribeAudio,
+  isTranscribingAudio = false,
 }: BrickAudioSectionProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
@@ -255,6 +259,36 @@ export default function BrickAudioSection({
             <span>Upload file</span>
           </button>
         </div>
+
+        {/* Transcribe audio button */}
+        {onTranscribeAudio && (
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <button
+              type="button"
+              id="btn-transcribe-audio"
+              onClick={onTranscribeAudio}
+              disabled={!audioBlob || isTranscribingAudio}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200/90 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              title={
+                !audioBlob
+                  ? "Record or upload audio first"
+                  : "Transcribe audio using AI speech-to-text"
+              }
+            >
+              {isTranscribingAudio ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
+                  <span>Transcribing audio...</span>
+                </>
+              ) : (
+                <>
+                  <Bot className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Transcribe audio</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

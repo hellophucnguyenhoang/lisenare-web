@@ -3,7 +3,7 @@ import {
   AlertTriangle,
   ChevronDown,
   Loader2,
-  Sparkles,
+  Bot,
   HelpCircle,
   Check,
 } from "lucide-react";
@@ -149,63 +149,73 @@ export default function BrickTextInputs({
               <InfoTooltip text="Target text you want to say." />
             </label>
 
-            {/* Language dropdown  with Flag */}
-            <div
-              ref={langDropdownRef}
-              className="relative inline-flex items-center"
-            >
-              <button
-                type="button"
-                id="btn-brick-target-lang-dropdown"
-                onClick={() => setIsLangDropdownOpen((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 bg-surface-container/60 hover:bg-surface-container border border-outline-variant/60 text-primary font-bold text-xs py-1 px-2.5 rounded-xl cursor-pointer outline-none focus:border-primary transition-all shadow-2xs active:scale-98"
-                title="Select target language"
-                aria-label="Target language"
-                aria-expanded={isLangDropdownOpen}
+            {/* Language flag / chooser */}
+            {onTargetLangChange ? (
+              <div
+                ref={langDropdownRef}
+                className="relative inline-flex items-center"
               >
-                <span className="text-sm select-none leading-none">
-                  {selectedLangOption.flag}
-                </span>
-                <span>{selectedLangOption.name}</span>
-                <ChevronDown
-                  className={`w-3 h-3 text-primary transition-transform duration-200 ${
-                    isLangDropdownOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {/* Custom dropdown menu */}
-              {isLangDropdownOpen && (
-                <div
-                  role="listbox"
-                  className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-36 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-1 z-30 animate-in fade-in zoom-in-95 duration-150"
+                <button
+                  type="button"
+                  id="btn-brick-target-lang-dropdown"
+                  onClick={() => setIsLangDropdownOpen((prev) => !prev)}
+                  className="inline-flex items-center gap-1.5 bg-surface-container/60 hover:bg-surface-container border border-outline-variant/60 text-primary font-bold text-xs py-1 px-2.5 rounded-xl cursor-pointer outline-none focus:border-primary transition-all shadow-2xs active:scale-98"
+                  title="Select target language"
+                  aria-label="Target language"
+                  aria-expanded={isLangDropdownOpen}
                 >
-                  {LANGUAGE_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.code}
-                      type="button"
-                      onClick={() => {
-                        onTargetLangChange?.(opt.code);
-                        setIsLangDropdownOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
-                        opt.code === targetLang
-                          ? "bg-primary/10 text-primary font-bold"
-                          : "text-on-surface hover:bg-surface-container"
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm select-none">{opt.flag}</span>
-                        <span>{opt.name}</span>
-                      </div>
-                      {opt.code === targetLang && (
-                        <Check className="w-3.5 h-3.5 text-primary" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                  <span className="text-sm select-none leading-none">
+                    {selectedLangOption.flag}
+                  </span>
+                  <span>{selectedLangOption.name}</span>
+                  <ChevronDown
+                    className={`w-3 h-3 text-primary transition-transform duration-200 ${
+                      isLangDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Custom dropdown menu */}
+                {isLangDropdownOpen && (
+                  <div
+                    role="listbox"
+                    className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1.5 w-36 bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-lg p-1 z-30 animate-in fade-in zoom-in-95 duration-150"
+                  >
+                    {LANGUAGE_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.code}
+                        type="button"
+                        onClick={() => {
+                          onTargetLangChange(opt.code);
+                          setIsLangDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+                          opt.code === targetLang
+                            ? "bg-primary/10 text-primary font-bold"
+                            : "text-on-surface hover:bg-surface-container"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm select-none">{opt.flag}</span>
+                          <span>{opt.name}</span>
+                        </div>
+                        {opt.code === targetLang && (
+                          <Check className="w-3.5 h-3.5 text-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <span
+                className="inline-flex items-center px-2 py-0.5 rounded-lg bg-surface-container/60 border border-outline-variant/60 text-sm select-none leading-none shadow-2xs"
+                title={`Target language: ${selectedLangOption.name}`}
+                aria-label={`Target language: ${selectedLangOption.name}`}
+              >
+                {selectedLangOption.flag}
+              </span>
+            )}
           </div>
 
           {isCheckingTargetExists && (
@@ -240,14 +250,15 @@ export default function BrickTextInputs({
           </div>
         )}
 
-        {/* Auto-generate Audio button  */}
+        {/* Generate audio button */}
         {onGenerateAudio && (
           <div className="flex items-center justify-between gap-2 pt-0.5">
             <button
               type="button"
+              id="btn-generate-audio"
               onClick={onGenerateAudio}
               disabled={!targetText.trim() || isGeneratingAudio}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200/90 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               title={
                 !targetText.trim()
                   ? "Enter target sentence first"
@@ -256,13 +267,13 @@ export default function BrickTextInputs({
             >
               {isGeneratingAudio ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
                   <span>Generating audio...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <span>Auto-generate audio</span>
+                  <Bot className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Generate audio</span>
                 </>
               )}
             </button>

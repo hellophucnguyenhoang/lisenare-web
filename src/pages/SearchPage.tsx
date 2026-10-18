@@ -41,12 +41,12 @@ import SaveToIslandModal from "@/components/bricks/SaveToIslandModal";
 import BrickDetailModal from "@/components/bricks/BrickDetailModal";
 import ReportBrickModal from "@/components/bricks/ReportBrickModal";
 import AddBrickPage from "@/pages/AddBrickPage";
+import EditBrickPage from "@/pages/EditBrickPage";
 import { toast } from "sonner";
 
 interface SearchPageProps {
   onBack: () => void;
   onNavigateToRetrieval?: (brickId?: number) => void;
-  onNavigateToEditBrick?: (brick: Brick) => void;
   onOpenAuth?: (mode: AuthMode) => void;
 }
 
@@ -58,7 +58,6 @@ const RECOMMENDATION_PAGE_SIZE = 6;
 export default function SearchPage({
   onBack,
   onNavigateToRetrieval,
-  onNavigateToEditBrick,
   onOpenAuth,
 }: SearchPageProps) {
   const { data: learner } = useLearnerMe();
@@ -97,6 +96,7 @@ export default function SearchPage({
 
   // Modals state
   const [detailBrickId, setDetailBrickId] = useState<number | null>(null);
+  const [editingBrick, setEditingBrick] = useState<Brick | null>(null);
   const [addingBrickData, setAddingBrickData] =
     useState<BrickInitialData | null>(null);
   const [pendingInteractionBrickId, setPendingInteractionBrickId] = useState<
@@ -136,10 +136,9 @@ export default function SearchPage({
   };
 
   const handleEditBrick = async (brickId: number) => {
-    if (!onNavigateToEditBrick) return;
     try {
       const fullBrick = await getBrickDetail(brickId);
-      onNavigateToEditBrick(fullBrick);
+      setEditingBrick(fullBrick);
     } catch (err) {
       console.error("Failed to load brick for editing:", err);
       toast.error("Failed to load brick details.");
@@ -452,6 +451,19 @@ export default function SearchPage({
           </button>
         )}
       </div>
+    );
+  }
+
+  if (editingBrick) {
+    return (
+      <EditBrickPage
+        brick={editingBrick}
+        onBack={() => {
+          setEditingBrick(null);
+          queryClient.invalidateQueries({ queryKey: ["context-search"] });
+          queryClient.invalidateQueries({ queryKey: ["bricks"] });
+        }}
+      />
     );
   }
 
@@ -892,20 +904,18 @@ export default function SearchPage({
 
                               {openMenuBrickId === brick.brick_id && (
                                 <div className="absolute right-0 top-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-30 py-1.5 w-36">
-                                  {onNavigateToEditBrick && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setOpenMenuBrickId(null);
-                                        handleEditBrick(brick.brick_id);
-                                      }}
-                                      className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
-                                    >
-                                      <Edit3 className="w-4 h-4 text-outline" />
-                                      <span>Edit brick</span>
-                                    </button>
-                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuBrickId(null);
+                                      handleEditBrick(brick.brick_id);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+                                  >
+                                    <Edit3 className="w-4 h-4 text-outline" />
+                                    <span>Edit brick</span>
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -1066,11 +1076,19 @@ export default function SearchPage({
 
       {/* Brick detail modal */}
       <BrickDetailModal
-        isOpen={Boolean(detailBrickId) && !savingIsland && !addingBrickData}
+        isOpen={
+          Boolean(detailBrickId) &&
+          !savingIsland &&
+          !addingBrickData &&
+          !editingBrick
+        }
         brickId={detailBrickId}
         onClose={() => setDetailBrickId(null)}
         onRetrieval={onNavigateToRetrieval}
-        onEdit={onNavigateToEditBrick}
+        onEdit={(brick) => {
+          setDetailBrickId(null);
+          setEditingBrick(brick);
+        }}
         onAddToIsland={handleOpenAddFromDetail}
         onAddIsland={handleOpenAddIsland}
         isLoggedIn={isLoggedIn}

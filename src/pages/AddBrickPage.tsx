@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Save, HelpCircle } from "lucide-react";
 import { useCreateBrick, useCheckBrickExists } from "@/hooks/useBricks";
 import { useIslands } from "@/hooks/useIslands";
@@ -6,6 +6,7 @@ import { useLearnerMe } from "@/hooks/useLearner";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio, resolveAudioUrl } from "@/utils/audio";
 import { type TargetLang, type BrickInitialData } from "@/types";
+import { transcribeAudio } from "@/api/evaluation";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
@@ -34,10 +35,14 @@ export default function AddBrickPage({
   const learnerLang = (learner?.retrieval_lang || learner?.retrievalLang) as
     | string
     | undefined;
-  const preferredLang: TargetLang =
-    learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en"
-      ? learnerLang
-      : "en";
+  const targetLang: TargetLang =
+    initialData?.targetLang === "en" ||
+    initialData?.targetLang === "ja" ||
+    initialData?.targetLang === "vi"
+      ? (initialData.targetLang as TargetLang)
+      : learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en"
+        ? learnerLang
+        : "en";
 
   const { data: islands = [] } = useIslands();
   const [selectedIslandId, setSelectedIslandId] = useState<number | null>(
@@ -53,34 +58,6 @@ export default function AddBrickPage({
   const [showInstructions, setShowInstructions] = useState(false);
   const [nativeText, setNativeText] = useState(initialData?.nativeText ?? "");
   const [targetText, setTargetText] = useState(initialData?.targetText ?? "");
-  const [targetLang, setTargetLang] = useState<TargetLang>(() => {
-    if (
-      initialData?.targetLang === "en" ||
-      initialData?.targetLang === "ja" ||
-      initialData?.targetLang === "vi"
-    ) {
-      return initialData.targetLang as TargetLang;
-    }
-    return preferredLang;
-  });
-  const userChangedLangRef = useRef(Boolean(initialData?.targetLang));
-
-  useEffect(() => {
-    if (learnerLang && !userChangedLangRef.current) {
-      if (
-        learnerLang === "ja" ||
-        learnerLang === "vi" ||
-        learnerLang === "en"
-      ) {
-        setTargetLang(learnerLang);
-      }
-    }
-  }, [learnerLang]);
-
-  const handleTargetLangChange = (newLang: TargetLang) => {
-    userChangedLangRef.current = true;
-    setTargetLang(newLang);
-  };
 
   const [pronunciation, setPronunciation] = useState(
     initialData?.pronunciation ?? "",
@@ -119,9 +96,33 @@ export default function AddBrickPage({
   const createBrick = useCreateBrick();
   const checkExists = useCheckBrickExists(targetText);
   const textToSpeechMutation = useTextToSpeech();
+  const [isTranscribingAudio, setIsTranscribingAudio] = useState(false);
 
   const isTargetExists = checkExists.data === true;
   const isCheckingTargetExists = checkExists.isFetching;
+
+  const handleTranscribeAudio = async () => {
+    if (!audioBlob) {
+      toast.error("Please record or upload audio first.");
+      return;
+    }
+
+    setIsTranscribingAudio(true);
+    try {
+      const transcript = await transcribeAudio(audioBlob);
+      if (transcript && transcript.trim()) {
+        setTargetText(transcript.trim());
+        toast.success("Audio transcribed successfully!");
+      } else {
+        toast.info("No speech detected in the audio.");
+      }
+    } catch (err: unknown) {
+      console.error("Failed to transcribe audio:", err);
+      toast.error("Failed to transcribe audio. Please try again.");
+    } finally {
+      setIsTranscribingAudio(false);
+    }
+  };
 
   const handleAutoGenerateAudio = async () => {
     if (!targetText.trim()) {
@@ -260,7 +261,6 @@ export default function AddBrickPage({
           targetText={targetText}
           onTargetTextChange={setTargetText}
           targetLang={targetLang}
-          onTargetLangChange={handleTargetLangChange}
           pronunciation={pronunciation}
           onPronunciationChange={setPronunciation}
           context={context}
@@ -276,6 +276,8 @@ export default function AddBrickPage({
           audioBlob={audioBlob}
           onAudioChange={setAudioBlob}
           existingAudioPath={initialData?.audioUrl}
+          onTranscribeAudio={handleTranscribeAudio}
+          isTranscribingAudio={isTranscribingAudio}
         />
 
         {/* Kind section: Word or Sentence */}

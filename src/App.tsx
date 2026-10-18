@@ -116,9 +116,6 @@ function AppContent() {
             setSubview(null);
             setActiveTab("retrieval");
           }}
-          onNavigateToEditBrick={(brick) => {
-            setSubview({ type: "editBrick", brick });
-          }}
           onOpenAuth={(mode) => setAuthModalMode(mode)}
         />
         <Toaster position="bottom-center" richColors />
