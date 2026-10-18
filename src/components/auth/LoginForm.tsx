@@ -26,8 +26,8 @@ export default function LoginForm({
   setSuccessMessage,
 }: LoginFormProps) {
   const { login, loginWithGoogle, isLoading } = useAuth();
-  const [username, setUsername] = useState("hoangphuc");
-  const [password, setPassword] = useState("12345678");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.SubmitEvent) => {

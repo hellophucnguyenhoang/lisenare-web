@@ -66,9 +66,19 @@ export default function ListeningRetrievalModal({
   const [autoPlayAgain, setAutoPlayAgain] = useState(() =>
     getStorageBool("listening_auto_play_again"),
   );
-  const [isRevealed, setIsRevealed] = useState(() => {
+  const [showNative, setShowNative] = useState(() => {
     try {
-      const stored = localStorage.getItem("listening_show_answer");
+      const stored = localStorage.getItem("listening_show_native");
+      return stored !== null ? stored === "true" : true;
+    } catch {
+      return true;
+    }
+  });
+  const [showTarget, setShowTarget] = useState(() => {
+    try {
+      const stored =
+        localStorage.getItem("listening_show_target") ??
+        localStorage.getItem("listening_show_answer");
       return stored !== null ? stored === "true" : true;
     } catch {
       return true;
@@ -308,13 +318,22 @@ export default function ListeningRetrievalModal({
     setStorageBool("listening_auto_play_again", next);
   };
 
-  const handleToggleReveal = () => {
-    setIsRevealed((prev) => {
+  const handleToggleShowNative = useCallback(() => {
+    setShowNative((prev) => {
       const next = !prev;
+      setStorageBool("listening_show_native", next);
+      return next;
+    });
+  }, []);
+
+  const handleToggleShowTarget = useCallback(() => {
+    setShowTarget((prev) => {
+      const next = !prev;
+      setStorageBool("listening_show_target", next);
       setStorageBool("listening_show_answer", next);
       return next;
     });
-  };
+  }, []);
 
   // Prefetch when near end
   useEffect(() => {
@@ -397,9 +416,17 @@ export default function ListeningRetrievalModal({
       } else if (e.key === "s" || e.key === "S") {
         e.preventDefault();
         handleToggleShuffle();
-      } else if (e.key === "e" || e.key === "E") {
+      } else if (e.key === "n" || e.key === "N") {
         e.preventDefault();
-        handleToggleReveal();
+        handleToggleShowNative();
+      } else if (
+        e.key === "t" ||
+        e.key === "T" ||
+        e.key === "e" ||
+        e.key === "E"
+      ) {
+        e.preventDefault();
+        handleToggleShowTarget();
       } else if (e.code === "Escape") {
         e.preventDefault();
         onClose();
@@ -423,7 +450,8 @@ export default function ListeningRetrievalModal({
     onClose,
     playAudio,
     shuffleEnabled,
-    handleToggleReveal,
+    handleToggleShowNative,
+    handleToggleShowTarget,
   ]);
 
   if (!isOpen) return null;
@@ -639,65 +667,103 @@ export default function ListeningRetrievalModal({
                 )}
               </div>
 
-              {/* Native sentence  */}
-              <div className="space-y-1 w-full max-w-md">
-                <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-md text-[9px] font-bold tracking-wider uppercase">
-                  Native sentence
-                </span>
-                <h2 className="text-base sm:text-lg font-bold font-display text-on-surface leading-snug select-text">
-                  {currentBrick?.native_text}
-                </h2>
+              {/* Native sentence */}
+              <div className="w-full max-w-md flex flex-col items-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-surface-container text-on-surface-variant rounded-md text-[9px] font-bold tracking-wider uppercase">
+                    Native sentence
+                  </span>
+                  <button
+                    type="button"
+                    id="btn-listening-toggle-native"
+                    onClick={handleToggleShowNative}
+                    className="p-1 rounded-md text-outline hover:text-on-surface hover:bg-surface-container active:scale-95 transition-all cursor-pointer"
+                    title={
+                      showNative
+                        ? "Hide native sentence (N)"
+                        : "Show native sentence (N)"
+                    }
+                    aria-label={
+                      showNative
+                        ? "Hide native sentence"
+                        : "Show native sentence"
+                    }
+                  >
+                    {showNative ? (
+                      <EyeOff className="w-3.5 h-3.5" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+                {showNative ? (
+                  <h2 className="text-base sm:text-lg font-bold font-display text-on-surface leading-snug select-text">
+                    {currentBrick?.native_text}
+                  </h2>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleToggleShowNative}
+                    className="py-1 px-3 rounded-lg border border-dashed border-outline-variant/60 text-xs text-outline hover:text-on-surface hover:bg-surface-container/50 cursor-pointer transition-colors select-none"
+                  >
+                    Hidden • Click to reveal
+                  </button>
+                )}
               </div>
 
-              {/* Show/Hide answer toggle button (matching RetrievalPage flashcard) */}
-              <div className="flex items-center justify-center my-0.5">
-                <button
-                  type="button"
-                  id="btn-listening-toggle-reveal"
-                  onClick={handleToggleReveal}
-                  className={`p-3.5 rounded-full transition-all active:scale-90 shadow-xs cursor-pointer ${
-                    isRevealed
-                      ? "bg-secondary/15 text-secondary ring-2 ring-secondary/20 hover:bg-secondary/25"
-                      : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-secondary"
-                  }`}
-                  title={
-                    isRevealed
-                      ? "Hide target sentence"
-                      : "Reveal target sentence"
-                  }
-                  aria-label={
-                    isRevealed
-                      ? "Hide target sentence"
-                      : "Reveal target sentence"
-                  }
-                >
-                  {isRevealed ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-
-              {/* Revealed target content */}
-              {isRevealed && (
-                <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200 flex flex-col items-center pt-2 border-t border-outline-variant/30">
-                  <span className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-bold tracking-wider uppercase mb-1.5">
+              {/* Target sentence */}
+              <div className="w-full max-w-md flex flex-col items-center pt-3 border-t border-outline-variant/30">
+                <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                  <span className="px-2.5 py-0.5 bg-primary/10 text-primary rounded-md text-[9px] font-bold tracking-wider uppercase">
                     Target sentence
                   </span>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-display text-primary leading-tight tracking-tight select-text">
-                    {currentBrick?.target_text}
-                  </h3>
-                  {currentBrick?.target_pron && (
-                    <p className="text-xs text-outline font-mono select-none mt-1">
-                      {currentBrick.target_pron}
-                    </p>
-                  )}
+                  <button
+                    type="button"
+                    id="btn-listening-toggle-target"
+                    onClick={handleToggleShowTarget}
+                    className="p-1 rounded-md text-outline hover:text-primary hover:bg-primary/10 active:scale-95 transition-all cursor-pointer"
+                    title={
+                      showTarget
+                        ? "Hide target sentence (T or E)"
+                        : "Show target sentence (T or E)"
+                    }
+                    aria-label={
+                      showTarget
+                        ? "Hide target sentence"
+                        : "Show target sentence"
+                    }
+                  >
+                    {showTarget ? (
+                      <EyeOff className="w-3.5 h-3.5" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                  </button>
                 </div>
-              )}
+                {showTarget ? (
+                  <div className="w-full flex flex-col items-center animate-in fade-in zoom-in-95 duration-150">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-display text-primary leading-tight tracking-tight select-text">
+                      {currentBrick?.target_text}
+                    </h3>
+                    {currentBrick?.target_pron && (
+                      <p className="text-xs text-outline font-mono select-none mt-1">
+                        {currentBrick.target_pron}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleToggleShowTarget}
+                    className="py-1.5 px-3.5 rounded-lg border border-dashed border-outline-variant/60 text-xs text-outline hover:text-primary hover:border-primary/40 hover:bg-primary/5 cursor-pointer transition-colors select-none"
+                  >
+                    Hidden • Click to reveal
+                  </button>
+                )}
+              </div>
 
               {/* Context if available */}
-              {currentBrick?.context && (
+              {currentBrick?.context && showTarget && (
                 <p className="text-xs text-on-surface-variant/80 italic mt-2 pt-2 border-t border-outline-variant/20 w-full max-w-md select-text">
                   "{currentBrick.context}"
                 </p>
@@ -792,8 +858,8 @@ export default function ListeningRetrievalModal({
               {/* Hint bar */}
               <div className="text-[10px] text-outline/80 text-center select-none hidden sm:block">
                 {playbackMode === "auto"
-                  ? "Auto-advancing upon audio completion • Space to pause • E to show/hide • S to shuffle"
-                  : "Manual mode • Press next or right arrow to advance • Space to play • E to show/hide"}
+                  ? "Auto-advancing upon audio completion • Space to pause • N for native • T for target"
+                  : "Manual mode • Press next or right arrow to advance • Space to play • N for native • T for target"}
               </div>
             </div>
           )}
