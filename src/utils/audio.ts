@@ -108,35 +108,78 @@ export const playBrickAudio = async (
 };
 
 /**
- * Cross-browser helper to obtain an audio MediaStream.
- * Handles modern navigator.mediaDevices as well as legacy vendor-prefixed getUserMedia.
+ * Obtains an audio MediaStream with automatic gain control, hardware noise suppression,
+ * and a software gain booster with dynamic range compression to match standard TTS/studio loudness.
  */
 export async function getAudioMediaStream(): Promise<MediaStream> {
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    return navigator.mediaDevices.getUserMedia({ audio: true });
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const nav = navigator as any;
-  const legacyGetUserMedia =
-    nav.getUserMedia ||
-    nav.webkitGetUserMedia ||
-    nav.mozGetUserMedia ||
-    nav.msGetUserMedia;
-
-  if (legacyGetUserMedia) {
-    return new Promise((resolve, reject) => {
-      legacyGetUserMedia.call(navigator, { audio: true }, resolve, reject);
-    });
-  }
-
   if (typeof window !== "undefined" && window.isSecureContext === false) {
     throw new Error(
       "Microphone access requires a secure context (HTTPS or localhost).",
     );
   }
 
-  throw new Error("Microphone is not supported in this browser.");
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("Microphone is not supported in this browser.");
+  }
+
+  const rawStream = await navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+    },
+  });
+
+  try {
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtx) return rawStream;
+
+    const ctx = new AudioCtx();
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+
+    const source = ctx.createMediaStreamSource(rawStream);
+
+    // 1. Boost microphone gain (3.2x / +10 dB) to match mastered TTS broadcast volume
+    const gainNode = ctx.createGain();
+    gainNode.gain.setValueAtTime(3.2, ctx.currentTime);
+
+    // 2. Dynamics compressor to transparently tame peaks and prevent clipping
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.setValueAtTime(-14, ctx.currentTime);
+    compressor.knee.setValueAtTime(12, ctx.currentTime);
+    compressor.ratio.setValueAtTime(5, ctx.currentTime);
+    compressor.attack.setValueAtTime(0.003, ctx.currentTime);
+    compressor.release.setValueAtTime(0.08, ctx.currentTime);
+
+    // 3. Output destination stream for MediaRecorder
+    const destination = ctx.createMediaStreamDestination();
+
+    source.connect(gainNode);
+    gainNode.connect(compressor);
+    compressor.connect(destination);
+
+    const boostedStream = destination.stream;
+
+    // Ensure stopping the boosted stream's tracks terminates hardware mic capture and frees AudioContext
+    boostedStream.getAudioTracks().forEach((boostedTrack) => {
+      const origStop = boostedTrack.stop.bind(boostedTrack);
+      boostedTrack.stop = () => {
+        origStop();
+        rawStream.getTracks().forEach((t) => t.stop());
+        void ctx.close();
+      };
+    });
+
+    return boostedStream;
+  } catch (err) {
+    console.warn("Could not apply audio boost pipeline, using raw stream:", err);
+    return rawStream;
+  }
 }
 
 /**
@@ -160,18 +203,20 @@ export function getSupportedAudioMimeType(): string {
 }
 
 /**
- * Creates a MediaRecorder instance configured with supported MIME types.
+ * Creates a MediaRecorder instance configured with supported MIME types and high-quality speech bitrate.
  */
 export function createMediaRecorder(stream: MediaStream): MediaRecorder {
   const mimeType = getSupportedAudioMimeType();
-  if (mimeType) {
-    try {
-      return new MediaRecorder(stream, { mimeType });
-    } catch {
-      return new MediaRecorder(stream);
-    }
+  const options: MediaRecorderOptions = {
+    audioBitsPerSecond: 128000,
+    ...(mimeType ? { mimeType } : {}),
+  };
+
+  try {
+    return new MediaRecorder(stream, options);
+  } catch {
+    return new MediaRecorder(stream);
   }
-  return new MediaRecorder(stream);
 }
 
 /**
