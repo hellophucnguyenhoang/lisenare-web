@@ -209,7 +209,7 @@ export default function BrickTextInputs({
               </div>
             ) : (
               <span
-                className="inline-flex items-center px-2 py-0.5 rounded-lg bg-surface-container/60 border border-outline-variant/60 text-sm select-none leading-none shadow-2xs"
+                className="inline-flex items-center text-sm select-none leading-none"
                 title={`Target language: ${selectedLangOption.name}`}
                 aria-label={`Target language: ${selectedLangOption.name}`}
               >

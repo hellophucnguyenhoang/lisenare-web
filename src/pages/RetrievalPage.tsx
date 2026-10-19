@@ -8,7 +8,12 @@ import {
   createMediaRecorder,
   getSupportedAudioMimeType,
 } from "@/utils/audio";
-import { transcribeAudio, compareSentences } from "@/api/evaluation";
+import {
+  transcribeAudio,
+  compareSentences,
+  createBrickReview,
+  type Rating,
+} from "@/api/evaluation";
 import RetrievalHeader from "@/components/retrieval/RetrievalHeader";
 import RetrievalFlashcard from "@/components/retrieval/RetrievalFlashcard";
 import RetrievalInputSection from "@/components/retrieval/RetrievalInputSection";
@@ -84,6 +89,8 @@ export default function RetrievalPage({
   const [hasSubmittedThisTurn, setHasSubmittedThisTurn] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const firstScoreRef = useRef<number | null>(null);
   const [typedAnswer, setTypedAnswer] = useState("");
   const [showTypeInput, setShowTypeInput] = useState<boolean>(() => {
     try {
@@ -109,7 +116,6 @@ export default function RetrievalPage({
 
   const [evaluationResult, setEvaluationResult] = useState<{
     score: number;
-    passed: boolean;
     targetText: string;
     learnerText: string;
   } | null>(null);
@@ -155,6 +161,7 @@ export default function RetrievalPage({
     setHasRevealedAnswer(false);
     setHasListenedTargetAudio(false);
     setHasSubmittedThisTurn(false);
+    firstScoreRef.current = null;
     setTypedAnswer("");
     setEvaluationResult(null);
     setLearnerAudioUrl(null);
@@ -284,30 +291,21 @@ export default function RetrievalPage({
         // 1. Transcribe audio via /audio/transcripts
         const transcript = await transcribeAudio(blob);
 
-        // 2. Determine whether review_base should be included (only on the first submit of this turn)
-        const reviewBase = !hasSubmittedThisTurn
-          ? {
-              brick_id: activeBrick.id,
-              is_answer_revealed: isAnswerRevealed,
-              learner_target_text: transcript || null,
-            }
-          : null;
-
-        setHasSubmittedThisTurn(true);
-
-        // 3. Compare transcript with target text via /text/sentence-comparison
+        // 2. Compare transcript with target text via /text/sentence-comparison
         const res = await compareSentences({
           sentence1: transcript || "",
           sentence2: activeBrick.targetText,
-          review_base: reviewBase,
         });
 
+        if (firstScoreRef.current === null) {
+          firstScoreRef.current = res.score;
+        }
+
+        setHasSubmittedThisTurn(true);
         setIsRevealed(true);
         setHasRevealedAnswer(true);
-        const passed = res.score >= (res.threshold ?? 0.8);
         setEvaluationResult({
           score: res.score,
-          passed,
           targetText: activeBrick.targetText,
           learnerText: transcript || "",
         });
@@ -328,29 +326,20 @@ export default function RetrievalPage({
 
     setIsEvaluating(true);
     try {
-      // Determine whether review_base should be included (only on the first submit of this turn)
-      const reviewBase = !hasSubmittedThisTurn
-        ? {
-            brick_id: activeBrick.id,
-            is_answer_revealed: isAnswerRevealed,
-            learner_target_text: typedAnswer.trim(),
-          }
-        : null;
-
-      setHasSubmittedThisTurn(true);
-
       const res = await compareSentences({
         sentence1: typedAnswer.trim(),
         sentence2: activeBrick.targetText,
-        review_base: reviewBase,
       });
 
+      if (firstScoreRef.current === null) {
+        firstScoreRef.current = res.score;
+      }
+
+      setHasSubmittedThisTurn(true);
       setIsRevealed(true);
       setHasRevealedAnswer(true);
-      const passed = res.score >= (res.threshold ?? 0.8);
       setEvaluationResult({
         score: res.score,
-        passed,
         targetText: activeBrick.targetText,
         learnerText: typedAnswer.trim(),
       });
@@ -364,6 +353,7 @@ export default function RetrievalPage({
 
   const handleNext = async () => {
     setEvaluationResult(null);
+    firstScoreRef.current = null;
     if (onIncrementFinishedCount) {
       onIncrementFinishedCount();
     } else {
@@ -385,6 +375,29 @@ export default function RetrievalPage({
       if (!result.data) {
         toast.success("Session completed! Great job!");
       }
+    }
+  };
+
+  const handleSubmitReview = async (rating: Rating) => {
+    if (!activeBrick || isSubmittingReview) return;
+    setIsSubmittingReview(true);
+    try {
+      await createBrickReview({
+        brick_id: activeBrick.id,
+        rating,
+        is_answer_revealed: isAnswerRevealed,
+        learner_target_text: evaluationResult?.learnerText || null,
+        first_score: firstScoreRef.current ?? evaluationResult?.score ?? 0,
+      });
+      qc.invalidateQueries({ queryKey: ["brick-memories"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+      await handleNext();
+    } catch (err) {
+      console.error("Failed to submit review:", err);
+      toast.error("Failed to save review. Please try again.");
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -525,21 +538,21 @@ export default function RetrievalPage({
           onStartRecording={handleStartRecording}
           onSubmitRecording={handleSubmitRecording}
           onCancelRecording={handleCancelRecording}
-          showNextButton={Boolean(evaluationResult?.passed)}
+          showNextButton={false}
           onNext={handleNext}
           onOpenInstructions={() => setShowInstructions(true)}
         />
       </div>
 
-      {/* Minimal scoreboard & Evaluation dialog */}
+      {/* Evaluation dialog */}
       {evaluationResult && (
         <RetrievalEvaluationModal
           score={evaluationResult.score}
-          passed={evaluationResult.passed}
           targetText={evaluationResult.targetText}
           learnerText={evaluationResult.learnerText}
           onClose={() => setEvaluationResult(null)}
-          onNext={handleNext}
+          onSubmitReview={handleSubmitReview}
+          isSubmitting={isSubmittingReview}
           isLoadingTargetAudio={isLoadingAudio}
           onPlayTargetAudio={() => handlePlayAudio()}
           onPlayLearnerAudio={() => playShortAudio(learnerAudioUrl)}

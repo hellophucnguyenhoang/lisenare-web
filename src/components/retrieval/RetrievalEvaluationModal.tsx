@@ -1,12 +1,14 @@
-import { Volume2, Play, ArrowRight, X, RotateCcw, Loader2 } from "lucide-react";
+import { useEffect } from "react";
+import { Volume2, Play, X, Loader2 } from "lucide-react";
+import { type Rating } from "@/api/evaluation";
 
 interface RetrievalEvaluationModalProps {
   score: number;
-  passed: boolean;
   targetText: string;
   learnerText: string;
   onClose: () => void;
-  onNext: () => void;
+  onSubmitReview: (rating: Rating) => void | Promise<void>;
+  isSubmitting?: boolean;
   onPlayTargetAudio: () => void;
   onPlayLearnerAudio?: () => void;
   hasLearnerAudio?: boolean;
@@ -15,11 +17,11 @@ interface RetrievalEvaluationModalProps {
 
 export default function RetrievalEvaluationModal({
   score,
-  passed,
   targetText,
   learnerText,
   onClose,
-  onNext,
+  onSubmitReview,
+  isSubmitting = false,
   onPlayTargetAudio,
   onPlayLearnerAudio,
   hasLearnerAudio = false,
@@ -27,38 +29,57 @@ export default function RetrievalEvaluationModal({
 }: RetrievalEvaluationModalProps) {
   const percentage = Math.round(score * 100);
 
+  // Keyboard shortcut listeners (1-4 for ratings, Escape to close)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      if (isSubmitting) return;
+
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "1") {
+        onSubmitReview(1);
+      } else if (e.key === "2") {
+        onSubmitReview(2);
+      } else if (e.key === "3") {
+        onSubmitReview(3);
+      } else if (e.key === "4") {
+        onSubmitReview(4);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, onSubmitReview, isSubmitting]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/50 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 w-full max-w-md p-6 flex flex-col items-center text-center relative animate-in zoom-in-95 duration-300">
-        {/* Top close icon */}
-        <button
-          type="button"
-          id="btn-close-evaluation"
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface-container text-on-surface-variant/70 hover:text-on-surface transition-colors cursor-pointer"
-          title="Close"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {/* Minimal score circle */}
-        <div className="flex items-center justify-center my-3">
-          <div
-            className={`w-24 h-24 rounded-full border-4 flex flex-col items-center justify-center shadow-xs transition-transform ${
-              passed
-                ? "border-primary bg-primary/5 text-primary"
-                : "border-amber-500 bg-amber-500/10 text-amber-600"
-            }`}
-          >
-            <span className="text-2xl font-bold font-display tracking-tight">
-              {percentage}%
-            </span>
+      <div className="bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 w-full max-w-md p-5 sm:p-6 flex flex-col items-center animate-in zoom-in-95 duration-300">
+        {/* Top header row: AI reference score on the left, close button on the right */}
+        <div className="w-full flex items-center justify-between -mt-1 mb-2">
+          <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/80">
+            <span>AI reference score:</span>
+            <span className="font-semibold text-on-surface-variant">{percentage}%</span>
           </div>
+          <button
+            type="button"
+            id="btn-close-evaluation"
+            onClick={onClose}
+            className="-mr-1 p-1.5 rounded-full hover:bg-surface-container text-on-surface-variant/70 hover:text-on-surface transition-colors cursor-pointer"
+            title="Close"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Comparison cards: Target and Learner sentences with audio buttons */}
-        <div className="w-full space-y-3 my-3 text-left">
+        <div className="w-full space-y-3 mb-2 text-left">
           {/* Target sentence card */}
           <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs">
             <div className="space-y-0.5 flex-1 min-w-0">
@@ -115,29 +136,54 @@ export default function RetrievalEvaluationModal({
           </div>
         </div>
 
-        {/* Action button: Next brick only if score >= 0.8 */}
-        <div className="w-full pt-2">
-          {passed ? (
-            <button
-              type="button"
-              id="btn-eval-next-brick"
-              onClick={onNext}
-              className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-bold shadow-md hover:bg-primary/95 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
-            >
-              <span>Next brick</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              id="btn-eval-retry"
-              onClick={onClose}
-              className="w-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface py-3.5 rounded-2xl font-bold border border-outline-variant/60 active:scale-98 transition-all flex items-center justify-center gap-2 text-sm cursor-pointer"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Try again</span>
-            </button>
-          )}
+        {/* Question: How easily did you recall this sentence? */}
+        <div className="w-full mt-3 mb-2 text-center">
+          <p className="text-sm font-semibold text-on-surface">
+            How easily did you recall this sentence?
+          </p>
+        </div>
+
+        {/* 4 Rating Buttons: Forget, Hard, Good, Easy */}
+        <div className="grid grid-cols-4 gap-2 w-full mt-1">
+          <button
+            type="button"
+            id="btn-rating-forget"
+            onClick={() => onSubmitReview(1)}
+            disabled={isSubmitting}
+            className="py-3 px-2 rounded-2xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <span>Forget</span>
+          </button>
+
+          <button
+            type="button"
+            id="btn-rating-hard"
+            onClick={() => onSubmitReview(2)}
+            disabled={isSubmitting}
+            className="py-3 px-2 rounded-2xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <span>Hard</span>
+          </button>
+
+          <button
+            type="button"
+            id="btn-rating-good"
+            onClick={() => onSubmitReview(3)}
+            disabled={isSubmitting}
+            className="py-3 px-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <span>Good</span>
+          </button>
+
+          <button
+            type="button"
+            id="btn-rating-easy"
+            onClick={() => onSubmitReview(4)}
+            disabled={isSubmitting}
+            className="py-3 px-2 rounded-2xl bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <span>Easy</span>
+          </button>
         </div>
       </div>
     </div>

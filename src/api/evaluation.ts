@@ -4,18 +4,35 @@ export interface TranscribeAudioResponse {
   transcript: string;
 }
 
-export interface ReviewBase {
+export type Rating = 1 | 2 | 3 | 4;
+
+export interface ReviewCreate {
   brick_id: number;
+  rating: Rating;
   reviewed_at?: string;
   is_answer_revealed?: boolean;
   learner_target_text?: string | null;
   learner_target_audio_path?: string | null;
+  first_score?: number;
+}
+
+export interface ReviewResponse {
+  total_reviews: number;
+}
+
+export async function createBrickReview(
+  data: ReviewCreate,
+): Promise<ReviewResponse> {
+  return request<ReviewResponse>("/brick-reviews", {
+    method: "POST",
+    body: data as unknown as Record<string, unknown>,
+  });
 }
 
 export interface SentenceCompareRequest {
   sentence1: string;
   sentence2: string;
-  review_base?: ReviewBase | null;
+  lang?: string | null;
 }
 
 export interface SentenceCompareResponse {
@@ -42,7 +59,7 @@ export async function compareSentences(
     body: {
       sentence1: params.sentence1,
       sentence2: params.sentence2,
-      review_base: params.review_base ?? null,
+      ...(params.lang ? { lang: params.lang } : {}),
     },
   });
 }
