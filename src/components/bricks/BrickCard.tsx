@@ -94,9 +94,9 @@ export default function BrickCard({
                     }
                     setIsMenuOpen(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+                  className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-error cursor-pointer"
                 >
-                  <RotateCcw className="w-4 h-4 text-outline" />
+                  <RotateCcw className="w-4 h-4 text-error" />
                   <span>Forget brick</span>
                 </button>
               )}

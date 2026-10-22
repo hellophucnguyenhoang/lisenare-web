@@ -54,6 +54,14 @@ export default function TotalLearningLineChart({
 
   const labelStep = Math.max(1, Math.ceil(coords.length / 8));
 
+  const activeCoord =
+    hoveredPointIndex !== null && coords[hoveredPointIndex]
+      ? coords[hoveredPointIndex]
+      : null;
+  const tooltipXPercent = activeCoord
+    ? Math.min(Math.max((activeCoord.x / vbWidth) * 100, 0), 100)
+    : 0;
+
   return (
     <div className="relative w-full pt-1">
       <svg
@@ -194,16 +202,17 @@ export default function TotalLearningLineChart({
       </svg>
 
       {/* Floating tooltip */}
-      {hoveredPointIndex !== null && coords[hoveredPointIndex] && (
+      {activeCoord && (
         <div
-          className="absolute -top-5 z-20 pointer-events-none -translate-x-1/2 bg-on-surface text-surface text-[11px] font-bold px-2 py-0.5 rounded-lg shadow-md whitespace-nowrap transition-all duration-75"
+          className="absolute -top-5 z-20 pointer-events-none bg-on-surface text-surface text-[11px] font-bold px-2.5 py-0.5 rounded-lg shadow-md whitespace-nowrap transition-all duration-75"
           style={{
-            left: `${(coords[hoveredPointIndex].x / vbWidth) * 100}%`,
+            left: `${tooltipXPercent.toFixed(2)}%`,
+            transform: `translateX(-${tooltipXPercent.toFixed(2)}%)`,
           }}
         >
           <span>
-            {coords[hoveredPointIndex].point.value} bricks on{" "}
-            {formatTooltipDate(coords[hoveredPointIndex].point.date)}
+            {activeCoord.point.value} bricks on{" "}
+            {formatTooltipDate(activeCoord.point.date)}
           </span>
         </div>
       )}

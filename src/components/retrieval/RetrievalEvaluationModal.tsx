@@ -150,9 +150,10 @@ export default function RetrievalEvaluationModal({
             id="btn-rating-forget"
             onClick={() => onSubmitReview(1)}
             disabled={isSubmitting}
-            className="py-3 px-2 rounded-2xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="py-2.5 px-1.5 rounded-2xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <span>Forget</span>
+            <span className="font-bold text-xs sm:text-sm">Forget</span>
+            <span className="text-[10px] font-normal text-white/80 leading-tight">wrong</span>
           </button>
 
           <button
@@ -160,9 +161,10 @@ export default function RetrievalEvaluationModal({
             id="btn-rating-hard"
             onClick={() => onSubmitReview(2)}
             disabled={isSubmitting}
-            className="py-3 px-2 rounded-2xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="py-2.5 px-1.5 rounded-2xl bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <span>Hard</span>
+            <span className="font-bold text-xs sm:text-sm">Hard</span>
+            <span className="text-[10px] font-normal text-white/80 leading-tight">right</span>
           </button>
 
           <button
@@ -170,9 +172,10 @@ export default function RetrievalEvaluationModal({
             id="btn-rating-good"
             onClick={() => onSubmitReview(3)}
             disabled={isSubmitting}
-            className="py-3 px-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="py-2.5 px-1.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <span>Good</span>
+            <span className="font-bold text-xs sm:text-sm">Good</span>
+            <span className="text-[10px] font-normal text-white/80 leading-tight">right</span>
           </button>
 
           <button
@@ -180,9 +183,10 @@ export default function RetrievalEvaluationModal({
             id="btn-rating-easy"
             onClick={() => onSubmitReview(4)}
             disabled={isSubmitting}
-            className="py-3 px-2 rounded-2xl bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="py-2.5 px-1.5 rounded-2xl bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-xs disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <span>Easy</span>
+            <span className="font-bold text-xs sm:text-sm">Easy</span>
+            <span className="text-[10px] font-normal text-white/80 leading-tight">right</span>
           </button>
         </div>
       </div>

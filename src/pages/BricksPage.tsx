@@ -363,10 +363,10 @@ export default function BricksPage({
             <button
               type="button"
               onClick={() => setShowListeningModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 hover:bg-primary/15 border border-primary/30 rounded-xl text-xs font-bold text-primary transition-all active:scale-95 shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-low hover:bg-surface-container border border-outline-variant/60 rounded-xl text-xs font-bold text-on-surface transition-all active:scale-95 shadow-2xs cursor-pointer"
               title={`Listen to "${selectedIsland.name}"`}
             >
-              <Headphones className="w-3.5 h-3.5" />
+              <Headphones className="w-3.5 h-3.5 text-primary" />
               <span>Listen</span>
             </button>
 
@@ -583,15 +583,19 @@ export default function BricksPage({
             type="button"
             id="btn-listen-bricks"
             onClick={() => setShowListeningModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="p-2.5 bg-surface-container-lowest hover:bg-surface-container-high border border-outline-variant/60 hover:border-primary/40 text-on-surface rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer flex items-center justify-center"
             title={
               selectedIsland
                 ? `Listen to "${selectedIsland.name}"`
                 : "Listen to all bricks"
             }
+            aria-label={
+              selectedIsland
+                ? `Listen to ${selectedIsland.name}`
+                : "Listen to all bricks"
+            }
           >
             <Headphones className="w-4 h-4 text-primary" />
-            <span className="hidden sm:inline">Listen bricks</span>
           </button>
 
           {/* Sort & Filter button (opens modal) */}

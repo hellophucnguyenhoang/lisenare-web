@@ -20,13 +20,20 @@ export default function ReviewsBarChart({
   }, [points]);
 
   return (
-    <div className="overflow-x-auto pb-1">
+    <div className="overflow-x-auto pt-2 pb-1">
       <div className="flex items-end justify-between gap-1 sm:gap-2 h-36 pt-6 px-1 min-w-full">
         {points.map((point, index) => {
           const heightPercent =
             maxValue > 0 ? (point.value / maxValue) * 100 : 0;
           const hasValue = point.value > 0;
           const isSelected = selectedColumnIndex === index;
+          const isFirst = index === 0;
+          const isLast = index === points.length - 1;
+          const horizontalAlign = isFirst
+            ? "left-0"
+            : isLast
+              ? "right-0"
+              : "left-1/2 -translate-x-1/2";
           const showLabel =
             isSelected ||
             points.length <= 14 ||
@@ -42,7 +49,7 @@ export default function ReviewsBarChart({
             >
               {/* Tooltip value */}
               <div
-                className={`absolute -top-6.5 left-1/2 -translate-x-1/2 transition-all duration-150 pointer-events-none bg-on-surface text-surface text-[10px] font-bold px-2 py-0.5 rounded shadow-md whitespace-nowrap z-20 ${
+                className={`absolute -top-5 ${horizontalAlign} transition-all duration-150 pointer-events-none bg-on-surface text-surface text-[10px] font-bold px-2 py-0.5 rounded shadow-md whitespace-nowrap z-20 ${
                   isSelected
                     ? "opacity-100 scale-100 ring-2 ring-primary/40 -translate-y-0.5"
                     : "opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100"

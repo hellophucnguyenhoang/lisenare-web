@@ -230,9 +230,23 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         <section className="pt-6 pb-12 text-center space-y-3">
           <button
             type="button"
+            onClick={handleDelete}
+            className="w-full flex items-center justify-center gap-2 py-4 text-error font-bold text-sm border border-error/20 bg-error/5 hover:bg-error/10 rounded-2xl transition-all active:scale-99 shadow-xs cursor-pointer"
+          >
+            <Trash2 className="w-5 h-5" />
+            <span>Delete brick</span>
+          </button>
+        </section>
+      </main>
+
+      {/* Sticky bottom bar */}
+      <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-outline-variant/30 safe-bottom z-40 p-4">
+        <div className="max-w-lg mx-auto flex flex-col">
+          <button
+            type="button"
             onClick={handleSave}
             disabled={!isFormValid || updateBrick.isPending}
-            className="w-full h-14 bg-primary text-on-primary rounded-2xl font-bold text-sm shadow-md shadow-primary/10 hover:shadow-lg active:scale-99 transition-all flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none cursor-pointer"
+            className="w-full h-14 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-md shadow-primary/10 hover:shadow-lg active:scale-99 transition-all flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none cursor-pointer"
           >
             {updateBrick.isPending ? (
               <>
@@ -246,17 +260,8 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
               </>
             )}
           </button>
-
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="w-full flex items-center justify-center gap-2 py-4 text-error font-bold text-sm border border-error/20 bg-error/5 hover:bg-error/10 rounded-2xl transition-all active:scale-99 shadow-xs cursor-pointer"
-          >
-            <Trash2 className="w-5 h-5" />
-            <span>Delete brick</span>
-          </button>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
 }
