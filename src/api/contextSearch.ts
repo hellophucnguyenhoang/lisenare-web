@@ -19,7 +19,7 @@ export async function searchContextBricks(
   params: string | ContextSearchParams,
 ): Promise<BrickContextSearch[]> {
   if (typeof params === "string") {
-    return request<BrickContextSearch[]>("/context-search/bricks-search", {
+    return request<BrickContextSearch[]>("/search/bricks", {
       method: "POST",
       body: { query: params },
     });
@@ -48,7 +48,7 @@ export async function searchContextBricks(
     body.kind = kind;
   }
 
-  return request<BrickContextSearch[]>("/context-search/bricks-search", {
+  return request<BrickContextSearch[]>("/search/bricks", {
     method: "POST",
     body,
   });

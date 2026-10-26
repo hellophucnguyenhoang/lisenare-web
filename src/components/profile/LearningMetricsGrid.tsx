@@ -185,7 +185,13 @@ export default function LearningMetricsGrid({
         </div>
 
         {/* Next due / Overdue */}
-        <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-between text-center shadow-xs relative">
+        <div
+          className={`rounded-2xl p-3 sm:p-4 flex flex-col items-center justify-between text-center transition-all relative ${
+            isOverdue
+              ? "bg-rose-500/10 dark:bg-rose-950/30 border-2 border-rose-500/50 dark:border-rose-500/60 shadow-sm shadow-rose-500/10 ring-1 ring-rose-500/20"
+              : "bg-surface-container-lowest border border-outline-variant/60 shadow-xs"
+          }`}
+        >
           <div className="absolute top-2.5 right-2.5">
             <InfoTooltip
               text={
@@ -195,13 +201,24 @@ export default function LearningMetricsGrid({
               }
             />
           </div>
-          <Clock
-            className={`w-6 h-6 mb-1 ${
-              isOverdue
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-emerald-600"
-            }`}
-          />
+
+          <div className="relative mb-1">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                isOverdue
+                  ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                  : "bg-emerald-500/10 text-emerald-600"
+              }`}
+            >
+              <Clock className="w-4.5 h-4.5" />
+            </div>
+            {isOverdue && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600" />
+              </span>
+            )}
+          </div>
 
           <button
             type="button"
@@ -212,16 +229,16 @@ export default function LearningMetricsGrid({
               .join(", ")}) - ${isOverdue ? "Overdue time" : "Remaining time"}`}
           >
             <span
-              className={`text-xl font-bold font-display text-on-surface transition-colors ${
+              className={`text-xl font-bold font-display transition-colors ${
                 isOverdue
-                  ? "group-hover:text-rose-700 dark:group-hover:text-rose-300"
-                  : "group-hover:text-emerald-700 dark:group-hover:text-emerald-400"
+                  ? "text-rose-600 dark:text-rose-400 font-extrabold group-hover:text-rose-700 dark:group-hover:text-rose-300"
+                  : "text-on-surface group-hover:text-emerald-700 dark:group-hover:text-emerald-400"
               }`}
             >
               {isLoading ? "..." : formattedNextDue}
             </span>
             <span
-              className={`text-xs font-semibold ${
+              className={`text-xs font-bold ${
                 isOverdue
                   ? "text-rose-600 dark:text-rose-400"
                   : "text-emerald-600"
@@ -232,7 +249,13 @@ export default function LearningMetricsGrid({
           </button>
 
           {/* Dynamic unit switcher (Adaptively shows 3 units from days, hours, mins, secs) */}
-          <div className="inline-flex items-center gap-0.5 p-0.5 bg-surface-container rounded-lg my-1 border border-outline-variant/40">
+          <div
+            className={`inline-flex items-center gap-0.5 p-0.5 rounded-lg my-1 border transition-colors ${
+              isOverdue
+                ? "bg-rose-500/10 border-rose-500/25 dark:bg-rose-950/40"
+                : "bg-surface-container border-outline-variant/40"
+            }`}
+          >
             {availableUnits.map((unit) => (
               <button
                 key={unit}
@@ -241,9 +264,11 @@ export default function LearningMetricsGrid({
                 className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold transition-all cursor-pointer ${
                   activeUnit === unit
                     ? isOverdue
-                      ? "bg-surface-container-lowest text-rose-700 dark:text-rose-300 shadow-2xs font-extrabold"
+                      ? "bg-rose-600 text-white shadow-xs font-black"
                       : "bg-surface-container-lowest text-emerald-700 dark:text-emerald-300 shadow-2xs font-extrabold"
-                    : "text-outline hover:text-on-surface"
+                    : isOverdue
+                      ? "text-rose-700/70 dark:text-rose-300/70 hover:text-rose-900 dark:hover:text-rose-100"
+                      : "text-outline hover:text-on-surface"
                 }`}
                 title={UNIT_TITLE[unit]}
               >
@@ -252,9 +277,15 @@ export default function LearningMetricsGrid({
             ))}
           </div>
 
-          <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
-            {isOverdue ? "Overdue" : "Next due"}
-          </span>
+          {isOverdue ? (
+            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30">
+              Overdue
+            </span>
+          ) : (
+            <span className="text-[10px] text-outline font-semibold uppercase tracking-wider">
+              Next due
+            </span>
+          )}
         </div>
       </div>
     </section>

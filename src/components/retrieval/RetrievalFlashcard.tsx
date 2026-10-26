@@ -140,26 +140,32 @@ export default function RetrievalFlashcard({
           </span>
           <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-primary mb-1 font-display flex flex-wrap justify-center gap-x-1.5 leading-snug">
             {wordsWithTiming.map(({ word, segment }, idx) => (
-              <span
+              <button
                 key={idx}
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (isLoadingAudio) return;
                   onPlayAudio(segment?.start_sec);
                 }}
-                className={`transition-all select-text ${
+                className={`transition-all bg-transparent p-0 border-0 font-inherit text-inherit inline-block cursor-pointer select-text touch-manipulation ${
                   isLoadingAudio
                     ? "opacity-60 cursor-not-allowed pointer-events-none"
-                    : "cursor-pointer hover:underline hover:opacity-80 active:opacity-60"
+                    : "hover:underline hover:opacity-80 active:opacity-60"
                 }`}
                 title={
                   segment
                     ? `Play from ${segment.start_sec.toFixed(2)}s`
                     : "Play word"
                 }
+                aria-label={
+                  segment
+                    ? `Play "${word}" from ${segment.start_sec.toFixed(2)}s`
+                    : `Play "${word}"`
+                }
               >
                 {word}
-              </span>
+              </button>
             ))}
           </h3>
           {activeBrick.targetPron && (

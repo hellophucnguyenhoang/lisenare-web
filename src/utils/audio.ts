@@ -1,7 +1,9 @@
 import { getBrickAudioUrl } from "@/api/bricks";
 
-// Global reference to the currently playing audio element
+// Global reference to the currently playing audio element and its source URL
 let activeAudio: HTMLAudioElement | null = null;
+let activeAudioUrl: string | null = null;
+const brickAudioUrlCache = new Map<number, string>();
 
 /**
  * Immediately stops and cleans up any currently playing audio clip.
@@ -16,12 +18,14 @@ export const stopShortAudio = (): void => {
       // Ignore pause errors
     }
     activeAudio = null;
+    activeAudioUrl = null;
   }
 };
 
 /**
  * Instantiates and plays a short audio clip from a direct URL, blob URL, or brick ID.
  * Automatically stops and cancels any previously playing audio to prevent audio overlap.
+ * Fully supports seeking to a specific start time across desktop and mobile web browsers.
  */
 export const playShortAudio = (
   audioUrlOrBrickId: string | number | null | undefined,
@@ -35,55 +39,133 @@ export const playShortAudio = (
     return;
   }
 
-  // Stop any previously playing audio instance immediately
-  stopShortAudio();
+  const resolvedUrl = resolveAudioUrl(String(audioUrlOrBrickId));
+  const hasSeekTime = typeof startTimeSec === "number" && startTimeSec > 0;
+  const targetSeek = hasSeekTime ? (startTimeSec as number) : 0;
 
-  const audio = new Audio(audioUrlOrBrickId);
-  activeAudio = audio;
+  let audio = activeAudio;
+  const isSameAudio =
+    audio &&
+    activeAudioUrl === resolvedUrl &&
+    audio.src &&
+    !audio.error;
 
-  const startPlayback = () => {
-    // If another audio was triggered before this one started, abort
-    if (activeAudio !== audio) return;
+  if (!isSameAudio) {
+    stopShortAudio();
+    audio = new Audio(resolvedUrl);
+    audio.preload = "auto";
+    activeAudio = audio;
+    activeAudioUrl = resolvedUrl;
+  } else if (audio) {
+    try {
+      audio.pause();
+    } catch {
+      // ignore
+    }
+  }
 
-    if (typeof startTimeSec === "number" && startTimeSec >= 0) {
+  if (!audio) return;
+
+  const currentAudio = audio;
+
+  const applySeek = () => {
+    if (activeAudio !== currentAudio) return;
+    if (hasSeekTime) {
       try {
-        audio.currentTime = startTimeSec;
+        if (Math.abs(currentAudio.currentTime - targetSeek) > 0.08) {
+          currentAudio.currentTime = targetSeek;
+        }
       } catch (e) {
         console.warn("Could not set audio currentTime:", e);
       }
     }
-
-    audio.play().catch((error) => {
-      // Don't log abort errors if user intentionally cancelled by playing another audio
-      if (error?.name !== "AbortError") {
-        console.error("Audio playback failed:", error);
-      }
-      onEnded?.();
-    });
   };
 
-  audio.onended = () => {
-    if (activeAudio === audio) {
+  const handleEnded = () => {
+    if (activeAudio === currentAudio) {
       activeAudio = null;
+      activeAudioUrl = null;
     }
     onEnded?.();
   };
 
-  if (typeof startTimeSec === "number" && startTimeSec > 0) {
-    if (audio.readyState >= 1) {
+  currentAudio.onended = handleEnded;
+
+  const startPlayback = () => {
+    if (activeAudio !== currentAudio) return;
+
+    applySeek();
+
+    const playPromise = currentAudio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          if (activeAudio !== currentAudio) return;
+          // In mobile Safari / WebKit, setting currentTime before or right as play() starts
+          // often gets reset back to 0. Re-apply seek once the play pipeline is active.
+          if (
+            hasSeekTime &&
+            Math.abs(currentAudio.currentTime - targetSeek) > 0.15
+          ) {
+            applySeek();
+          }
+        })
+        .catch((error) => {
+          if (error?.name !== "AbortError") {
+            console.error("Audio playback failed:", error);
+          }
+          handleEnded();
+        });
+    }
+
+    if (hasSeekTime) {
+      // Fallback listeners for mobile browsers where playback starts at 0 before seeking
+      const ensureSeekOnPlay = () => {
+        if (activeAudio !== currentAudio) return;
+        if (
+          Math.abs(currentAudio.currentTime - targetSeek) > 0.15 &&
+          currentAudio.currentTime < targetSeek
+        ) {
+          applySeek();
+        }
+      };
+
+      currentAudio.addEventListener("playing", ensureSeekOnPlay, { once: true });
+      currentAudio.addEventListener("timeupdate", ensureSeekOnPlay, {
+        once: true,
+      });
+
+      setTimeout(ensureSeekOnPlay, 60);
+      setTimeout(ensureSeekOnPlay, 180);
+    }
+  };
+
+  if (hasSeekTime) {
+    if (currentAudio.readyState >= 1) {
       startPlayback();
     } else {
-      audio.addEventListener("loadedmetadata", startPlayback, { once: true });
-      audio.load();
+      const onReady = () => {
+        currentAudio.removeEventListener("loadedmetadata", onReady);
+        currentAudio.removeEventListener("canplay", onReady);
+        startPlayback();
+      };
+      currentAudio.addEventListener("loadedmetadata", onReady, { once: true });
+      currentAudio.addEventListener("canplay", onReady, { once: true });
+      currentAudio.load();
     }
   } else {
+    try {
+      currentAudio.currentTime = 0;
+    } catch {
+      // ignore
+    }
     startPlayback();
   }
 };
 
 /**
  * Retrieves the complete audio URL for a brick using its ID and plays it.
- * Calls GET /api/bricks/{brick_id}/audio under the hood.
+ * Calls GET /api/bricks/{brick_id}/audio under the hood with in-memory caching.
  */
 export const playBrickAudio = async (
   brickId: number | null | undefined,
@@ -95,7 +177,13 @@ export const playBrickAudio = async (
     return;
   }
   try {
-    const url = await getBrickAudioUrl(brickId);
+    let url = brickAudioUrlCache.get(brickId);
+    if (!url) {
+      url = await getBrickAudioUrl(brickId);
+      if (url) {
+        brickAudioUrlCache.set(brickId, url);
+      }
+    }
     if (url) {
       playShortAudio(url, startTimeSec, onEnded);
     } else {

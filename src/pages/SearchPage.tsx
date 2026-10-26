@@ -154,7 +154,7 @@ export default function SearchPage({
       forgetBrickMutation.mutate(brickId, {
         onSuccess: () => {
           toast.success("Brick memory reset successfully.");
-          queryClient.invalidateQueries({ queryKey: ["context-search"] });
+          queryClient.invalidateQueries({ queryKey: ["search"] });
           queryClient.invalidateQueries({ queryKey: ["bricks"] });
           queryClient.invalidateQueries({ queryKey: ["stats"] });
         },
@@ -177,7 +177,7 @@ export default function SearchPage({
       deleteBrickMutation.mutate(brickId, {
         onSuccess: () => {
           toast.success("Brick deleted successfully.");
-          queryClient.invalidateQueries({ queryKey: ["context-search"] });
+          queryClient.invalidateQueries({ queryKey: ["search"] });
           queryClient.invalidateQueries({ queryKey: ["bricks"] });
         },
         onError: (err: unknown) => {
@@ -460,7 +460,7 @@ export default function SearchPage({
         brick={editingBrick}
         onBack={() => {
           setEditingBrick(null);
-          queryClient.invalidateQueries({ queryKey: ["context-search"] });
+          queryClient.invalidateQueries({ queryKey: ["search"] });
           queryClient.invalidateQueries({ queryKey: ["bricks"] });
         }}
       />

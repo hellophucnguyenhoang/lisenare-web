@@ -23,7 +23,7 @@ export default function GuestProfileView({
         </h2>
 
         <p className="text-xs text-on-surface-variant max-w-xs mb-6 leading-relaxed">
-          Simple and effective retrieval.
+          Listen, repeat, listen, and repeat.
         </p>
 
         <div className="w-full flex flex-col gap-2.5 mb-6">

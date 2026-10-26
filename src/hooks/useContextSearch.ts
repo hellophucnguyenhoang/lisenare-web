@@ -15,7 +15,7 @@ export function useSearchContextBricks(
 
   return useQuery<BrickContextSearch[]>({
     queryKey: [
-      "context-search",
+      "search",
       "bricks",
       {
         ...normalizedParams,

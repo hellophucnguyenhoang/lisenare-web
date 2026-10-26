@@ -221,7 +221,7 @@ export function useForgetBrick() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bricks"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
-      qc.invalidateQueries({ queryKey: ["context-search"] });
+      qc.invalidateQueries({ queryKey: ["search"] });
     },
   });
 }

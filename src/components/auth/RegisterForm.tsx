@@ -5,7 +5,6 @@ import {
   User as UserIcon,
   KeyRound,
   ShieldCheck,
-  Sparkles,
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -85,14 +84,11 @@ export default function RegisterForm({
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Header title */}
       <div className="text-center space-y-1.5">
-        <div className="w-12 h-12 rounded-2xl bg-secondary/10 text-secondary mx-auto flex items-center justify-center mb-2 shadow-xs">
-          <Sparkles className="w-6 h-6" />
-        </div>
         <h2 className="text-2xl font-bold font-display text-on-surface tracking-tight">
           Create account
         </h2>
         <p className="text-xs text-on-surface-variant font-medium">
-          Join Lisenare to save your vocabulary streaks
+          So glad to have you in!
         </p>
       </div>
 
