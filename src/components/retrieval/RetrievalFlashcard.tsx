@@ -1,5 +1,14 @@
-import { useMemo } from "react";
-import { Volume2, Eye, EyeOff, Edit3, Loader2 } from "lucide-react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import {
+  Volume2,
+  Eye,
+  EyeOff,
+  Edit3,
+  Loader2,
+  MoreVertical,
+  SkipForward,
+  Flag,
+} from "lucide-react";
 import { type Brick } from "@/types";
 import { useForcedAlignment } from "@/hooks/useBricks";
 import { type WordSegmentSecond } from "@/api/evaluation";
@@ -11,6 +20,8 @@ interface RetrievalFlashcardProps {
   onToggleReveal: () => void;
   onPlayAudio: (startTimeSec?: number) => void;
   onEditBrick?: () => void;
+  onSkipBrick?: () => void;
+  onReportBrick?: () => void;
 }
 
 export default function RetrievalFlashcard({
@@ -20,7 +31,27 @@ export default function RetrievalFlashcard({
   onToggleReveal,
   onPlayAudio,
   onEditBrick,
+  onSkipBrick,
+  onReportBrick,
 }: RetrievalFlashcardProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener("click", handleOutsideClick);
+    return () => window.removeEventListener("click", handleOutsideClick);
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [activeBrick?.id]);
+
   const { data: alignmentSegments } = useForcedAlignment(
     activeBrick.id,
     Boolean(activeBrick.id),
@@ -61,25 +92,93 @@ export default function RetrievalFlashcard({
   }, [activeBrick.targetText, alignmentSegments]);
 
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-5 sm:p-8 flex flex-col items-center text-center relative overflow-hidden transition-all">
-      <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 flex items-center gap-1 z-10">
-        {onEditBrick && (
-          <button
-            type="button"
-            id="btn-retrieval-edit-brick"
-            onClick={onEditBrick}
-            className="p-2 text-outline hover:text-primary hover:bg-surface-container rounded-xl transition-all active:scale-95 cursor-pointer"
-            title="Edit this brick"
-            aria-label="Edit this brick"
-          >
-            <Edit3 className="w-4 h-4" />
-          </button>
+    <div className="bg-surface-container-lowest border border-outline-variant/60 rounded-2xl shadow-md p-5 sm:p-8 flex flex-col items-center text-center relative transition-all">
+      {/* Header options menu */}
+      <div
+        className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-20"
+        ref={menuRef}
+      >
+        <button
+          type="button"
+          id="btn-retrieval-more-options"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(!isMenuOpen);
+          }}
+          className="text-outline hover:text-primary transition-all p-1.5 rounded-full hover:bg-surface-container cursor-pointer active:scale-95"
+          aria-label="More options"
+          title="More options"
+        >
+          <MoreVertical className="w-5 h-5" />
+        </button>
+
+        {isMenuOpen && (
+          <div className="absolute right-0 top-9 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-30 py-1.5 w-36 text-left animate-in fade-in zoom-in-95 duration-150">
+            {onEditBrick && (
+              <button
+                type="button"
+                id="btn-retrieval-menu-edit"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                  onEditBrick();
+                }}
+                className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+              >
+                <Edit3 className="w-4 h-4 text-outline" />
+                <span>Edit brick</span>
+              </button>
+            )}
+            {onSkipBrick && (
+              <button
+                type="button"
+                id="btn-retrieval-menu-skip"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                  onSkipBrick();
+                }}
+                className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+              >
+                <SkipForward className="w-4 h-4 text-outline" />
+                <span>
+                  {activeBrick.isSkipped ? "Unskip brick" : "Skip brick"}
+                </span>
+              </button>
+            )}
+            {onReportBrick && (
+              <button
+                type="button"
+                id="btn-retrieval-menu-report"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(false);
+                  onReportBrick();
+                }}
+                className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+              >
+                <Flag className="w-4 h-4 text-outline" />
+                <span>Report brick</span>
+              </button>
+            )}
+          </div>
         )}
       </div>
 
-      <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase mb-3 sm:mb-5">
-        Native sentence
-      </span>
+      <div className="flex items-center gap-2 mb-3 sm:mb-5">
+        <span className="px-3 py-1 bg-surface-container text-on-surface-variant rounded-lg text-[10px] font-bold tracking-wider uppercase">
+          Native sentence
+        </span>
+        {activeBrick.isSkipped && (
+          <span
+            className="px-2 py-0.5 bg-surface-container text-outline rounded-md text-[10px] font-semibold flex items-center gap-1 border border-outline-variant/40"
+            title="This brick is skipped from retrieval"
+          >
+            <SkipForward className="w-3 h-3" />
+            <span>Skipped</span>
+          </span>
+        )}
+      </div>
 
       {/* Native phrase */}
       <div className="mb-4 sm:mb-6">
@@ -179,7 +278,7 @@ export default function RetrievalFlashcard({
       {/* Context pill if available */}
       {activeBrick.context && (
         <p className="text-xs text-on-surface-variant/80 italic mt-4 sm:mt-6 border-t border-outline-variant/20 pt-3 sm:pt-4 w-full">
-          "{activeBrick.context}"
+          {activeBrick.context}
         </p>
       )}
     </div>

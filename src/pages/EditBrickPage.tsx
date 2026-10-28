@@ -137,6 +137,13 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           setAudioBlob(null);
           onBack();
         },
+        onError: (err: unknown) => {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : "Failed to update brick. Please try again.";
+          toast.error(msg);
+        },
       },
     );
   };

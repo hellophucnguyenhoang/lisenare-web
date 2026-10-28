@@ -19,6 +19,7 @@ import {
   FileText,
   Languages,
   Heart,
+  SkipForward,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -354,6 +355,15 @@ export default function BrickDetailModal({
                     <span className="uppercase text-[11px] font-bold px-1.5 py-0.5 rounded bg-surface-container">
                       {detail.targetLang}
                     </span>
+                  </div>
+                )}
+                {detail.isSkipped && (
+                  <div
+                    className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-surface-container text-outline"
+                    title="This brick is skipped from retrieval"
+                  >
+                    <SkipForward className="w-3 h-3" />
+                    <span>Skipped</span>
                   </div>
                 )}
               </div>

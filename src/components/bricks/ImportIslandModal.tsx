@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { type Island } from "@/types";
 import { useImportIsland, useImportToNewIsland } from "@/hooks/useIslands";
+import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import PlainTextInput from "@/components/common/PlainTextInput";
 import { toast } from "sonner";
 
@@ -172,6 +173,13 @@ export default function ImportIslandModal({
 
       const targetCol = islands.find((c) => c.id === selectedIslandId);
       const targetName = targetCol?.name || "island";
+
+      if ((targetCol?.brickCount ?? 0) >= MAX_ISLAND_BRICKS) {
+        toast.error(
+          "This island has reached the maximum limit of 1,111 bricks.",
+        );
+        return;
+      }
 
       if (onImportToExisting) {
         onImportToExisting(selectedIslandId, file, targetName);
@@ -337,12 +345,24 @@ export default function ImportIslandModal({
                   onChange={(e) => setSelectedIslandId(Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-xs font-semibold text-on-surface focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all cursor-pointer"
                 >
-                  {islands.map((col) => (
-                    <option key={col.id} value={col.id}>
-                      {col.name} ({col.brickCount ?? 0} bricks)
-                    </option>
-                  ))}
+                  {islands.map((col) => {
+                    const isFull = (col.brickCount ?? 0) >= MAX_ISLAND_BRICKS;
+                    return (
+                      <option key={col.id} value={col.id}>
+                        {col.name} ({col.brickCount ?? 0}/{MAX_ISLAND_BRICKS} bricks)
+                        {isFull ? " - FULL" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
+                {selectedIslandId &&
+                  (islands.find((c) => c.id === selectedIslandId)?.brickCount ??
+                    0) >= MAX_ISLAND_BRICKS && (
+                    <p className="text-[11px] text-error font-medium px-1">
+                      This island has reached the limit of 1,111 bricks. Please
+                      choose another island or import into a new island.
+                    </p>
+                  )}
                 <p className="text-[11px] text-outline px-1">
                   Bricks will be merged into this island. Existing duplicates
                   are safely skipped.
@@ -381,7 +401,10 @@ export default function ImportIslandModal({
                 !file ||
                 isImporting ||
                 (mode === "new" && !newIslandName.trim()) ||
-                (mode === "existing" && !selectedIslandId)
+                (mode === "existing" &&
+                  (!selectedIslandId ||
+                    (islands.find((c) => c.id === selectedIslandId)
+                      ?.brickCount ?? 0) >= MAX_ISLAND_BRICKS))
               }
               className="flex-2 py-2.5 px-4 bg-primary text-on-primary font-bold text-xs rounded-xl shadow-xs hover:bg-primary/95 transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
             >

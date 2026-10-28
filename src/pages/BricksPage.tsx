@@ -33,10 +33,12 @@ import {
   useInfiniteBricks,
   useDeleteBrick,
   useForgetBrick,
+  useSkipBrick,
 } from "@/hooks/useBricks";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { type AuthMode } from "@/types";
 import { useHeader } from "@/context/HeaderContext";
+import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import { toast } from "sonner";
 
 interface BricksPageProps {
@@ -66,7 +68,7 @@ export default function BricksPage({
 
   // Sort and filter state
   type BrickSortType = "NEWEST" | "AZ" | "ZA";
-  type BrickStatusFilter = "LEARNED" | "NOT_LEARNED" | null;
+  type BrickStatusFilter = "LEARNED" | "NOT_LEARNED" | "SKIPPED" | null;
   type UnitTypeFilter = "word" | "sentence" | null;
 
   const [sortBy, setSortBy] = useState<BrickSortType>("NEWEST");
@@ -155,8 +157,37 @@ export default function BricksPage({
   const createIsland = useCreateIsland();
   const deleteBrick = useDeleteBrick();
   const forgetBrick = useForgetBrick();
+  const skipBrickMutation = useSkipBrick();
   const importToExisting = useImportIsland();
   const importToNew = useImportToNewIsland();
+
+  const handleSkipBrick = (brickId: number, isSkipped: boolean) => {
+    skipBrickMutation.mutate(
+      { brickId, isSkipped },
+      {
+        onSuccess: () => {
+          toast.success(
+            isSkipped ? "Brick skipped" : "Brick unskipped",
+            isSkipped
+              ? {
+                  action: {
+                    label: "Undo",
+                    onClick: () => handleSkipBrick(brickId, false),
+                  },
+                }
+              : undefined,
+          );
+        },
+        onError: (err: unknown) => {
+          const msg =
+            err instanceof Error
+              ? err.message
+              : "Failed to update brick skip status.";
+          toast.error(msg);
+        },
+      },
+    );
+  };
 
   const handleImportToExisting = (
     islandId: number,
@@ -334,6 +365,11 @@ export default function BricksPage({
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface">
             {totalBricks} brick{totalBricks !== 1 ? "s" : ""}
+            {selectedIsland && (
+              <span className="text-sm font-normal text-outline ml-2">
+                ({selectedIsland.brickCount ?? totalBricks}/{MAX_ISLAND_BRICKS})
+              </span>
+            )}
           </h2>
           <p className="text-on-surface-variant text-xs sm:text-sm mt-0.5 max-w-lg">
             {selectedIsland ? ` in "${selectedIsland.name}"` : ""}
@@ -346,7 +382,9 @@ export default function BricksPage({
               ? " • Learned"
               : statusFilter === "NOT_LEARNED"
                 ? " • Not learned"
-                : ""}
+                : statusFilter === "SKIPPED"
+                  ? " • Skipped"
+                  : ""}
             {selectedTags.length > 0
               ? ` • ${selectedTags.map((t) => `#${t}`).join(", ")}`
               : ""}
@@ -465,7 +503,10 @@ export default function BricksPage({
                         {col.name}
                       </span>
                       <span className="text-[10px] text-outline font-normal">
-                        {col.brickCount ?? 0} bricks
+                        {col.brickCount ?? 0}/{MAX_ISLAND_BRICKS} bricks
+                        {(col.brickCount ?? 0) >= MAX_ISLAND_BRICKS
+                          ? " • Full"
+                          : ""}
                       </span>
                     </button>
 
@@ -653,7 +694,12 @@ export default function BricksPage({
           {statusFilter && (
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-medium">
               <span>
-                Status: {statusFilter === "LEARNED" ? "Learned" : "Not learned"}
+                Status:{" "}
+                {statusFilter === "LEARNED"
+                  ? "Learned"
+                  : statusFilter === "NOT_LEARNED"
+                    ? "Not learned"
+                    : "Skipped"}
               </span>
               <button
                 type="button"
@@ -764,6 +810,7 @@ export default function BricksPage({
                 }}
                 onSelectBrick={() => onNavigateToRetrieval(brick.id)}
                 onStudyBrick={() => onNavigateToRetrieval(brick.id)}
+                onSkipBrick={handleSkipBrick}
                 onSelectTag={handleToggleTag}
               />
             ))}

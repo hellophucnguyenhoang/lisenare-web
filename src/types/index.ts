@@ -23,6 +23,7 @@ export interface Brick {
   tags: string[];
   islandId: number;
   learned: boolean;
+  isSkipped?: boolean;
 }
 
 export interface Token {

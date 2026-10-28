@@ -7,6 +7,7 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio, resolveAudioUrl } from "@/utils/audio";
 import { type TargetLang, type BrickInitialData } from "@/types";
 import { transcribeAudio } from "@/api/evaluation";
+import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
@@ -152,13 +153,25 @@ export default function AddBrickPage({
     }
   };
 
+  const currentIsland = islands.find((c) => c.id === effectiveIslandId);
+  const isIslandFull = (currentIsland?.brickCount ?? 0) >= MAX_ISLAND_BRICKS;
+
   const isFormValid = Boolean(
-    nativeText.trim() && targetText.trim() && effectiveIslandId && audioBlob,
+    nativeText.trim() &&
+      targetText.trim() &&
+      effectiveIslandId &&
+      audioBlob &&
+      !isIslandFull,
   );
 
   const handleSave = () => {
     if (!effectiveIslandId) {
       toast.error("Please choose or create an island for this brick.");
+      return;
+    }
+
+    if (isIslandFull) {
+      toast.error("This island has reached the maximum limit of 1,111 bricks.");
       return;
     }
 
@@ -209,6 +222,13 @@ export default function AddBrickPage({
           setIsPrivate(true);
           setAudioBlob(null);
         }
+      },
+      onError: (err: unknown) => {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "Failed to save brick. Please try again.";
+        toast.error(msg);
       },
     });
   };
@@ -305,6 +325,8 @@ export default function AddBrickPage({
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 <span>Saving brick...</span>
               </>
+            ) : isIslandFull ? (
+              <span>Island is full (1,111/1,111)</span>
             ) : (
               <>
                 <Save className="w-5 h-5" />

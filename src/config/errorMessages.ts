@@ -18,7 +18,9 @@ export const ERROR_MESSAGES: Record<string, string> = {
     "The verification code you entered is invalid. Please double-check it.",
 
   // Islands management
-  COLLECTION_ALREADY_EXISTS: "You already have this island.",
+  ISLAND_ALREADY_EXISTS: "You already have this island.",
+  ISLAND_BRICK_LIMIT_EXCEEDED:
+    "This island has reached the maximum limit of 1,111 bricks.",
 
   // Bricks management
   BRICK_EDIT_FORBIDDEN: "You do not have permission to modify this item.",

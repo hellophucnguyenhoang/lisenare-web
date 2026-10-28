@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 export type BrickSortType = "NEWEST" | "AZ" | "ZA";
-export type BrickStatusFilter = "LEARNED" | "NOT_LEARNED" | null;
+export type BrickStatusFilter = "LEARNED" | "NOT_LEARNED" | "SKIPPED" | null;
 export type UnitTypeFilter = "word" | "sentence" | null;
 
 interface BricksFilterModalProps {
@@ -84,6 +84,7 @@ export default function BricksFilterModal({
     { label: "All", value: null },
     { label: "Learned", value: "LEARNED" },
     { label: "Not learned", value: "NOT_LEARNED" },
+    { label: "Skipped", value: "SKIPPED" },
   ];
 
   const sortOptions: { label: string; value: BrickSortType }[] = [
@@ -179,7 +180,7 @@ export default function BricksFilterModal({
             <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant block">
               Status
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {statusOptions.map((opt) => {
                 const isSelected = statusFilter === opt.value;
                 return (

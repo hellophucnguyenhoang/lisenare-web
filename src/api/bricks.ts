@@ -58,6 +58,7 @@ interface BrickReadApi {
   island_id: number;
   tags?: string[];
   learned?: boolean;
+  is_skipped?: boolean;
 }
 
 export type InteractionType = "LISTEN" | "ADD" | "LIKE" | "REMOVE_REACTION";
@@ -96,7 +97,7 @@ interface BrickPageApi {
 
 export interface BrickListParams {
   island_ids?: number[];
-  status?: "LEARNED" | "NOT_LEARNED";
+  status?: "LEARNED" | "NOT_LEARNED" | "SKIPPED";
   kind?: "word" | "sentence";
   tags?: string[];
   sort_by?: "NEWEST" | "AZ" | "ZA";
@@ -121,6 +122,7 @@ function toBrick(api: BrickReadApi): Brick {
     tags: api.tags || [],
     islandId: api.island_id,
     learned: api.learned ?? false,
+    isSkipped: api.is_skipped ?? false,
   };
 }
 
@@ -322,6 +324,19 @@ export async function reportBrick(
  */
 export async function forgetBrick(brickId: number): Promise<void> {
   await request<void>(`/bricks/${brickId}/forget`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Skips or unskips a brick for retrieval sessions.
+ * Calls POST /api/bricks/{brick_id}/skip?is_skipped={is_skipped}
+ */
+export async function skipBrick(
+  brickId: number,
+  isSkipped: boolean = true,
+): Promise<void> {
+  await request<void>(`/bricks/${brickId}/skip?is_skipped=${isSkipped}`, {
     method: "POST",
   });
 }

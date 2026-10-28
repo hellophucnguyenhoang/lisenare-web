@@ -121,7 +121,11 @@ export function useImportIsland() {
           "Import is still processing on the server. Your bricks will appear shortly.",
         );
       } else {
-        toast.error("Failed to import island. Please check the file.");
+        const message =
+          err instanceof RequestError
+            ? err.message
+            : "Failed to import island. Please check the file.";
+        toast.error(message);
       }
     },
   });
@@ -157,7 +161,11 @@ export function useImportToNewIsland() {
           "Import is still processing on the server. Your new island will appear shortly.",
         );
       } else {
-        toast.error("Failed to import island. Please check the file.");
+        const message =
+          err instanceof RequestError
+            ? err.message
+            : "Failed to import island. Please check the file.";
+        toast.error(message);
       }
     },
   });

@@ -1,5 +1,7 @@
 export const API_TIMEOUT = 10_000;
 
+export const MAX_ISLAND_BRICKS = 1111;
+
 export const PAGINATION = {
   PAGE_SIZE: 20,
 };

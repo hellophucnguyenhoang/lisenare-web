@@ -18,6 +18,7 @@ import {
   createBrickInteraction,
   reportBrick,
   forgetBrick,
+  skipBrick,
   getListeningBricks,
   type BrickListeningParams,
   type BrickListeningPage,
@@ -218,6 +219,25 @@ export function useForgetBrick() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (brickId: number) => forgetBrick(brickId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+      qc.invalidateQueries({ queryKey: ["search"] });
+    },
+  });
+}
+
+export function useSkipBrick() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      variables: number | { brickId: number; isSkipped?: boolean },
+    ) => {
+      if (typeof variables === "number") {
+        return skipBrick(variables, true);
+      }
+      return skipBrick(variables.brickId, variables.isSkipped ?? true);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["bricks"] });
       qc.invalidateQueries({ queryKey: ["stats"] });

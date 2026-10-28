@@ -19,10 +19,12 @@ import RetrievalFlashcard from "@/components/retrieval/RetrievalFlashcard";
 import RetrievalInputSection from "@/components/retrieval/RetrievalInputSection";
 import RetrievalEvaluationModal from "@/components/retrieval/RetrievalEvaluationModal";
 import RetrievalInstructionsPage from "@/components/retrieval/RetrievalInstructionsPage";
+import ReportBrickModal from "@/components/bricks/ReportBrickModal";
 import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { type Brick, type AuthMode } from "@/types";
 import { useLearnerMe } from "@/hooks/useLearner";
+import { useSkipBrick } from "@/hooks/useBricks";
 import { useHeader } from "@/context/HeaderContext";
 
 interface RetrievalPageProps {
@@ -113,11 +115,14 @@ export default function RetrievalPage({
   };
   const [learnerAudioUrl, setLearnerAudioUrl] = useState<string | null>(null);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const skipBrickMutation = useSkipBrick();
 
   const [evaluationResult, setEvaluationResult] = useState<{
     score: number;
     targetText: string;
     learnerText: string;
+    context?: string | null;
   } | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -308,6 +313,7 @@ export default function RetrievalPage({
           score: res.score,
           targetText: activeBrick.targetText,
           learnerText: transcript || "",
+          context: activeBrick.context,
         });
       } else {
         toast.error("No audio recorded. Please try again.");
@@ -342,6 +348,7 @@ export default function RetrievalPage({
         score: res.score,
         targetText: activeBrick.targetText,
         learnerText: typedAnswer.trim(),
+        context: activeBrick.context,
       });
     } catch (err) {
       console.error("Typed evaluation error:", err);
@@ -501,6 +508,36 @@ export default function RetrievalPage({
     }
   };
 
+  const handleSkipBrick = async (forcedSkipped?: boolean) => {
+    if (!activeBrick || skipBrickMutation.isPending) return;
+    const targetBrick = activeBrick;
+    const nextSkippedState =
+      typeof forcedSkipped === "boolean" ? forcedSkipped : !targetBrick.isSkipped;
+
+    try {
+      await skipBrickMutation.mutateAsync({
+        brickId: targetBrick.id,
+        isSkipped: nextSkippedState,
+      });
+
+      if (nextSkippedState) {
+        toast.success("Brick skipped", {
+          action: {
+            label: "Undo",
+            onClick: () => handleSkipBrick(false),
+          },
+        });
+        await handleNext();
+      } else {
+        toast.success("Brick unskipped");
+        qc.invalidateQueries({ queryKey: ["bricks", "retrieval-next"] });
+      }
+    } catch (err) {
+      console.error("Failed to update brick skip status:", err);
+      toast.error("Failed to update brick. Please try again.");
+    }
+  };
+
   return (
     <div
       className={`grow flex flex-col items-center px-4 sm:px-6 py-4 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] animate-in fade-in duration-300 ${
@@ -522,6 +559,8 @@ export default function RetrievalPage({
               ? () => onNavigateToEditBrick(activeBrick)
               : undefined
           }
+          onSkipBrick={handleSkipBrick}
+          onReportBrick={() => setIsReportModalOpen(true)}
         />
 
         <RetrievalInputSection
@@ -550,6 +589,7 @@ export default function RetrievalPage({
           score={evaluationResult.score}
           targetText={evaluationResult.targetText}
           learnerText={evaluationResult.learnerText}
+          context={evaluationResult.context ?? activeBrick?.context}
           onClose={() => setEvaluationResult(null)}
           onSubmitReview={handleSubmitReview}
           isSubmitting={isSubmittingReview}
@@ -557,6 +597,16 @@ export default function RetrievalPage({
           onPlayTargetAudio={() => handlePlayAudio()}
           onPlayLearnerAudio={() => playShortAudio(learnerAudioUrl)}
           hasLearnerAudio={Boolean(learnerAudioUrl)}
+        />
+      )}
+
+      {/* Report brick dialog */}
+      {activeBrick && (
+        <ReportBrickModal
+          isOpen={isReportModalOpen}
+          brickId={activeBrick.id}
+          targetText={activeBrick.targetText}
+          onClose={() => setIsReportModalOpen(false)}
         />
       )}
     </div>

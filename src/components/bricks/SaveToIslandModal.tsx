@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { type Island } from "@/types";
+import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import {
   PlusCircle,
   FolderPlus,
@@ -103,33 +104,51 @@ function SaveToIslandModalContent({
         {/* Existing islands List: Shown FIRST for 1-tap save */}
         {islands.length > 0 ? (
           <div className="space-y-2 mb-3 max-h-56 sm:max-h-64 overflow-y-auto pr-1 text-left">
-            {islands.map((col) => (
-              <button
-                key={col.id}
-                type="button"
-                id={`btn-select-col-${col.id}`}
-                disabled={isSaving}
-                onClick={() => onSave(col.id)}
-                className="w-full text-left p-3.5 bg-surface-container-low hover:bg-primary/10 hover:border-primary/40 active:scale-98 transition-all border border-outline-variant/60 rounded-2xl flex items-center justify-between cursor-pointer disabled:opacity-50 min-h-12"
-              >
-                <div className="truncate mr-2">
-                  <span className="block truncate text-xs sm:text-sm font-bold text-on-surface">
-                    {col.name}
-                  </span>
-                  <span className="text-[11px] text-outline font-normal">
-                    {col.brickCount ?? 0}{" "}
-                    {col.brickCount === 1 ? "brick" : "bricks"}
-                  </span>
-                </div>
-                {isSaving ? (
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />
-                ) : (
-                  <div className="p-1 rounded-full bg-primary/10 text-primary shrink-0">
-                    <ChevronRight className="w-3.5 h-3.5" />
+            {islands.map((col) => {
+              const isFull = (col.brickCount ?? 0) >= MAX_ISLAND_BRICKS;
+              return (
+                <button
+                  key={col.id}
+                  type="button"
+                  id={`btn-select-col-${col.id}`}
+                  disabled={isSaving || isFull}
+                  onClick={() => onSave(col.id)}
+                  title={
+                    isFull
+                      ? "This island has reached the limit of 1,111 bricks"
+                      : undefined
+                  }
+                  className={`w-full text-left p-3.5 bg-surface-container-low transition-all border border-outline-variant/60 rounded-2xl flex items-center justify-between min-h-12 ${
+                    isFull
+                      ? "opacity-60 cursor-not-allowed bg-surface-container/50"
+                      : "hover:bg-primary/10 hover:border-primary/40 active:scale-98 cursor-pointer disabled:opacity-50"
+                  }`}
+                >
+                  <div className="truncate mr-2">
+                    <div className="flex items-center gap-2">
+                      <span className="block truncate text-xs sm:text-sm font-bold text-on-surface">
+                        {col.name}
+                      </span>
+                      {isFull && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-error/10 text-error shrink-0">
+                          Full
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-outline font-normal">
+                      {col.brickCount ?? 0}/{MAX_ISLAND_BRICKS} bricks
+                    </span>
                   </div>
-                )}
-              </button>
-            ))}
+                  {isSaving ? (
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin shrink-0" />
+                  ) : (
+                    <div className="p-1 rounded-full bg-primary/10 text-primary shrink-0">
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         ) : (
           <div className="p-4 bg-surface-container/30 border border-dashed border-outline-variant/60 rounded-2xl mb-4 text-xs text-on-surface-variant">

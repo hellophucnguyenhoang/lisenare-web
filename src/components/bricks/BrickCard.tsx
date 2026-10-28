@@ -6,6 +6,7 @@ import {
   Trash2,
   RotateCcw,
   CheckCircle2,
+  SkipForward,
 } from "lucide-react";
 
 interface BrickCardProps {
@@ -13,6 +14,7 @@ interface BrickCardProps {
   onEditBrick: (brick: Brick) => void;
   onDeleteBrick: (brickId: number) => void;
   onForgetBrick?: (brickId: number) => void;
+  onSkipBrick?: (brickId: number, isSkipped: boolean) => void;
   onSelectBrick?: (brick: Brick) => void;
   onStudyBrick?: (brick: Brick) => void;
   onSelectTag?: (tag: string) => void;
@@ -23,6 +25,7 @@ export default function BrickCard({
   onEditBrick,
   onDeleteBrick,
   onForgetBrick,
+  onSkipBrick,
   onSelectBrick,
   onStudyBrick,
   onSelectTag,
@@ -78,6 +81,20 @@ export default function BrickCard({
                 >
                   <Edit3 className="w-4 h-4 text-outline" />
                   <span>Edit brick</span>
+                </button>
+              )}
+              {onSkipBrick && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSkipBrick(brick.id, !brick.isSkipped);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-xs font-semibold hover:bg-surface-container flex items-center gap-2 text-on-surface cursor-pointer"
+                >
+                  <SkipForward className="w-4 h-4 text-outline" />
+                  <span>{brick.isSkipped ? "Unskip brick" : "Skip brick"}</span>
                 </button>
               )}
               {onForgetBrick && (
@@ -165,14 +182,25 @@ export default function BrickCard({
           ))}
         </div>
 
-        {brick.learned && (
-          <span
-            className="text-primary flex items-center shrink-0 ml-2"
-            title="Learned"
-          >
-            <CheckCircle2 className="w-5 h-5 fill-primary-fixed" />
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          {brick.isSkipped && (
+            <span
+              className="text-outline/80 flex items-center gap-1 text-[10px] font-semibold bg-surface-container px-2 py-0.5 rounded-md"
+              title="This brick is skipped from retrieval"
+            >
+              <SkipForward className="w-3 h-3" />
+              <span>Skipped</span>
+            </span>
+          )}
+          {brick.learned && !brick.isSkipped && (
+            <span
+              className="text-primary flex items-center"
+              title="Learned"
+            >
+              <CheckCircle2 className="w-5 h-5 fill-primary-fixed" />
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

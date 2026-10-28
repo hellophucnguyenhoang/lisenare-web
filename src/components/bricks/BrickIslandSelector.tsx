@@ -6,6 +6,7 @@ import {
   useUpdateIsland,
 } from "@/hooks/useIslands";
 import { type Island } from "@/types";
+import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import AddIslandModal from "./AddIslandModal";
 
 interface BrickIslandSelectorProps {
@@ -90,26 +91,41 @@ export default function BrickIslandSelector({
                   No islands available yet.
                 </div>
               ) : (
-                islands.map((col) => (
-                  <button
-                    key={col.id}
-                    type="button"
-                    onClick={() => {
-                      onSelectIsland(col.id);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full px-3.5 py-2.5 text-left text-xs font-medium flex items-center justify-between hover:bg-surface-container transition-colors ${
-                      selectedIslandId === col.id
-                        ? "bg-primary/10 text-primary font-bold"
-                        : "text-on-surface"
-                    }`}
-                  >
-                    <span className="truncate">{col.name}</span>
-                    {selectedIslandId === col.id && (
-                      <Check className="w-4 h-4 text-primary shrink-0" />
-                    )}
-                  </button>
-                ))
+                islands.map((col) => {
+                  const isFull = (col.brickCount ?? 0) >= MAX_ISLAND_BRICKS;
+                  return (
+                    <button
+                      key={col.id}
+                      type="button"
+                      onClick={() => {
+                        onSelectIsland(col.id);
+                        setIsOpen(false);
+                      }}
+                      className={`w-full px-3.5 py-2.5 text-left text-xs font-medium flex items-center justify-between hover:bg-surface-container transition-colors ${
+                        selectedIslandId === col.id
+                          ? "bg-primary/10 text-primary font-bold"
+                          : "text-on-surface"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 mr-2">
+                        <span className="truncate">{col.name}</span>
+                        {isFull && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-error/10 text-error shrink-0">
+                            Full
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[11px] text-outline font-normal">
+                          {col.brickCount ?? 0}/{MAX_ISLAND_BRICKS}
+                        </span>
+                        {selectedIslandId === col.id && (
+                          <Check className="w-4 h-4 text-primary shrink-0" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })
               )}
 
               <div className="h-px bg-outline-variant/30 mx-2" />
@@ -154,6 +170,12 @@ export default function BrickIslandSelector({
           <FolderPlus className="w-4 h-4" />
         </button>
       </div>
+
+      {selectedIsland && (selectedIsland.brickCount ?? 0) >= MAX_ISLAND_BRICKS && (
+        <p className="text-xs text-error font-medium px-1 flex items-center gap-1">
+          This island has reached the limit of 1,111 bricks. Choose another island or delete unused bricks.
+        </p>
+      )}
 
       {/* Add / Edit island Modals */}
       {(showAddModal || editingIsland) && (
