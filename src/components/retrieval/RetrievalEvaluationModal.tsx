@@ -7,6 +7,7 @@ interface RetrievalEvaluationModalProps {
   targetText: string;
   learnerText: string;
   context?: string | null;
+  imageUrl?: string | null;
   onClose: () => void;
   onSubmitReview: (rating: Rating) => void | Promise<void>;
   isSubmitting?: boolean;
@@ -21,6 +22,7 @@ export default function RetrievalEvaluationModal({
   targetText,
   learnerText,
   context,
+  imageUrl,
   onClose,
   onSubmitReview,
   isSubmitting = false,
@@ -140,16 +142,26 @@ export default function RetrievalEvaluationModal({
           </div>
 
           {/* Brick context card */}
-          {context && context.trim() && (
-            <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 shadow-xs">
-              <div className="space-y-0.5">
-                <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-                  Brick context
-                </span>
+          {((context && context.trim()) || imageUrl) && (
+            <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 shadow-xs space-y-2">
+              <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
+                Brick context
+              </span>
+              {imageUrl && (
+                <div className="relative rounded-xl overflow-hidden max-h-40 max-w-xs mx-auto border border-outline-variant/30 bg-surface-container-lowest">
+                  <img
+                    src={imageUrl}
+                    alt="Brick context illustration"
+                    className="max-h-40 w-auto object-contain mx-auto rounded-lg"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              {context && context.trim() && (
                 <p className="text-sm text-on-surface-variant italic wrap-break-word">
                   {context.trim()}
                 </p>
-              </div>
+              )}
             </div>
           )}
         </div>

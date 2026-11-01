@@ -10,6 +10,7 @@ import { transcribeAudio } from "@/api/evaluation";
 import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
+import BrickImageSection from "@/components/bricks/BrickImageSection";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
 import BrickUnitTypeSelector, {
   type UnitType,
@@ -70,8 +71,11 @@ export default function AddBrickPage({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(
     initialData?.audioBlob ?? null,
   );
+  const [imageFile, setImageFile] = useState<File | null>(
+    initialData?.imageFile ?? null,
+  );
 
-  // Preload audio from existing brick if audioUrl is provided
+  // Preload audio and image from existing brick if audioUrl/imageUrl is provided
   useEffect(() => {
     if (!initialData) return;
     if (initialData.audioBlob) {
@@ -88,6 +92,25 @@ export default function AddBrickPage({
         })
         .catch((err) => {
           console.warn("Could not preload audio blob from brick:", err);
+        });
+    }
+
+    if (initialData.imageFile) {
+      setImageFile(initialData.imageFile);
+    } else if (initialData.imageUrl) {
+      fetch(initialData.imageUrl)
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch initial image");
+          return res.blob();
+        })
+        .then((blob) => {
+          const file = new File([blob], "image.webp", {
+            type: blob.type || "image/webp",
+          });
+          setImageFile(file);
+        })
+        .catch((err) => {
+          console.warn("Could not preload image file from brick:", err);
         });
     }
   }, [initialData]);
@@ -199,6 +222,9 @@ export default function AddBrickPage({
       }),
     );
     formData.append("target_audio_file", audioBlob, "audio.wav");
+    if (imageFile) {
+      formData.append("image_file", imageFile);
+    }
 
     createBrick.mutate(formData, {
       onSuccess: () => {
@@ -219,6 +245,7 @@ export default function AddBrickPage({
           setTags([]);
           setIsPrivate(true);
           setAudioBlob(null);
+          setImageFile(null);
         }
       },
       onError: (err: unknown) => {
@@ -287,6 +314,14 @@ export default function AddBrickPage({
           isCheckingTargetExists={isCheckingTargetExists}
           onGenerateAudio={handleAutoGenerateAudio}
           isGeneratingAudio={textToSpeechMutation.isPending}
+        />
+
+        {/* Context image section */}
+        <BrickImageSection
+          imageFile={imageFile}
+          onImageFileChange={setImageFile}
+          existingImageUrl={initialData?.imageUrl}
+          existingImagePath={initialData?.imagePath}
         />
 
         {/* Pronunciation recording / Preview section */}

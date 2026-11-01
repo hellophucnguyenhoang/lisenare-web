@@ -19,6 +19,8 @@ import {
   reportBrick,
   forgetBrick,
   skipBrick,
+  getBrickImageUrl,
+  clearBrickImageCache,
   getListeningBricks,
   type BrickListeningParams,
   type BrickListeningPage,
@@ -100,6 +102,18 @@ export function useCheckBrickExists(
   });
 }
 
+export function useBrickImage(
+  brickId?: number | null,
+  imagePath?: string | null,
+) {
+  return useQuery({
+    queryKey: ["brick-image", brickId],
+    queryFn: () => getBrickImageUrl(brickId!),
+    enabled: Boolean(brickId && imagePath),
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
 export function useCreateBrick() {
   const qc = useQueryClient();
   return useMutation({
@@ -118,7 +132,11 @@ export function useUpdateBrick() {
       brickId: number;
       formData: FormData;
     }) => updateBrick(brickId, formData),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["bricks"] }),
+    onSuccess: (_, variables) => {
+      clearBrickImageCache(variables.brickId);
+      qc.invalidateQueries({ queryKey: ["brick-image", variables.brickId] });
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+    },
   });
 }
 
@@ -126,7 +144,11 @@ export function useDeleteBrick() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: deleteBrick,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["bricks"] }),
+    onSuccess: (_, brickId) => {
+      clearBrickImageCache(brickId);
+      qc.invalidateQueries({ queryKey: ["brick-image", brickId] });
+      qc.invalidateQueries({ queryKey: ["bricks"] });
+    },
   });
 }
 

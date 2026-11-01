@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { useBrickDetail, useCheckBrickExists } from "@/hooks/useBricks";
+import {
+  useBrickDetail,
+  useCheckBrickExists,
+  useBrickImage,
+} from "@/hooks/useBricks";
 import { getBrickAudioUrl } from "@/api/bricks";
 import { playShortAudio, stopShortAudio } from "@/utils/audio";
 import { type Brick, type AuthMode } from "@/types";
@@ -58,6 +62,8 @@ export default function BrickDetailModal({
     isError,
     error,
   } = useBrickDetail(brickId, isOpen && Boolean(brickId) && isLoggedIn);
+
+  const { data: imageUrl } = useBrickImage(detail?.id, detail?.imagePath);
 
   const isOwner = detail
     ? currentLearnerId !== undefined && detail.creatorId === currentLearnerId
@@ -255,18 +261,30 @@ export default function BrickDetailModal({
               </p>
             </div>
 
-            {/* Context */}
-            {detail.context && (
-              <div className="p-3.5 bg-surface-container/40 rounded-xl border border-outline-variant/40 space-y-1">
+            {/* Context & Image */}
+            {(detail.context || imageUrl) && (
+              <div className="p-3.5 bg-surface-container/40 rounded-xl border border-outline-variant/40 space-y-2.5">
                 <div className="flex items-center gap-1.5 text-outline">
                   <FileText className="w-3.5 h-3.5" />
                   <span className="text-[10px] font-bold uppercase tracking-wider">
                     Context
                   </span>
                 </div>
-                <p className="text-xs text-on-surface-variant leading-relaxed">
-                  {detail.context}
-                </p>
+                {imageUrl && (
+                  <div className="relative rounded-xl overflow-hidden max-h-56 max-w-sm mx-auto border border-outline-variant/30 bg-surface-container-lowest">
+                    <img
+                      src={imageUrl}
+                      alt="Brick context illustration"
+                      className="max-h-56 w-auto object-contain mx-auto rounded-lg shadow-2xs"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+                {detail.context && (
+                  <p className="text-xs text-on-surface-variant leading-relaxed">
+                    {detail.context}
+                  </p>
+                )}
               </div>
             )}
 

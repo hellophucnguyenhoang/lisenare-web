@@ -5,12 +5,14 @@ import {
   useUpdateBrick,
   useDeleteBrick,
   useCheckBrickExists,
+  useBrickImage,
 } from "@/hooks/useBricks";
 import { useLearnerMe } from "@/hooks/useLearner";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio } from "@/utils/audio";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
+import BrickImageSection from "@/components/bricks/BrickImageSection";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
 import BrickUnitTypeSelector, {
   type UnitType,
@@ -51,6 +53,13 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   const [tags, setTags] = useState<string[]>(brick.tags || []);
   const [isPrivate, setIsPrivate] = useState<boolean>(brick.isPrivate ?? true);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [removedExistingImage, setRemovedExistingImage] = useState(false);
+
+  const { data: existingImageUrl } = useBrickImage(
+    brick.id,
+    removedExistingImage ? null : brick.imagePath,
+  );
 
   const updateBrick = useUpdateBrick();
   const deleteBrick = useDeleteBrick();
@@ -107,24 +116,31 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       return;
     }
 
+    const jsonData: Record<string, unknown> = {
+      native_text: nativeText.trim(),
+      target_text: targetText.trim(),
+      target_lang: targetLang,
+      target_pron: pronunciation.trim() || null,
+      context: context.trim() || null,
+      kind: kind,
+      island_id: selectedIslandId,
+      is_private: isPrivate,
+      tags,
+    };
+
+    if (removedExistingImage && !imageFile) {
+      jsonData.image_path = null;
+    }
+
     const formData = new FormData();
-    formData.append(
-      "json_data",
-      JSON.stringify({
-        native_text: nativeText.trim(),
-        target_text: targetText.trim(),
-        target_lang: targetLang,
-        target_pron: pronunciation.trim() || null,
-        context: context.trim() || null,
-        kind: kind,
-        island_id: selectedIslandId,
-        is_private: isPrivate,
-        tags,
-      }),
-    );
+    formData.append("json_data", JSON.stringify(jsonData));
 
     if (audioBlob) {
       formData.append("target_audio_file", audioBlob);
+    }
+
+    if (imageFile) {
+      formData.append("image_file", imageFile);
     }
 
     updateBrick.mutate(
@@ -133,6 +149,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
         onSuccess: () => {
           toast.success("Brick updated successfully!");
           setAudioBlob(null);
+          setImageFile(null);
           onBack();
         },
         onError: (err: unknown) => {
@@ -212,6 +229,21 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           isCheckingTargetExists={isCheckingTargetExists}
           onGenerateAudio={handleAutoGenerateAudio}
           isGeneratingAudio={textToSpeechMutation.isPending}
+        />
+
+        {/* Context image section */}
+        <BrickImageSection
+          imageFile={imageFile}
+          onImageFileChange={(file) => {
+            setImageFile(file);
+            if (file) setRemovedExistingImage(false);
+          }}
+          existingImageUrl={removedExistingImage ? null : existingImageUrl}
+          existingImagePath={removedExistingImage ? null : brick.imagePath}
+          onRemoveExistingImage={() => {
+            setRemovedExistingImage(true);
+            setImageFile(null);
+          }}
         />
 
         {/* Pronunciation audio section */}

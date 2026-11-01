@@ -10,7 +10,7 @@ import {
   Flag,
 } from "lucide-react";
 import { type Brick } from "@/types";
-import { useForcedAlignment } from "@/hooks/useBricks";
+import { useForcedAlignment, useBrickImage } from "@/hooks/useBricks";
 import { type WordSegmentSecond } from "@/api/evaluation";
 
 interface RetrievalFlashcardProps {
@@ -36,6 +36,11 @@ export default function RetrievalFlashcard({
 }: RetrievalFlashcardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const { data: imageUrl } = useBrickImage(
+    activeBrick.id,
+    activeBrick.imagePath,
+  );
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -275,11 +280,25 @@ export default function RetrievalFlashcard({
         </div>
       )}
 
-      {/* Context pill if available */}
-      {activeBrick.context && (
-        <p className="text-xs text-on-surface-variant/80 italic mt-4 sm:mt-6 border-t border-outline-variant/20 pt-3 sm:pt-4 w-full">
-          {activeBrick.context}
-        </p>
+      {/* Context & image if available */}
+      {(activeBrick.context || imageUrl) && (
+        <div className="mt-4 sm:mt-6 border-t border-outline-variant/20 pt-3 sm:pt-4 w-full flex flex-col items-center gap-2.5">
+          {imageUrl && (
+            <div className="relative rounded-2xl overflow-hidden max-h-52 max-w-xs sm:max-w-sm border border-outline-variant/40 bg-surface-container-low shadow-2xs">
+              <img
+                src={imageUrl}
+                alt="Brick context illustration"
+                className="max-h-52 w-auto object-contain mx-auto rounded-xl"
+                loading="lazy"
+              />
+            </div>
+          )}
+          {activeBrick.context && (
+            <p className="text-xs text-on-surface-variant/80 italic text-center">
+              {activeBrick.context}
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

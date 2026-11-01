@@ -53,6 +53,7 @@ interface BrickReadApi {
   kind?: string;
   is_private: boolean;
   target_audio_path: string;
+  image_path?: string | null;
   last_edit_at: string;
   creator_id: number;
   island_id: number;
@@ -120,9 +121,10 @@ function toBrick(api: BrickReadApi): Brick {
     targetText: api.target_text,
     targetLang: api.target_lang || "en",
     targetAudioPath: api.target_audio_path,
+    imagePath: api.image_path ?? null,
     targetPron: api.target_pron,
     context: api.context,
-    kind: api.kind || api.kind || "sentence",
+    kind: api.kind || "sentence",
     isPrivate: api.is_private,
     lastEditAt: api.last_edit_at,
     tags: api.tags || [],
@@ -237,6 +239,33 @@ export async function checkBrickExists(targetText: string): Promise<boolean> {
  */
 export async function getBrickAudioUrl(brickId: number): Promise<string> {
   return request<string>(`/bricks/${brickId}/audio`);
+}
+
+const brickImageUrlCache = new Map<number, string>();
+
+/**
+ * Retrieves the direct image URL for a brick from the backend.
+ * Calls GET /api/bricks/{brick_id}/image
+ *
+ * @param brickId - The unique ID of the brick
+ * @returns The complete public URL to view the image
+ */
+export async function getBrickImageUrl(brickId: number): Promise<string> {
+  const cached = brickImageUrlCache.get(brickId);
+  if (cached) return cached;
+  const url = await request<string>(`/bricks/${brickId}/image`);
+  if (url) {
+    brickImageUrlCache.set(brickId, url);
+  }
+  return url;
+}
+
+export function clearBrickImageCache(brickId?: number) {
+  if (brickId != null) {
+    brickImageUrlCache.delete(brickId);
+  } else {
+    brickImageUrlCache.clear();
+  }
 }
 
 /**

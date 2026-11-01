@@ -24,7 +24,7 @@ import { Plus, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import { type Brick, type AuthMode } from "@/types";
 import { useLearnerMe } from "@/hooks/useLearner";
-import { useSkipBrick } from "@/hooks/useBricks";
+import { useSkipBrick, useBrickImage } from "@/hooks/useBricks";
 import { useHeader } from "@/context/HeaderContext";
 
 interface RetrievalPageProps {
@@ -145,6 +145,11 @@ export default function RetrievalPage({
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
+
+  const { data: activeBrickImageUrl } = useBrickImage(
+    activeBrick?.id,
+    activeBrick?.imagePath,
+  );
 
   const isAnswerRevealed =
     hasRevealedAnswer || isRevealed || hasListenedTargetAudio;
@@ -590,6 +595,7 @@ export default function RetrievalPage({
           targetText={evaluationResult.targetText}
           learnerText={evaluationResult.learnerText}
           context={evaluationResult.context ?? activeBrick?.context}
+          imageUrl={activeBrickImageUrl}
           onClose={() => setEvaluationResult(null)}
           onSubmitReview={handleSubmitReview}
           isSubmitting={isSubmittingReview}

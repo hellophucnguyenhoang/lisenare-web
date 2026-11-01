@@ -15,6 +15,8 @@ export interface Brick {
   targetText: string;
   targetLang?: TargetLang | string;
   targetAudioPath: string;
+  imagePath?: string | null;
+  imageUrl?: string | null;
   targetPron: string | null;
   context: string | null;
   kind: string;
@@ -67,6 +69,9 @@ export interface BrickInitialData {
   tags?: string[];
   audioBlob?: Blob | null;
   audioUrl?: string | null;
+  imageFile?: File | null;
+  imageUrl?: string | null;
+  imagePath?: string | null;
   islandId?: number;
 }
 

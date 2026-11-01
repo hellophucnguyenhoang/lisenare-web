@@ -7,6 +7,7 @@ import {
   RotateCcw,
   CheckCircle2,
   SkipForward,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface BrickCardProps {
@@ -53,7 +54,19 @@ export default function BrickCard({
       className="brick-card bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-5 flex flex-col justify-between shadow-xs relative group hover:border-primary/40 hover:shadow-md transition-all cursor-pointer"
     >
       {/* Header options */}
-      <div className="flex justify-end items-start mb-2">
+      <div className="flex justify-between items-center mb-2">
+        <div>
+          {brick.imagePath && (
+            <span
+              className="text-[10px] font-medium text-outline/80 bg-surface-container px-2 py-0.5 rounded-md flex items-center gap-1"
+              title="Includes context image"
+            >
+              <ImageIcon className="w-3 h-3 text-primary" />
+              <span>Image</span>
+            </span>
+          )}
+        </div>
+
         <div className="relative">
           <button
             type="button"
