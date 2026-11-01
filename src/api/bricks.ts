@@ -61,7 +61,7 @@ interface BrickReadApi {
   is_skipped?: boolean;
 }
 
-export type InteractionType = "LISTEN" | "ADD" | "LIKE" | "REMOVE_REACTION";
+export type InteractionType = "LISTEN" | "ADD";
 
 export interface BrickInteractionCreate {
   session_id: string;
@@ -72,20 +72,26 @@ export interface BrickInteractionCreate {
 export interface BrickCreator {
   id: number;
   name: string;
+  retrievalLang?: string;
+  avatarPath?: string | null;
+}
+
+interface BrickCreatorApi {
+  id: number;
+  name: string;
   retrieval_lang?: string;
+  avatar_path?: string | null;
 }
 
 export interface BrickDetail extends Brick {
   islandName: string;
   creatorId: number;
   creator: BrickCreator;
-  reaction: string | null;
 }
 
 interface BrickDetailApi extends BrickReadApi {
   island_name?: string;
-  creator: BrickCreator;
-  reaction?: string | null;
+  creator: BrickCreatorApi;
 }
 
 interface BrickPageApi {
@@ -131,8 +137,12 @@ function toBrickDetail(api: BrickDetailApi): BrickDetail {
     ...toBrick(api),
     islandName: api.island_name || "",
     creatorId: api.creator_id,
-    creator: api.creator,
-    reaction: api.reaction || null,
+    creator: {
+      id: api.creator.id,
+      name: api.creator.name,
+      retrievalLang: api.creator.retrieval_lang,
+      avatarPath: api.creator.avatar_path ?? null,
+    },
   };
 }
 

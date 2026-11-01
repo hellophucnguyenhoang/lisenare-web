@@ -38,8 +38,8 @@ export interface Learner {
   name: string;
   email?: string | null;
   isEmailVerified?: boolean;
-  avatarUrl?: string;
-  retrieval_lang?: RetrievalLang | string;
+  avatarUrl?: string | null;
+  avatarPath?: string | null;
   retrievalLang?: RetrievalLang | string;
 }
 

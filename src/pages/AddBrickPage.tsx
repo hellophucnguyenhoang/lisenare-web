@@ -33,9 +33,7 @@ export default function AddBrickPage({
   onSuccess,
 }: AddBrickPageProps) {
   const { data: learner } = useLearnerMe();
-  const learnerLang = (learner?.retrieval_lang || learner?.retrievalLang) as
-    | string
-    | undefined;
+  const learnerLang = learner?.retrievalLang as string | undefined;
   const targetLang: TargetLang =
     initialData?.targetLang === "en" ||
     initialData?.targetLang === "ja" ||

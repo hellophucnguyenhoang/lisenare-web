@@ -8,6 +8,7 @@ import { useHeader } from "@/context/HeaderContext";
 import EmailManagerModal from "@/components/profile/EmailManagerModal";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
 import ChangeNameModal from "@/components/profile/ChangeNameModal";
+import ChangeProfilePictureModal from "@/components/profile/ChangeProfilePictureModal";
 import ProfileHeaderCard from "@/components/profile/ProfileHeaderCard";
 import GuestProfileView from "@/components/profile/GuestProfileView";
 import LearningMetricsGrid from "@/components/profile/LearningMetricsGrid";
@@ -36,6 +37,7 @@ export default function ProfilePage({
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
+  const [isProfilePictureModalOpen, setIsProfilePictureModalOpen] = useState(false);
 
   // Timeseries controls
   const [timeseriesMetric, setTimeseriesMetric] = useState<
@@ -88,9 +90,7 @@ export default function ProfilePage({
   const learnerName = learner?.name || "Learner";
   const learnerEmail = learner?.email || "";
   const isEmailVerified = learner?.isEmailVerified ?? Boolean(learnerEmail);
-  const currentRetrievalLang = (learner?.retrieval_lang ||
-    learner?.retrievalLang ||
-    "en") as RetrievalLang;
+  const currentRetrievalLang = (learner?.retrievalLang || "en") as RetrievalLang;
 
   const handleSelectRetrievalLang = (newLang: RetrievalLang) => {
     if (newLang === currentRetrievalLang) return;
@@ -160,9 +160,11 @@ export default function ProfilePage({
       <ProfileHeaderCard
         learnerName={learnerName}
         learnerEmail={learnerEmail}
+        avatarUrl={learner?.avatarUrl}
         isEmailVerified={isEmailVerified}
         onOpenEmailModal={() => setIsEmailModalOpen(true)}
         onOpenNameModal={() => setIsNameModalOpen(true)}
+        onOpenProfilePictureModal={() => setIsProfilePictureModalOpen(true)}
         onReload={handleReload}
         isReloading={isReloading}
       />
@@ -194,6 +196,7 @@ export default function ProfilePage({
         onOpenEmailModal={() => setIsEmailModalOpen(true)}
         onOpenPasswordModal={() => setIsPasswordModalOpen(true)}
         onOpenNameModal={() => setIsNameModalOpen(true)}
+        onOpenProfilePictureModal={() => setIsProfilePictureModalOpen(true)}
         onLogout={onLogout}
       />
 
@@ -215,6 +218,14 @@ export default function ProfilePage({
         isOpen={isNameModalOpen}
         currentName={learnerName}
         onClose={() => setIsNameModalOpen(false)}
+      />
+
+      {/* Change profile picture modal */}
+      <ChangeProfilePictureModal
+        isOpen={isProfilePictureModalOpen}
+        currentPictureUrl={learner?.avatarUrl}
+        learnerName={learnerName}
+        onClose={() => setIsProfilePictureModalOpen(false)}
       />
     </div>
   );

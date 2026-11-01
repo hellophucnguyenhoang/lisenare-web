@@ -4,15 +4,18 @@ import {
   CheckCircle2,
   AlertCircle,
   RotateCcw,
+  Camera,
 } from "lucide-react";
 import { maskEmail } from "@/utils/maskEmail";
 
 interface ProfileHeaderCardProps {
   learnerName: string;
   learnerEmail: string;
+  avatarUrl?: string | null;
   isEmailVerified: boolean;
   onOpenEmailModal: () => void;
   onOpenNameModal: () => void;
+  onOpenProfilePictureModal?: () => void;
   onReload?: () => void;
   isReloading?: boolean;
 }
@@ -20,9 +23,11 @@ interface ProfileHeaderCardProps {
 export default function ProfileHeaderCard({
   learnerName,
   learnerEmail,
+  avatarUrl,
   isEmailVerified,
   onOpenEmailModal,
   onOpenNameModal,
+  onOpenProfilePictureModal,
   onReload,
   isReloading = false,
 }: ProfileHeaderCardProps) {
@@ -31,12 +36,36 @@ export default function ProfileHeaderCard({
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4 sm:gap-5 min-w-0">
           {/* Profile picture */}
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border border-outline-variant/40">
-            <img
-              src="https://placecats.com/300/300"
-              alt={learnerName}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative shrink-0 group">
+            <button
+              type="button"
+              onClick={onOpenProfilePictureModal}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-surface-container shrink-0 border-2 border-outline-variant/40 hover:border-primary/50 transition-all cursor-pointer block text-left"
+              title="Change profile picture"
+              aria-label="Change profile picture"
+            >
+              <img
+                src={avatarUrl || "https://placecats.com/300/300"}
+                alt={learnerName}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src =
+                    "https://placecats.com/300/300";
+                }}
+              />
+            </button>
+            {onOpenProfilePictureModal && (
+              <button
+                type="button"
+                id="btn-edit-profile-picture"
+                onClick={onOpenProfilePictureModal}
+                className="absolute -bottom-1 -right-1 p-1 sm:p-1.5 rounded-full bg-primary text-on-primary hover:bg-primary/90 shadow-md transition-all active:scale-95 cursor-pointer border-2 border-surface-container-lowest"
+                title="Change profile picture"
+                aria-label="Change profile picture"
+              >
+                <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Learner info */}

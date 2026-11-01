@@ -1,4 +1,4 @@
-import { ShieldCheck, Mail, KeyRound, Edit3, LogOut } from "lucide-react";
+import { ShieldCheck, Mail, KeyRound, Edit3, LogOut, Camera } from "lucide-react";
 
 interface AccountSettingsSectionProps {
   learnerEmail: string;
@@ -6,6 +6,7 @@ interface AccountSettingsSectionProps {
   onOpenEmailModal: () => void;
   onOpenPasswordModal: () => void;
   onOpenNameModal: () => void;
+  onOpenProfilePictureModal?: () => void;
   onLogout?: () => void;
 }
 
@@ -15,6 +16,7 @@ export default function AccountSettingsSection({
   onOpenEmailModal,
   onOpenPasswordModal,
   onOpenNameModal,
+  onOpenProfilePictureModal,
   onLogout,
 }: AccountSettingsSectionProps) {
   return (
@@ -24,7 +26,29 @@ export default function AccountSettingsSection({
         Account settings
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5">
+        {/* Profile picture */}
+        {onOpenProfilePictureModal && (
+          <button
+            type="button"
+            id="btn-profile-picture-settings"
+            onClick={onOpenProfilePictureModal}
+            className="p-3 bg-surface hover:bg-surface-container border border-outline-variant/50 rounded-xl text-left transition-all active:scale-98 group flex items-center gap-3 cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <Camera className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-on-surface group-hover:text-primary transition-colors truncate">
+                Profile picture
+              </h4>
+              <p className="text-[10px] text-outline truncate">
+                Update picture
+              </p>
+            </div>
+          </button>
+        )}
+
         {/* Email settings */}
         <button
           type="button"

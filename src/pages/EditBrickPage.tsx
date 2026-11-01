@@ -27,9 +27,7 @@ interface EditBrickPageProps {
 
 export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
   const { data: learner } = useLearnerMe();
-  const learnerLang = (learner?.retrieval_lang || learner?.retrievalLang) as
-    | string
-    | undefined;
+  const learnerLang = learner?.retrievalLang as string | undefined;
   const fallbackLang: TargetLang =
     learnerLang === "ja" || learnerLang === "vi" || learnerLang === "en"
       ? learnerLang

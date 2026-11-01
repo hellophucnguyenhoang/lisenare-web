@@ -163,6 +163,10 @@ export default function Header({
                     src={learnerAvatar}
                     alt={learnerName}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        "https://placecats.com/300/300";
+                    }}
                   />
                 </div>
                 <span className="font-bold text-xs">{learnerName}</span>
@@ -186,6 +190,10 @@ export default function Header({
                         src={learnerAvatar}
                         alt={learnerName}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            "https://placecats.com/300/300";
+                        }}
                       />
                     </div>
                     <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>

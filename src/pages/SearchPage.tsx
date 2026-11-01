@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Volume2,
-  Heart,
   Plus,
   ArrowUp,
   Sparkles,
@@ -81,7 +80,6 @@ export default function SearchPage({
 
   // Audio & interaction states
   const [playingBrickId, setPlayingBrickId] = useState<number | null>(null);
-  const [likedMap, setLikedMap] = useState<Record<number, boolean>>({});
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Search state
@@ -249,32 +247,6 @@ export default function SearchPage({
     setPlayingBrickId(brickId);
     playShortAudio(brickId, undefined, () => {
       setPlayingBrickId((curr) => (curr === brickId ? null : curr));
-    });
-  };
-
-  // Like brick: toggles state and asynchronously notifies backend profile without loading new bricks
-  const handleToggleLike = (
-    brickId: number,
-    currentReaction?: string | null,
-    e?: React.MouseEvent,
-  ) => {
-    if (e) e.stopPropagation();
-    if (!isLoggedIn) {
-      toast.error("Please sign in to react to bricks.");
-      onOpenAuth?.("login");
-      return;
-    }
-    const isCurrentlyLiked =
-      likedMap[brickId] !== undefined
-        ? likedMap[brickId]
-        : currentReaction === "LIKE";
-    const nextLiked = !isCurrentlyLiked;
-    setLikedMap((prev) => ({ ...prev, [brickId]: nextLiked }));
-
-    void createBrickInteraction({
-      session_id: sessionId,
-      brick_id: brickId,
-      interaction_type: nextLiked ? "LIKE" : "REMOVE_REACTION",
     });
   };
 
@@ -582,7 +554,6 @@ export default function SearchPage({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {recommendedBricks.map((brick) => {
                   const isPlaying = playingBrickId === brick.id;
-                  const isLiked = likedMap[brick.id] ?? false;
 
                   return (
                     <div
@@ -639,24 +610,6 @@ export default function SearchPage({
                         >
                           <Volume2
                             className={`w-4 h-4 ${isPlaying ? "animate-pulse" : ""}`}
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={(e) =>
-                            handleToggleLike(brick.id, undefined, e)
-                          }
-                          className={`p-2 rounded-xl transition-all active:scale-95 cursor-pointer ${
-                            isLiked
-                              ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40"
-                              : "bg-surface-container hover:bg-surface-container-high text-outline hover:text-rose-500"
-                          }`}
-                          title={isLiked ? "Unlike" : "Like"}
-                          aria-label={isLiked ? "Unlike" : "Like"}
-                        >
-                          <Heart
-                            className={`w-4 h-4 ${isLiked ? "fill-rose-500 text-rose-500" : ""}`}
                           />
                         </button>
 
