@@ -10,8 +10,8 @@ import { transcribeAudio } from "@/api/evaluation";
 import { MAX_ISLAND_BRICKS } from "@/config/constants";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
-import BrickImageSection from "@/components/bricks/BrickImageSection";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
+import BrickOptionalSection from "@/components/bricks/BrickOptionalSection";
 import BrickUnitTypeSelector, {
   type UnitType,
 } from "@/components/bricks/BrickUnitTypeSelector";
@@ -299,38 +299,38 @@ export default function AddBrickPage({
           onSelectIsland={setSelectedIslandId}
         />
 
-        {/* Languages inputs */}
+        {/* Core inputs: Native sentence, Target sentence, and Target audio */}
         <BrickTextInputs
           nativeText={nativeText}
           onNativeTextChange={setNativeText}
           targetText={targetText}
           onTargetTextChange={setTargetText}
           targetLang={targetLang}
-          pronunciation={pronunciation}
-          onPronunciationChange={setPronunciation}
-          context={context}
-          onContextChange={setContext}
           targetExists={isTargetExists}
           isCheckingTargetExists={isCheckingTargetExists}
           onGenerateAudio={handleAutoGenerateAudio}
           isGeneratingAudio={textToSpeechMutation.isPending}
-        />
+        >
+          <BrickAudioSection
+            audioBlob={audioBlob}
+            onAudioChange={setAudioBlob}
+            existingAudioPath={initialData?.audioUrl}
+            onTranscribeAudio={handleTranscribeAudio}
+            isTranscribingAudio={isTranscribingAudio}
+            embedded
+          />
+        </BrickTextInputs>
 
-        {/* Context image section */}
-        <BrickImageSection
+        {/* Optional details: Target pronunciation, Context, Image */}
+        <BrickOptionalSection
+          pronunciation={pronunciation}
+          onPronunciationChange={setPronunciation}
+          context={context}
+          onContextChange={setContext}
           imageFile={imageFile}
           onImageFileChange={setImageFile}
           existingImageUrl={initialData?.imageUrl}
           existingImagePath={initialData?.imagePath}
-        />
-
-        {/* Pronunciation recording / Preview section */}
-        <BrickAudioSection
-          audioBlob={audioBlob}
-          onAudioChange={setAudioBlob}
-          existingAudioPath={initialData?.audioUrl}
-          onTranscribeAudio={handleTranscribeAudio}
-          isTranscribingAudio={isTranscribingAudio}
         />
 
         {/* Kind section: Word or Sentence */}

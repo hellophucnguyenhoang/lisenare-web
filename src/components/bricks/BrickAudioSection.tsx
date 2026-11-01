@@ -1,5 +1,13 @@
 import { useState, useRef, useMemo, useEffect, type ChangeEvent } from "react";
-import { Mic, Upload, Volume2, Loader2, Square, Bot } from "lucide-react";
+import {
+  Mic,
+  Upload,
+  Volume2,
+  Loader2,
+  Square,
+  Bot,
+  HelpCircle,
+} from "lucide-react";
 import {
   playShortAudio,
   playBrickAudio,
@@ -10,6 +18,52 @@ import {
 } from "@/utils/audio";
 import { toast } from "sonner";
 
+function InfoTooltip({ text }: { text: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  return (
+    <div ref={containerRef} className="relative inline-flex items-center">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        className="p-0.5 rounded-full text-outline hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer select-none"
+        aria-label="Information"
+        title={text}
+      >
+        <HelpCircle className="w-3.5 h-3.5" />
+      </button>
+
+      {isOpen && (
+        <div
+          role="tooltip"
+          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-60 sm:w-68 p-2.5 bg-on-surface text-surface text-[11px] leading-relaxed font-normal rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none"
+        >
+          {text}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface BrickAudioSectionProps {
   audioBlob: Blob | null;
   onAudioChange: (blob: Blob | null) => void;
@@ -17,6 +71,7 @@ interface BrickAudioSectionProps {
   brickId?: number;
   onTranscribeAudio?: () => void;
   isTranscribingAudio?: boolean;
+  embedded?: boolean;
 }
 
 export default function BrickAudioSection({
@@ -26,6 +81,7 @@ export default function BrickAudioSection({
   brickId,
   onTranscribeAudio,
   isTranscribingAudio = false,
+  embedded = false,
 }: BrickAudioSectionProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
@@ -157,8 +213,8 @@ export default function BrickAudioSection({
         ? "Tap to listen"
         : "Record or upload audio below";
 
-  return (
-    <section className="space-y-3">
+  const content = (
+    <>
       {/* Hidden audio file input */}
       <input
         ref={fileInputRef}
@@ -168,127 +224,148 @@ export default function BrickAudioSection({
         className="hidden"
       />
 
-      <h2 className="text-lg font-bold font-display text-on-surface px-1">
-        Target sentence audio
-      </h2>
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex flex-col gap-4">
-        {/* Playable audio card with generous touch target */}
-        <div
-          onClick={
-            hasPlayableAudio && !isLoadingAudio ? handlePlayAudio : undefined
-          }
-          className={`flex items-center justify-between w-full rounded-2xl p-3.5 sm:p-4 border transition-all select-none touch-manipulation [-webkit-tap-highlight-color:transparent] ${
-            hasPlayableAudio
-              ? "bg-surface-container-low hover:bg-surface-container border-outline-variant/40 shadow-xs cursor-pointer active:scale-[0.99]"
-              : "bg-surface-container-low/50 border-dashed border-outline-variant/50 cursor-default"
-          }`}
-        >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <button
-              type="button"
-              onClick={handlePlayAudio}
-              disabled={!hasPlayableAudio || isLoadingAudio}
-              className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs touch-manipulation [-webkit-tap-highlight-color:transparent] ${
-                isPlayingAudio
-                  ? "bg-primary text-on-primary ring-4 ring-primary/20 scale-105"
-                  : "bg-primary text-on-primary active:scale-95 hover:brightness-105"
-              } disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
-              title={
-                isLoadingAudio
-                  ? "Loading audio..."
-                  : isPlayingAudio
-                    ? "Stop audio"
-                    : "Play pronunciation"
-              }
-              aria-label={
-                isPlayingAudio ? "Stop pronunciation" : "Play pronunciation"
-              }
-            >
-              {isLoadingAudio ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : isPlayingAudio ? (
-                <Square className="w-4 h-4 fill-current" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
-            </button>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-on-surface truncate">
-                {statusTitle}
-              </div>
-              <div className="text-[11px] text-on-surface-variant truncate">
-                {statusSubtitle}
-              </div>
+      {/* Playable audio card with generous touch target */}
+      <div
+        onClick={
+          hasPlayableAudio && !isLoadingAudio ? handlePlayAudio : undefined
+        }
+        className={`flex items-center justify-between w-full rounded-2xl p-3.5 sm:p-4 border transition-all select-none touch-manipulation [-webkit-tap-highlight-color:transparent] ${
+          hasPlayableAudio
+            ? "bg-surface-container-low hover:bg-surface-container border-outline-variant/40 shadow-xs cursor-pointer active:scale-[0.99]"
+            : "bg-surface-container-low/50 border-dashed border-outline-variant/50 cursor-default"
+        }`}
+      >
+        <div className="flex items-center gap-3.5 min-w-0">
+          <button
+            type="button"
+            onClick={handlePlayAudio}
+            disabled={!hasPlayableAudio || isLoadingAudio}
+            className={`w-11 h-11 shrink-0 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-xs touch-manipulation [-webkit-tap-highlight-color:transparent] ${
+              isPlayingAudio
+                ? "bg-primary text-on-primary ring-4 ring-primary/20 scale-105"
+                : "bg-primary text-on-primary active:scale-95 hover:brightness-105"
+            } disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none`}
+            title={
+              isLoadingAudio
+                ? "Loading audio..."
+                : isPlayingAudio
+                  ? "Stop audio"
+                  : "Play pronunciation"
+            }
+            aria-label={
+              isPlayingAudio ? "Stop pronunciation" : "Play pronunciation"
+            }
+          >
+            {isLoadingAudio ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : isPlayingAudio ? (
+              <Square className="w-4 h-4 fill-current" />
+            ) : (
+              <Volume2 className="w-5 h-5" />
+            )}
+          </button>
+          <div className="min-w-0">
+            <div className="text-xs font-bold text-on-surface truncate">
+              {statusTitle}
+            </div>
+            <div className="text-[11px] text-on-surface-variant truncate">
+              {statusSubtitle}
             </div>
           </div>
-
-          {isPlayingAudio && (
-            <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-md shrink-0 animate-pulse">
-              Playing
-            </span>
-          )}
         </div>
 
-        {/* Action buttons : Record new  & Upload file  */}
-        <div className="grid grid-cols-2 gap-3 pt-1">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRecord();
-            }}
-            className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ${
-              isRecording
-                ? "bg-error text-on-error"
-                : "bg-primary/10 text-primary hover:bg-primary/20"
-            }`}
-          >
-            <Mic className="w-4 h-4" />
-            <span>{isRecording ? "Stop recording" : "Record audio"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              fileInputRef.current?.click();
-            }}
-            className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface text-on-surface-variant font-bold text-xs hover:bg-surface-container transition-all active:scale-95 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
-          >
-            <Upload className="w-4 h-4" />
-            <span>Upload file</span>
-          </button>
-        </div>
-
-        {/* Transcribe audio button */}
-        {onTranscribeAudio && (
-          <div className="flex items-center justify-between gap-2 pt-0.5">
-            <button
-              type="button"
-              id="btn-transcribe-audio"
-              onClick={onTranscribeAudio}
-              disabled={!audioBlob || isTranscribingAudio}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200/90 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              title={
-                !audioBlob
-                  ? "Record or upload audio first"
-                  : "Transcribe audio using AI speech-to-text"
-              }
-            >
-              {isTranscribingAudio ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
-                  <span>Transcribing audio...</span>
-                </>
-              ) : (
-                <>
-                  <Bot className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Transcribe audio</span>
-                </>
-              )}
-            </button>
-          </div>
+        {isPlayingAudio && (
+          <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-md shrink-0 animate-pulse">
+            Playing
+          </span>
         )}
+      </div>
+
+      {/* Action buttons : Record new  & Upload file  */}
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRecord();
+          }}
+          className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs transition-all active:scale-95 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent] ${
+            isRecording
+              ? "bg-error text-on-error"
+              : "bg-primary/10 text-primary hover:bg-primary/20"
+          }`}
+        >
+          <Mic className="w-4 h-4" />
+          <span>{isRecording ? "Stop recording" : "Record audio"}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            fileInputRef.current?.click();
+          }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface text-on-surface-variant font-bold text-xs hover:bg-surface-container transition-all active:scale-95 cursor-pointer touch-manipulation [-webkit-tap-highlight-color:transparent]"
+        >
+          <Upload className="w-4 h-4" />
+          <span>Upload file</span>
+        </button>
+      </div>
+
+      {/* Transcribe audio button */}
+      {onTranscribeAudio && (
+        <div className="flex items-center justify-between gap-2 pt-0.5">
+          <button
+            type="button"
+            id="btn-transcribe-audio"
+            onClick={onTranscribeAudio}
+            disabled={!audioBlob || isTranscribingAudio}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-800 bg-amber-100 hover:bg-amber-200/90 rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title={
+              !audioBlob
+                ? "Record or upload audio first"
+                : "Transcribe audio using AI speech-to-text"
+            }
+          >
+            {isTranscribingAudio ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-700" />
+                <span>Transcribing audio...</span>
+              </>
+            ) : (
+              <>
+                <Bot className="w-3.5 h-3.5 text-amber-700" />
+                <span>Transcribe audio</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="flex flex-col gap-2.5">
+        <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
+          <span>Target audio</span>
+          <InfoTooltip text="The target sound you want to speak." />
+        </label>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center gap-1.5 px-1">
+        <h2 className="text-lg font-bold font-display text-on-surface">
+          Target audio
+        </h2>
+        <InfoTooltip text="The target sound you want to speak." />
+      </div>
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex flex-col gap-4">
+        {content}
       </div>
     </section>
   );

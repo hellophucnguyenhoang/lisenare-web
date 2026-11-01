@@ -3,9 +3,6 @@ import {
   X,
   Play,
   Pause,
-  RotateCcw,
-  SkipForward,
-  SkipBack,
   Shuffle,
   Repeat,
   Eye,
@@ -87,7 +84,6 @@ export default function ListeningRetrievalModal({
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const {
     data,
@@ -189,15 +185,6 @@ export default function ListeningRetrievalModal({
       .then(() => setIsPlaying(true))
       .catch(() => setIsPlaying(false));
   }, []);
-
-  // Auto-scroll active item into view
-  useEffect(() => {
-    if (!isOpen) return;
-    const el = itemRefs.current[currentIndex];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }, [currentIndex, isOpen]);
 
   // Move next
   const handleNext = useCallback(() => {
@@ -447,8 +434,8 @@ export default function ListeningRetrievalModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top header */}
-        <div className="px-5 py-3 border-b border-outline-variant/30 flex items-center justify-between gap-3 bg-surface-container-low/40">
-          <div className="min-w-0">
+        <div className="px-4 sm:px-5 py-3 border-b border-outline-variant/30 flex items-center justify-between gap-2.5 sm:gap-3 bg-surface-container-low/40">
+          <div className="min-w-0 flex-1">
             <h2 className="text-sm font-bold text-on-surface truncate flex items-center gap-1.5">
               <span>Listen bricks</span>
               {islandName && (
@@ -464,122 +451,51 @@ export default function ListeningRetrievalModal({
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            {/* Playback mode switcher */}
-            <div className="inline-flex p-0.5 rounded-xl bg-surface-container border border-outline-variant/40 mr-1">
-              {(["auto", "manual"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => {
-                    setPlaybackMode(mode);
-                    clearTimer();
-                  }}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                    playbackMode === mode
-                      ? "bg-surface-container-lowest text-primary shadow-xs"
-                      : "text-on-surface-variant hover:text-on-surface"
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Autoplay switch */}
+            <button
+              type="button"
+              role="switch"
+              id="btn-listening-autoplay"
+              aria-checked={playbackMode === "auto"}
+              onClick={() => {
+                setPlaybackMode((prev) =>
+                  prev === "auto" ? "manual" : "auto",
+                );
+                clearTimer();
+              }}
+              className="flex items-center gap-2 py-1 px-2.5 rounded-xl hover:bg-surface-container/60 transition-colors cursor-pointer select-none"
+              title={
+                playbackMode === "auto"
+                  ? "Autoplay is on • Advances to next brick automatically"
+                  : "Autoplay is off • Manual playback"
+              }
+              aria-label="Autoplay"
+            >
+              <span className="text-xs font-bold text-on-surface select-none">
+                Autoplay
+              </span>
+              <span
+                aria-hidden="true"
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                  playbackMode === "auto"
+                    ? "bg-primary"
+                    : "bg-outline-variant/60"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${
+                    playbackMode === "auto" ? "translate-x-4" : "translate-x-0"
                   }`}
-                  title={
-                    mode === "auto"
-                      ? "Auto-play: advances down the list automatically"
-                      : "Manual: click any brick to play"
-                  }
-                >
-                  {mode === "auto" ? "Auto" : "Manual"}
-                </button>
-              ))}
-            </div>
-
-            {/* Toggle show native text */}
-            <button
-              type="button"
-              onClick={handleToggleShowNative}
-              className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
-                showNative
-                  ? "text-outline hover:text-on-surface hover:bg-surface-container"
-                  : "bg-amber-500/15 text-amber-600 font-bold"
-              }`}
-              title={
-                showNative
-                  ? "Native text visible • Click to hide (N)"
-                  : "Native text hidden • Click to show (N)"
-              }
-              aria-label="Toggle native text"
-            >
-              {showNative ? (
-                <Eye className="w-4 h-4" />
-              ) : (
-                <EyeOff className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Toggle show target text */}
-            <button
-              type="button"
-              onClick={handleToggleShowTarget}
-              className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
-                showTarget
-                  ? "text-outline hover:text-on-surface hover:bg-surface-container"
-                  : "bg-primary/15 text-primary font-bold"
-              }`}
-              title={
-                showTarget
-                  ? "Target text visible • Click to hide (T)"
-                  : "Target text hidden • Click to show (T)"
-              }
-              aria-label="Toggle target text"
-            >
-              {showTarget ? (
-                <Eye className="w-4 h-4" />
-              ) : (
-                <EyeOff className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Loop / Auto play again */}
-            <button
-              type="button"
-              onClick={handleToggleAutoPlayAgain}
-              className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
-                autoPlayAgain
-                  ? "bg-primary/15 text-primary font-bold shadow-2xs"
-                  : "text-outline hover:text-on-surface hover:bg-surface-container"
-              }`}
-              title={
-                autoPlayAgain
-                  ? "Loop enabled (restarts at end)"
-                  : "Loop disabled"
-              }
-              aria-label="Toggle auto play again"
-            >
-              <Repeat className="w-4 h-4" />
-            </button>
-
-            {/* Shuffle */}
-            <button
-              type="button"
-              onClick={handleToggleShuffle}
-              className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
-                shuffleEnabled
-                  ? "bg-primary/15 text-primary font-bold shadow-2xs"
-                  : "text-outline hover:text-on-surface hover:bg-surface-container"
-              }`}
-              title={
-                shuffleEnabled
-                  ? "Shuffle enabled (random order)"
-                  : "Sequential order"
-              }
-              aria-label="Toggle shuffle"
-            >
-              <Shuffle className="w-4 h-4" />
+                />
+              </span>
             </button>
 
             {/* Close button */}
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer ml-1"
+              className="p-2 rounded-xl text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
@@ -635,9 +551,6 @@ export default function ListeningRetrievalModal({
                 return (
                   <div
                     key={`${brick.audio_path}-${displayIdx}`}
-                    ref={(el) => {
-                      itemRefs.current[displayIdx] = el;
-                    }}
                     onClick={() => handleSelectBrick(displayIdx)}
                     className={`group w-full text-left p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer flex items-start gap-3 select-none ${
                       isActive
@@ -763,59 +676,96 @@ export default function ListeningRetrievalModal({
           )}
         </div>
 
-        {/* Minimal sticky bottom player bar */}
+        {/* Bottom controls bar */}
         {!isLoading && !isError && rawItems.length > 0 && (
-          <div className="px-5 py-2.5 border-t border-outline-variant/30 bg-surface-container-low/50 flex items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={handleReplay}
-              className="p-2 rounded-xl text-outline hover:text-primary hover:bg-surface-container active:scale-95 transition-all cursor-pointer"
-              title="Replay (R)"
-              aria-label="Replay current audio"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+          <div className="px-4 sm:px-6 py-2.5 sm:py-3 border-t border-outline-variant/30 bg-surface-container-low/60 flex items-center justify-between gap-2">
+            {/* Left: Reveal toggles */}
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              {/* Toggle show native text */}
+              <button
+                type="button"
+                onClick={handleToggleShowNative}
+                className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                  showNative
+                    ? "text-outline hover:text-on-surface hover:bg-surface-container"
+                    : "bg-surface-container text-on-surface-variant font-bold border border-outline-variant/60"
+                }`}
+                title={
+                  showNative
+                    ? "Native text visible • Click to hide (N)"
+                    : "Native text hidden • Click to show (N)"
+                }
+                aria-label="Toggle native text"
+              >
+                {showNative ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <EyeOff className="w-4 h-4" />
+                )}
+              </button>
 
-            <button
-              type="button"
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-              className="p-2 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-              title="Previous brick (Left arrow / Up arrow)"
-              aria-label="Previous brick"
-            >
-              <SkipBack className="w-4 h-4" />
-            </button>
+              {/* Toggle show target text */}
+              <button
+                type="button"
+                onClick={handleToggleShowTarget}
+                className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                  showTarget
+                    ? "text-outline hover:text-on-surface hover:bg-surface-container"
+                    : "bg-primary/15 text-primary font-bold"
+                }`}
+                title={
+                  showTarget
+                    ? "Target text visible • Click to hide (T)"
+                    : "Target text hidden • Click to show (T)"
+                }
+                aria-label="Toggle target text"
+              >
+                {showTarget ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <EyeOff className="w-4 h-4" />
+                )}
+              </button>
+            </div>
 
-            <button
-              type="button"
-              id="btn-listening-footer-play"
-              onClick={handleTogglePlay}
-              className="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-xs hover:bg-primary/95 active:scale-95 transition-all cursor-pointer"
-              title={isPlaying ? "Pause (Space)" : "Listen (Space)"}
-              aria-label={isPlaying ? "Pause" : "Listen"}
-            >
-              {isPlaying ? (
-                <Pause className="w-4 h-4 fill-current" />
-              ) : (
-                <Play className="w-4 h-4 fill-current ml-0.5" />
-              )}
-            </button>
+            {/* Right: Playback options (Shuffle, Loop) */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={handleToggleShuffle}
+                className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                  shuffleEnabled
+                    ? "bg-primary/15 text-primary font-bold shadow-2xs"
+                    : "text-outline hover:text-on-surface hover:bg-surface-container"
+                }`}
+                title={
+                  shuffleEnabled
+                    ? "Shuffle enabled (random order)"
+                    : "Sequential order"
+                }
+                aria-label="Toggle shuffle"
+              >
+                <Shuffle className="w-4 h-4" />
+              </button>
 
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={
-                !autoPlayAgain &&
-                !hasNextPage &&
-                currentIndex >= order.length - 1
-              }
-              className="p-2 rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container active:scale-95 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-              title="Next brick (Right arrow / Down arrow)"
-              aria-label="Next brick"
-            >
-              <SkipForward className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={handleToggleAutoPlayAgain}
+                className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                  autoPlayAgain
+                    ? "bg-primary/15 text-primary font-bold shadow-2xs"
+                    : "text-outline hover:text-on-surface hover:bg-surface-container"
+                }`}
+                title={
+                  autoPlayAgain
+                    ? "Loop enabled (restarts at end)"
+                    : "Loop disabled"
+                }
+                aria-label="Toggle auto play again"
+              >
+                <Repeat className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>

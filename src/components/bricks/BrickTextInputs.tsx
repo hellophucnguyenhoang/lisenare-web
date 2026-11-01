@@ -75,14 +75,11 @@ interface BrickTextInputsProps {
   onTargetTextChange: (value: string) => void;
   targetLang?: TargetLang;
   onTargetLangChange?: (value: TargetLang) => void;
-  pronunciation: string;
-  onPronunciationChange: (value: string) => void;
-  context?: string;
-  onContextChange?: (value: string) => void;
   targetExists?: boolean;
   isCheckingTargetExists?: boolean;
   onGenerateAudio?: () => void;
   isGeneratingAudio?: boolean;
+  children?: React.ReactNode;
 }
 
 export default function BrickTextInputs({
@@ -92,14 +89,11 @@ export default function BrickTextInputs({
   onTargetTextChange,
   targetLang = "en",
   onTargetLangChange,
-  pronunciation,
-  onPronunciationChange,
-  context = "",
-  onContextChange,
   targetExists = false,
   isCheckingTargetExists = false,
   onGenerateAudio,
   isGeneratingAudio = false,
+  children,
 }: BrickTextInputsProps) {
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef<HTMLDivElement>(null);
@@ -281,33 +275,7 @@ export default function BrickTextInputs({
         )}
       </div>
 
-      {/* Target pronunciation */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Target pronunciation (optional)</span>
-          <InfoTooltip text="Optional pronunciation guide." />
-        </label>
-        <PlainTextInput
-          value={pronunciation}
-          onChange={onPronunciationChange}
-          placeholder="Phonetic transcription e.g. /wɛər ɪz ðə ˈlaɪbrɛri/"
-          className="w-full h-12 px-4 rounded-xl bg-surface border-2 border-transparent focus-within:border-primary text-xs font-mono outline-none"
-        />
-      </div>
-
-      {/* Context */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
-          <span>Context (optional)</span>
-          <InfoTooltip text="Optional scenario, context, or notes to help remember how it's used." />
-        </label>
-        <PlainTextInput
-          value={context}
-          onChange={onContextChange ?? (() => {})}
-          placeholder="Usage situation, clip source, or notes e.g. At the airport check-in..."
-          className="w-full h-12 px-4 rounded-xl bg-surface border-2 border-transparent focus-within:border-primary text-xs outline-none"
-        />
-      </div>
+      {children}
     </section>
   );
 }

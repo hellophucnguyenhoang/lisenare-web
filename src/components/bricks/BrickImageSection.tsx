@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Image as ImageIcon, Upload, X, AlertCircle } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Upload,
+  X,
+  AlertCircle,
+  HelpCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface BrickImageSectionProps {
@@ -9,32 +15,46 @@ interface BrickImageSectionProps {
   existingImagePath?: string | null;
   onRemoveExistingImage?: () => void;
   disabled?: boolean;
+  embedded?: boolean;
 }
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 function InfoTooltip({ text }: { text: string }) {
-  const [show, setShow] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
 
   return (
-    <div
-      className="relative inline-flex items-center"
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
+    <div ref={containerRef} className="relative inline-flex items-center">
       <button
         type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          setShow((prev) => !prev);
-        }}
-        className="w-4 h-4 rounded-full border border-outline/40 text-outline flex items-center justify-center text-[10px] font-bold hover:text-primary hover:border-primary transition-colors cursor-pointer"
-        aria-label="More information"
+        onClick={() => setIsOpen((prev) => !prev)}
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
+        className="p-0.5 rounded-full text-outline hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer select-none"
+        aria-label="Information"
+        title={text}
       >
-        i
+        <HelpCircle className="w-3.5 h-3.5" />
       </button>
 
-      {show && (
+      {isOpen && (
         <div
           role="tooltip"
           className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 w-60 sm:w-68 p-2.5 bg-on-surface text-surface text-[11px] leading-relaxed font-normal rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none"
@@ -53,6 +73,7 @@ export default function BrickImageSection({
   existingImagePath,
   onRemoveExistingImage,
   disabled = false,
+  embedded = false,
 }: BrickImageSectionProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -140,13 +161,19 @@ export default function BrickImageSection({
   const currentDisplayUrl = previewUrl || existingImageUrl;
   const hasImage = Boolean(currentDisplayUrl || imageFile || existingImagePath);
 
-  return (
-    <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
+  const content = (
+    <>
       <div className="flex items-center justify-between">
         <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
           <ImageIcon className="w-4 h-4 text-primary" />
-          <span>Context image (optional)</span>
-          <InfoTooltip text="Optional image or GIF illustration to enrich the brick context and aid visual memory." />
+          <span>{embedded ? "Image" : "Context image (optional)"}</span>
+          <InfoTooltip
+            text={
+              embedded
+                ? "Image or GIF illustration to enrich the brick context and aid visual memory."
+                : "Optional image or GIF illustration to enrich the brick context and aid visual memory."
+            }
+          />
         </label>
         {hasImage && !disabled && (
           <button
@@ -204,7 +231,7 @@ export default function BrickImageSection({
                   {imageFile.name} ({(imageFile.size / (1024 * 1024)).toFixed(1)} MB)
                 </>
               ) : (
-                "Current context image"
+                "Current image"
               )}
             </span>
             {!disabled && (
@@ -246,6 +273,16 @@ export default function BrickImageSection({
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="flex flex-col gap-2">{content}</div>;
+  }
+
+  return (
+    <section className="bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-5 sm:p-6 shadow-xs space-y-3">
+      {content}
     </section>
   );
 }

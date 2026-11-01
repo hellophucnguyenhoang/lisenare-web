@@ -12,8 +12,8 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { playShortAudio } from "@/utils/audio";
 import { toast } from "sonner";
 import BrickTextInputs from "@/components/bricks/BrickTextInputs";
-import BrickImageSection from "@/components/bricks/BrickImageSection";
 import BrickAudioSection from "@/components/bricks/BrickAudioSection";
+import BrickOptionalSection from "@/components/bricks/BrickOptionalSection";
 import BrickUnitTypeSelector, {
   type UnitType,
 } from "@/components/bricks/BrickUnitTypeSelector";
@@ -213,7 +213,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           onSelectIsland={setSelectedIslandId}
         />
 
-        {/* Core text inputs */}
+        {/* Core inputs: Native sentence, Target sentence, and Target audio */}
         <BrickTextInputs
           nativeText={nativeText}
           onNativeTextChange={setNativeText}
@@ -221,18 +221,26 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
           onTargetTextChange={setTargetText}
           targetLang={targetLang}
           onTargetLangChange={setTargetLang}
-          pronunciation={pronunciation}
-          onPronunciationChange={setPronunciation}
-          context={context}
-          onContextChange={setContext}
           targetExists={isTargetExists}
           isCheckingTargetExists={isCheckingTargetExists}
           onGenerateAudio={handleAutoGenerateAudio}
           isGeneratingAudio={textToSpeechMutation.isPending}
-        />
+        >
+          <BrickAudioSection
+            audioBlob={audioBlob}
+            onAudioChange={setAudioBlob}
+            existingAudioPath={brick.targetAudioPath}
+            brickId={brick.id}
+            embedded
+          />
+        </BrickTextInputs>
 
-        {/* Context image section */}
-        <BrickImageSection
+        {/* Optional details: Target pronunciation, Context, Image */}
+        <BrickOptionalSection
+          pronunciation={pronunciation}
+          onPronunciationChange={setPronunciation}
+          context={context}
+          onContextChange={setContext}
           imageFile={imageFile}
           onImageFileChange={(file) => {
             setImageFile(file);
@@ -244,14 +252,6 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
             setRemovedExistingImage(true);
             setImageFile(null);
           }}
-        />
-
-        {/* Pronunciation audio section */}
-        <BrickAudioSection
-          audioBlob={audioBlob}
-          onAudioChange={setAudioBlob}
-          existingAudioPath={brick.targetAudioPath}
-          brickId={brick.id}
         />
 
         {/* Kind section: Word or Sentence */}

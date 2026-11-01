@@ -186,11 +186,32 @@ export default function RetrievalFlashcard({
       </div>
 
       {/* Native phrase */}
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-3 sm:mb-4">
         <h2 className="text-base md:text-lg lg:text-xl font-bold font-display text-on-background tracking-tight leading-snug">
           {activeBrick.nativeText}
         </h2>
       </div>
+
+      {/* Context & image if available */}
+      {(activeBrick.context || imageUrl) && (
+        <div className="mb-4 sm:mb-5 w-full flex flex-col items-center gap-2.5">
+          {imageUrl && (
+            <div className="relative rounded-2xl overflow-hidden max-h-52 max-w-xs sm:max-w-sm border border-outline-variant/40 bg-surface-container-low shadow-2xs">
+              <img
+                src={imageUrl}
+                alt="Brick context illustration"
+                className="max-h-52 w-auto object-contain mx-auto rounded-xl"
+                loading="lazy"
+              />
+            </div>
+          )}
+          {activeBrick.context && (
+            <p className="text-xs text-on-surface-variant/80 italic text-center">
+              {activeBrick.context}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Action controls: Target audio listen & Reveal toggle */}
       <div className="flex items-center justify-center gap-3 my-2">
@@ -275,27 +296,6 @@ export default function RetrievalFlashcard({
           {activeBrick.targetPron && (
             <p className="text-xs text-outline font-mono select-none mt-1">
               {activeBrick.targetPron}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Context & image if available */}
-      {(activeBrick.context || imageUrl) && (
-        <div className="mt-4 sm:mt-6 border-t border-outline-variant/20 pt-3 sm:pt-4 w-full flex flex-col items-center gap-2.5">
-          {imageUrl && (
-            <div className="relative rounded-2xl overflow-hidden max-h-52 max-w-xs sm:max-w-sm border border-outline-variant/40 bg-surface-container-low shadow-2xs">
-              <img
-                src={imageUrl}
-                alt="Brick context illustration"
-                className="max-h-52 w-auto object-contain mx-auto rounded-xl"
-                loading="lazy"
-              />
-            </div>
-          )}
-          {activeBrick.context && (
-            <p className="text-xs text-on-surface-variant/80 italic text-center">
-              {activeBrick.context}
             </p>
           )}
         </div>
