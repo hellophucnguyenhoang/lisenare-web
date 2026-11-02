@@ -102,7 +102,7 @@ export default function BrickOptionalSection({
         <div className="flex flex-col gap-2">
           <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">
             <span>Context</span>
-            <InfoTooltip text="Usage situation, context, or notes to help remember how it's used." />
+            <InfoTooltip text="Usage situation or notes of how or when your brick is used." />
           </label>
           <PlainTextInput
             value={context}

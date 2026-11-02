@@ -45,8 +45,8 @@ export default function BrickPrivacyToggle({
             </span>
             <p className="text-xs text-on-surface-variant leading-relaxed mt-0.5">
               {isPrivate
-                ? "Only you can see and retrieval this brick in your islands."
-                : "Visible to all learners. Others can discover and retrieval it."}
+                ? "Only you can see and retrieve this brick in your islands."
+                : "Visible to all learners. Others can discover and retrieve it."}
             </p>
           </div>
         </div>

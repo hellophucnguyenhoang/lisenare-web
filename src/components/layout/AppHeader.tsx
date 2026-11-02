@@ -89,7 +89,7 @@ export default function AppHeader({
                 className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
                 title="Lisenare home"
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-primary/20 shadow-2xs flex items-center justify-center p-1.5 transition-transform group-hover:scale-105 group-active:scale-95 overflow-hidden">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-primary/20 shadow-2xs flex items-center justify-center p-1 transition-transform group-hover:scale-105 group-active:scale-95 overflow-hidden">
                   <img
                     src="/favicon.svg"
                     alt="Lisenare logo"

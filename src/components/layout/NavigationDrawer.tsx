@@ -76,7 +76,7 @@ export default function NavigationDrawer({
         {/* Drawer header */}
         <div className="h-14 sm:h-16 px-4 sm:px-5 border-b border-outline-variant/30 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white border border-primary/20 shadow-2xs flex items-center justify-center p-1.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-xl bg-white border border-primary/20 shadow-2xs flex items-center justify-center p-1 overflow-hidden">
               <img
                 src="/favicon.svg"
                 alt="Lisenare logo"

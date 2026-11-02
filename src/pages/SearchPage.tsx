@@ -399,7 +399,7 @@ export default function SearchPage({
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
+        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-2">
           <img
             src="/favicon.svg"
             alt="Lisenare logo"

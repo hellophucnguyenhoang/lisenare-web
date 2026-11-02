@@ -416,7 +416,7 @@ export default function RetrievalPage({
   if (!isLoggedIn) {
     return (
       <div className="max-w-md mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
-        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-3">
+        <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-2">
           <img
             src="/favicon.svg"
             alt="Lisenare logo"
