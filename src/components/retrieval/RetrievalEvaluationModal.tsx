@@ -62,8 +62,14 @@ export default function RetrievalEvaluationModal({
   }, [onClose, onSubmitReview, isSubmitting]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/50 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 w-full max-w-md p-5 sm:p-6 flex flex-col items-center animate-in zoom-in-95 duration-300 max-h-[92dvh] overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/50 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 w-full max-w-md p-5 sm:p-6 flex flex-col items-center animate-in zoom-in-95 duration-300 max-h-[92dvh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Top header row: AI reference score on the left, close button on the right */}
         <div className="w-full flex items-center justify-between -mt-1 mb-2">
           <div className="flex items-center gap-1.5 text-[11px] text-on-surface-variant/80">
@@ -84,62 +90,69 @@ export default function RetrievalEvaluationModal({
           </button>
         </div>
 
-        {/* Comparison cards: Target and Learner sentences with audio buttons, plus optional Context */}
+        {/* Comparison cards: Target and Learner sentences (clickable to play audio), plus optional Context */}
         <div className="w-full space-y-3 mb-2 text-left">
           {/* Target sentence card */}
-          <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs">
+          <button
+            type="button"
+            id="btn-eval-target-card"
+            onClick={onPlayTargetAudio}
+            disabled={isLoadingTargetAudio}
+            className="w-full text-left bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 hover:border-primary/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs transition-all cursor-pointer group active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed select-none"
+            title={
+              isLoadingTargetAudio
+                ? "Loading audio..."
+                : "Click to listen to target sentence"
+            }
+            aria-label="Click to listen to target sentence"
+          >
             <div className="space-y-0.5 flex-1 min-w-0">
               <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
                 Target sentence
               </span>
-              <p className="text-sm font-semibold text-primary wrap-break-word">
+              <span className="text-sm font-semibold text-primary wrap-break-word block">
                 {targetText}
-              </p>
+              </span>
             </div>
-            <button
-              type="button"
-              id="btn-eval-target-audio"
-              onClick={onPlayTargetAudio}
-              disabled={isLoadingTargetAudio}
-              className="p-2.5 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl transition-all active:scale-90 cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
-              title={
-                isLoadingTargetAudio
-                  ? "Loading audio..."
-                  : "Listen to target audio"
-              }
-              aria-label="Listen to target audio"
-            >
-              {isLoadingTargetAudio ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Volume2 className="w-4 h-4" />
-              )}
-            </button>
-          </div>
+            {isLoadingTargetAudio ? (
+              <Loader2 className="w-4 h-4 text-primary animate-spin shrink-0" />
+            ) : (
+              <Volume2 className="w-4 h-4 text-primary/60 group-hover:text-primary transition-colors shrink-0" />
+            )}
+          </button>
 
           {/* Learner sentence card */}
-          <div className="bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs">
-            <div className="space-y-0.5 flex-1 min-w-0">
-              <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-                Your sentence
-              </span>
-              <p className="text-sm font-semibold text-on-surface wrap-break-word">
-                {learnerText || "(No speech detected)"}
-              </p>
+          {hasLearnerAudio && onPlayLearnerAudio ? (
+            <button
+              type="button"
+              id="btn-eval-learner-card"
+              onClick={onPlayLearnerAudio}
+              className="w-full text-left bg-surface-container-low hover:bg-surface-container border border-outline-variant/40 hover:border-secondary/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs transition-all cursor-pointer group active:scale-[0.99] select-none"
+              title="Click to listen to your sentence"
+              aria-label="Click to listen to your sentence"
+            >
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
+                  Your sentence
+                </span>
+                <span className="text-sm font-semibold text-on-surface wrap-break-word block">
+                  {learnerText || "(No speech detected)"}
+                </span>
+              </div>
+              <Play className="w-4 h-4 text-secondary/60 fill-secondary/60 group-hover:text-secondary group-hover:fill-secondary transition-colors shrink-0" />
+            </button>
+          ) : (
+            <div className="w-full text-left bg-surface-container-low border border-outline-variant/40 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-xs">
+              <div className="space-y-0.5 flex-1 min-w-0">
+                <span className="text-[10px] font-bold text-outline uppercase tracking-wider block">
+                  Your sentence
+                </span>
+                <span className="text-sm font-semibold text-on-surface wrap-break-word block">
+                  {learnerText || "(No speech detected)"}
+                </span>
+              </div>
             </div>
-            {hasLearnerAudio && onPlayLearnerAudio && (
-              <button
-                type="button"
-                id="btn-eval-learner-audio"
-                onClick={onPlayLearnerAudio}
-                className="p-2.5 bg-secondary/10 hover:bg-secondary/20 text-secondary rounded-xl transition-all active:scale-90 cursor-pointer shrink-0"
-                title="Listen to your audio"
-                aria-label="Listen to your audio"
-              >
-                <Play className="w-4 h-4 fill-secondary" />
-              </button>
-            )}
-          </div>
+          )}
 
           {/* Brick context card */}
           {((context && context.trim()) || imageUrl) && (

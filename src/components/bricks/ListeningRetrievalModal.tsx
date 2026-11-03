@@ -1,14 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import {
-  X,
-  Play,
-  Pause,
-  Shuffle,
-  Repeat,
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
+import { X, Play, Shuffle, Repeat, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useInfiniteListeningBricks } from "@/hooks/useBricks";
 import { type BrickListeningData } from "@/api/bricks";
 import { resolveAudioUrl } from "@/utils/audio";
@@ -180,6 +171,7 @@ export default function ListeningRetrievalModal({
     const audio = audioRef.current;
     const url = resolveAudioUrl(brick.audio_path);
     if (audio.src !== url) audio.src = url;
+    audio.currentTime = 0;
     audio
       .play()
       .then(() => setIsPlaying(true))
@@ -245,8 +237,13 @@ export default function ListeningRetrievalModal({
   const handleTogglePlay = useCallback(() => {
     if (isPlaying) {
       clearTimer();
-      audioRef.current?.pause();
-      setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false));
+      }
     } else if (isFinishedSession) {
       setIsFinishedSession(false);
       setCurrentIndex(0);
@@ -260,9 +257,17 @@ export default function ListeningRetrievalModal({
   const handleSelectBrick = (displayIndex: number) => {
     clearTimer();
     setIsFinishedSession(false);
-    if (displayIndex === currentIndex && isPlaying) {
-      audioRef.current?.pause();
-      setIsPlaying(false);
+    if (displayIndex === currentIndex) {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current
+          .play()
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false));
+      } else {
+        const targetBrick = rawItems[order[displayIndex]];
+        if (targetBrick) playAudio(targetBrick);
+      }
       return;
     }
     setCurrentIndex(displayIndex);
@@ -401,9 +406,6 @@ export default function ListeningRetrievalModal({
       ) {
         e.preventDefault();
         handleToggleShowTarget();
-      } else if (e.code === "Escape") {
-        e.preventDefault();
-        onClose();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -416,7 +418,6 @@ export default function ListeningRetrievalModal({
     handleReplay,
     handleToggleShowNative,
     handleToggleShowTarget,
-    onClose,
   ]);
 
   if (!isOpen) return null;
@@ -427,12 +428,8 @@ export default function ListeningRetrievalModal({
       aria-modal="true"
       aria-label="Listen bricks modal"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={onClose}
     >
-      <div
-        className="w-full max-w-2xl bg-surface-container-lowest border border-outline-variant/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-[820px] animate-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="w-full max-w-2xl bg-surface-container-lowest border border-outline-variant/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-205 animate-in zoom-in-95 duration-200">
         {/* Top header */}
         <div className="px-4 sm:px-5 py-3 border-b border-outline-variant/30 flex items-center justify-between gap-2.5 sm:gap-3 bg-surface-container-low/40">
           <div className="min-w-0 flex-1">
@@ -558,7 +555,7 @@ export default function ListeningRetrievalModal({
                         : "hover:bg-surface-container-low/70 border border-transparent"
                     }`}
                   >
-                    {/* Play / Pause button */}
+                    {/* Play button */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -572,14 +569,12 @@ export default function ListeningRetrievalModal({
                             ? "bg-primary/20 text-primary"
                             : "bg-surface-container text-on-surface-variant group-hover:bg-primary/15 group-hover:text-primary"
                       }`}
-                      title={isItemPlaying ? "Pause" : "Listen"}
-                      aria-label={isItemPlaying ? "Pause" : "Listen"}
+                      title={isItemPlaying ? "Play from beginning" : "Listen"}
+                      aria-label={
+                        isItemPlaying ? "Play from beginning" : "Listen"
+                      }
                     >
-                      {isItemPlaying ? (
-                        <Pause className="w-4 h-4 fill-current" />
-                      ) : (
-                        <Play className="w-4 h-4 fill-current ml-0.5" />
-                      )}
+                      <Play className="w-4 h-4 fill-current ml-0.5" />
                     </button>
 
                     {/* Sentence content */}
@@ -588,7 +583,7 @@ export default function ListeningRetrievalModal({
                       <div>
                         {isTargetVisible ? (
                           <p
-                            className={`text-sm sm:text-base font-bold leading-snug wrap-break-word ${
+                            className={`text-sm sm:text-base font-bold leading-snug wrap-break-words ${
                               isActive ? "text-primary" : "text-on-surface"
                             }`}
                           >
@@ -608,7 +603,7 @@ export default function ListeningRetrievalModal({
                         )}
 
                         {brick.target_pron && isTargetVisible && (
-                          <p className="text-[11px] text-outline font-mono mt-0.5 truncate">
+                          <p className="text-[11px] text-outline font-mono mt-0.5 leading-relaxed wrap-break-words">
                             {brick.target_pron}
                           </p>
                         )}
@@ -617,7 +612,7 @@ export default function ListeningRetrievalModal({
                       {/* Native sentence */}
                       <div className="mt-1">
                         {isNativeVisible ? (
-                          <p className="text-xs text-on-surface-variant leading-relaxed wrap-break-word">
+                          <p className="text-xs text-on-surface-variant leading-relaxed wrap-break-words">
                             {brick.native_text}
                           </p>
                         ) : (
@@ -636,7 +631,7 @@ export default function ListeningRetrievalModal({
 
                       {/* Context */}
                       {brick.context && isTargetVisible && (
-                        <p className="text-[11px] text-outline/80 italic mt-1 line-clamp-2">
+                        <p className="text-[11px] text-outline/80 italic mt-1 leading-relaxed wrap-break-words">
                           "{brick.context}"
                         </p>
                       )}

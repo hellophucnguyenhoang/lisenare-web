@@ -97,7 +97,6 @@ export default function BricksFilterModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        onClick={onClose}
         className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity"
         aria-hidden="true"
       />

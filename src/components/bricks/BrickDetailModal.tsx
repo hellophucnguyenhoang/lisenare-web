@@ -108,10 +108,7 @@ export default function BrickDetailModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        onClick={handleClose}
-        className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-      />
+      <div className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
 
       {/* Modal card  */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-3xl p-6 sm:p-7 w-full max-w-lg shadow-2xl animate-in zoom-in duration-200 z-10 max-h-[90vh] overflow-y-auto">

@@ -53,10 +53,7 @@ function SaveToIslandModalContent({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        onClick={isSaving ? undefined : onClose}
-        className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-      />
+      <div className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
 
       {/* Modal card  */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-3xl p-5 sm:p-6 w-full max-w-sm sm:max-w-md shadow-2xl animate-in zoom-in duration-200 text-center z-10 max-h-[90vh] overflow-y-auto">

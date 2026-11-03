@@ -32,10 +32,7 @@ export default function VideoPlayerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div
-        onClick={onClose}
-        className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-      />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
 
       {/* Modal container  */}
       <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 z-10 flex flex-col max-h-[90vh]">

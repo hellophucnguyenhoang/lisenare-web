@@ -56,7 +56,8 @@ export default function NavigationDrawer({
         id="drawer-backdrop"
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ${
+        style={{ willChange: "opacity" }}
+        className={`fixed inset-0 z-50 bg-black/40 transition-opacity duration-300 ${
           isOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -69,6 +70,7 @@ export default function NavigationDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
+        style={{ willChange: isOpen ? "transform" : "auto" }}
         className={`fixed top-0 left-0 bottom-0 z-50 w-72 max-w-[80vw] bg-surface-container-lowest border-r border-outline-variant/30 shadow-2xl flex flex-col transition-transform duration-300 ease-out select-none ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
