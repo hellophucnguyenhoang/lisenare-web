@@ -63,10 +63,12 @@ export default function RetrievalEvaluationModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/50 backdrop-blur-xs p-4 sm:p-6 animate-in fade-in duration-200"
+      style={{ willChange: "opacity" }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-on-surface/50 p-4 sm:p-6 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
+        style={{ willChange: "transform, opacity" }}
         className="bg-surface-container-lowest rounded-3xl shadow-2xl border border-outline-variant/40 w-full max-w-md p-5 sm:p-6 flex flex-col items-center animate-in zoom-in-95 duration-300 max-h-[92dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >

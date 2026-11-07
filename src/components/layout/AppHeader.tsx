@@ -68,7 +68,7 @@ export default function AppHeader({
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 shadow-2xs transition-all">
+      <header className="fixed top-0 left-0 w-full z-40 bg-surface-container-lowest/95 backdrop-blur-md border-b border-outline-variant/30 shadow-2xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="h-14 sm:h-16 flex items-center justify-between gap-3">
             {/* Top left: Hamburger menu button + Logo */}

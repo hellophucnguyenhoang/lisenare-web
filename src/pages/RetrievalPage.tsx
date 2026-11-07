@@ -20,7 +20,7 @@ import RetrievalInputSection from "@/components/retrieval/RetrievalInputSection"
 import RetrievalEvaluationModal from "@/components/retrieval/RetrievalEvaluationModal";
 import RetrievalInstructionsPage from "@/components/retrieval/RetrievalInstructionsPage";
 import ReportBrickModal from "@/components/bricks/ReportBrickModal";
-import { Plus, HelpCircle } from "lucide-react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { type Brick, type AuthMode } from "@/types";
 import { useLearnerMe } from "@/hooks/useLearner";
@@ -415,7 +415,7 @@ export default function RetrievalPage({
 
   if (!isLoggedIn) {
     return (
-      <div className="max-w-md mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
+      <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-8 max-w-md mx-auto w-full min-h-[calc(100dvh-5rem)] text-center animate-in fade-in duration-300">
         <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 shadow-xs flex items-center justify-center mb-5 overflow-hidden p-2">
           <img
             src="/favicon.svg"
@@ -445,7 +445,7 @@ export default function RetrievalPage({
 
   if (isLoadingBrick) {
     return (
-      <div className="max-w-lg mx-auto px-4 sm:px-6 py-24 text-center animate-in fade-in duration-300">
+      <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] text-center animate-in fade-in duration-300">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
       </div>
     );
@@ -462,7 +462,7 @@ export default function RetrievalPage({
 
   if (!activeBrick) {
     return (
-      <div className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center animate-in fade-in duration-300 flex flex-col items-center">
+      <div className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] text-center animate-in fade-in duration-300">
         {/* Title */}
         <h2 className="text-2xl sm:text-3xl font-bold font-display text-on-surface tracking-tight mb-2">
           Next brick?
@@ -485,19 +485,6 @@ export default function RetrievalPage({
             <span>Add brick</span>
           </button>
         )}
-
-        {/* Small question leading to Text instruction page */}
-        <button
-          type="button"
-          id="btn-how-retrieval-works"
-          onClick={() => setShowInstructions(true)}
-          className="mt-8 inline-flex items-center gap-1.5 text-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer group"
-        >
-          <HelpCircle className="w-4 h-4 text-outline group-hover:text-primary transition-colors" />
-          <span className="underline underline-offset-4 font-medium">
-            How does retrieval work?
-          </span>
-        </button>
       </div>
     );
   }
@@ -517,7 +504,9 @@ export default function RetrievalPage({
     if (!activeBrick || skipBrickMutation.isPending) return;
     const targetBrick = activeBrick;
     const nextSkippedState =
-      typeof forcedSkipped === "boolean" ? forcedSkipped : !targetBrick.isSkipped;
+      typeof forcedSkipped === "boolean"
+        ? forcedSkipped
+        : !targetBrick.isSkipped;
 
     try {
       await skipBrickMutation.mutateAsync({
@@ -545,11 +534,7 @@ export default function RetrievalPage({
 
   return (
     <div
-      className={`grow flex flex-col items-center px-4 sm:px-6 py-4 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] animate-in fade-in duration-300 ${
-        showTypeInput
-          ? "justify-start pt-2 sm:justify-center sm:pt-6"
-          : "justify-center"
-      }`}
+      className="grow flex flex-col items-center justify-center px-4 sm:px-6 py-4 sm:py-8 max-w-lg mx-auto w-full min-h-[calc(100dvh-5rem)] animate-in fade-in duration-300"
     >
       {/* Main flashcard & Interactive input section */}
       <div className="w-full max-w-full space-y-4 min-w-0">

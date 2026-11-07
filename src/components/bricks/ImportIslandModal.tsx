@@ -196,8 +196,14 @@ export default function ImportIslandModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-surface-container-lowest border border-outline-variant/70 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-y-auto">
+    <div
+      style={{ willChange: "opacity" }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-200"
+    >
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="bg-surface-container-lowest border border-outline-variant/70 rounded-3xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="flex justify-between items-center pb-4 border-b border-outline-variant/30">
           <div className="flex items-center gap-2.5">

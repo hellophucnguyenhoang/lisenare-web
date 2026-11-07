@@ -197,10 +197,16 @@ export default function EmailManagerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
+      <div
+        style={{ willChange: "opacity" }}
+        className="fixed inset-0 bg-black/50 transition-opacity animate-in fade-in duration-200"
+      />
 
       {/* Modal container */}
-      <div className="relative bg-surface-container-lowest border border-outline-variant/60 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200">
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="relative bg-surface-container-lowest border border-outline-variant/60 rounded-3xl w-full max-w-md p-6 shadow-2xl z-10 animate-in zoom-in-95 duration-200"
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/30">
           <div className="flex items-center gap-2.5">

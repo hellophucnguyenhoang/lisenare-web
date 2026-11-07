@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { X, Play, Shuffle, Repeat, Eye, EyeOff, Loader2 } from "lucide-react";
+import { X, Play, Pause, Shuffle, Repeat, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useInfiniteListeningBricks } from "@/hooks/useBricks";
 import { type BrickListeningData } from "@/api/bricks";
 import { resolveAudioUrl } from "@/utils/audio";
@@ -45,8 +45,9 @@ export default function ListeningRetrievalModal({
   islandId,
   islandName,
 }: ListeningRetrievalModalProps) {
-  const [playbackMode, setPlaybackMode] =
-    useState<ListeningPlaybackMode>("auto");
+  const [autoplay, setAutoplay] = useState(() =>
+    getStorageBool("listening_autoplay", true),
+  );
   const [shuffleEnabled, setShuffleEnabled] = useState(() =>
     getStorageBool("listening_shuffle", false),
   );
@@ -234,42 +235,38 @@ export default function ListeningRetrievalModal({
     }
   }, [currentIndex, order, rawItems, playAudio]);
 
-  const handleTogglePlay = useCallback(() => {
-    if (isPlaying) {
-      clearTimer();
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => setIsPlaying(false));
+  const handleToggleAutoplay = useCallback(() => {
+    setAutoplay((prev) => {
+      const next = !prev;
+      setStorageBool("listening_autoplay", next);
+      if (!next) {
+        clearTimer();
+      } else {
+        if (isFinishedSession) {
+          setIsFinishedSession(false);
+          setCurrentIndex(0);
+          const firstBrick = rawItems[order[0]];
+          if (firstBrick) playAudio(firstBrick);
+        } else if (!isPlaying) {
+          const targetBrick = currentBrick ?? rawItems[order[currentIndex] ?? 0];
+          if (targetBrick) playAudio(targetBrick);
+        }
       }
-    } else if (isFinishedSession) {
-      setIsFinishedSession(false);
-      setCurrentIndex(0);
-      const firstBrick = rawItems[order[0]];
-      if (firstBrick) playAudio(firstBrick);
-    } else if (currentBrick) {
-      playAudio(currentBrick);
-    }
-  }, [isPlaying, isFinishedSession, currentBrick, rawItems, order, playAudio]);
+      return next;
+    });
+  }, [
+    isFinishedSession,
+    isPlaying,
+    currentBrick,
+    rawItems,
+    order,
+    currentIndex,
+    playAudio,
+  ]);
 
   const handleSelectBrick = (displayIndex: number) => {
     clearTimer();
     setIsFinishedSession(false);
-    if (displayIndex === currentIndex) {
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current
-          .play()
-          .then(() => setIsPlaying(true))
-          .catch(() => setIsPlaying(false));
-      } else {
-        const targetBrick = rawItems[order[displayIndex]];
-        if (targetBrick) playAudio(targetBrick);
-      }
-      return;
-    }
     setCurrentIndex(displayIndex);
     const targetBrick = rawItems[order[displayIndex]];
     if (targetBrick) {
@@ -278,14 +275,10 @@ export default function ListeningRetrievalModal({
   };
 
   const handleReplay = useCallback(() => {
-    clearTimer();
-    if (!audioRef.current || !currentBrick) return;
-    audioRef.current.currentTime = 0;
-    audioRef.current
-      .play()
-      .then(() => setIsPlaying(true))
-      .catch(() => setIsPlaying(false));
-  }, [currentBrick]);
+    if (currentBrick) {
+      playAudio(currentBrick);
+    }
+  }, [currentBrick, playAudio]);
 
   const handleToggleShuffle = () => {
     const next = !shuffleEnabled;
@@ -346,7 +339,7 @@ export default function ListeningRetrievalModal({
     if (!audio) return;
     const onEnded = () => {
       setIsPlaying(false);
-      if (playbackMode === "auto") {
+      if (autoplay) {
         timerRef.current = setTimeout(handleNext, 650);
       }
     };
@@ -357,7 +350,7 @@ export default function ListeningRetrievalModal({
       audio.removeEventListener("ended", onEnded);
       audio.removeEventListener("error", onError);
     };
-  }, [playbackMode, handleNext]);
+  }, [autoplay, handleNext]);
 
   // Infinite scroll trigger on list scroll
   const handleListScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -382,7 +375,7 @@ export default function ListeningRetrievalModal({
         return;
       if (e.code === "Space") {
         e.preventDefault();
-        handleTogglePlay();
+        handleToggleAutoplay();
       } else if (e.code === "ArrowDown" || e.code === "ArrowRight") {
         e.preventDefault();
         handleNext();
@@ -412,7 +405,7 @@ export default function ListeningRetrievalModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [
     isOpen,
-    handleTogglePlay,
+    handleToggleAutoplay,
     handleNext,
     handlePrevious,
     handleReplay,
@@ -427,9 +420,13 @@ export default function ListeningRetrievalModal({
       role="dialog"
       aria-modal="true"
       aria-label="Listen bricks modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+      style={{ willChange: "opacity" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 animate-in fade-in duration-200"
     >
-      <div className="w-full max-w-2xl bg-surface-container-lowest border border-outline-variant/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-205 animate-in zoom-in-95 duration-200">
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="w-full max-w-2xl bg-surface-container-lowest border border-outline-variant/60 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[88vh] max-h-205 animate-in zoom-in-95 duration-200"
+      >
         {/* Top header */}
         <div className="px-4 sm:px-5 py-3 border-b border-outline-variant/30 flex items-center justify-between gap-2.5 sm:gap-3 bg-surface-container-low/40">
           <div className="min-w-0 flex-1">
@@ -449,45 +446,6 @@ export default function ListeningRetrievalModal({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            {/* Autoplay switch */}
-            <button
-              type="button"
-              role="switch"
-              id="btn-listening-autoplay"
-              aria-checked={playbackMode === "auto"}
-              onClick={() => {
-                setPlaybackMode((prev) =>
-                  prev === "auto" ? "manual" : "auto",
-                );
-                clearTimer();
-              }}
-              className="flex items-center gap-2 py-1 px-2.5 rounded-xl hover:bg-surface-container/60 transition-colors cursor-pointer select-none"
-              title={
-                playbackMode === "auto"
-                  ? "Autoplay is on • Advances to next brick automatically"
-                  : "Autoplay is off • Manual playback"
-              }
-              aria-label="Autoplay"
-            >
-              <span className="text-xs font-bold text-on-surface select-none">
-                Autoplay
-              </span>
-              <span
-                aria-hidden="true"
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                  playbackMode === "auto"
-                    ? "bg-primary"
-                    : "bg-outline-variant/60"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out ${
-                    playbackMode === "auto" ? "translate-x-4" : "translate-x-0"
-                  }`}
-                />
-              </span>
-            </button>
-
             {/* Close button */}
             <button
               type="button"
@@ -549,57 +507,58 @@ export default function ListeningRetrievalModal({
                   <div
                     key={`${brick.audio_path}-${displayIdx}`}
                     onClick={() => handleSelectBrick(displayIdx)}
-                    className={`group w-full text-left p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer flex items-start gap-3 select-none ${
+                    className={`group w-full text-left p-3 sm:p-3.5 rounded-2xl transition-all cursor-pointer flex items-start justify-between gap-3 select-none ${
                       isActive
                         ? "bg-primary/8 border border-primary/30 shadow-xs"
                         : "hover:bg-surface-container-low/70 border border-transparent"
                     }`}
                   >
-                    {/* Play button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectBrick(displayIdx);
-                      }}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform active:scale-90 cursor-pointer ${
-                        isItemPlaying
-                          ? "bg-primary text-on-primary shadow-xs"
-                          : isActive
-                            ? "bg-primary/20 text-primary"
-                            : "bg-surface-container text-on-surface-variant group-hover:bg-primary/15 group-hover:text-primary"
-                      }`}
-                      title={isItemPlaying ? "Play from beginning" : "Listen"}
-                      aria-label={
-                        isItemPlaying ? "Play from beginning" : "Listen"
-                      }
-                    >
-                      <Play className="w-4 h-4 fill-current ml-0.5" />
-                    </button>
-
                     {/* Sentence content */}
                     <div className="flex-1 min-w-0">
                       {/* Target sentence */}
                       <div>
                         {isTargetVisible ? (
-                          <p
-                            className={`text-sm sm:text-base font-bold leading-snug wrap-break-words ${
-                              isActive ? "text-primary" : "text-on-surface"
-                            }`}
-                          >
-                            {brick.target_text}
-                          </p>
+                          <div className="flex items-start gap-2">
+                            <p
+                              className={`text-sm sm:text-base font-bold leading-snug wrap-break-words ${
+                                isActive ? "text-primary" : "text-on-surface"
+                              }`}
+                            >
+                              {brick.target_text}
+                            </p>
+                            {!showTarget && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleRevealTarget(rawIdx);
+                                }}
+                                className="p-1 rounded-md text-outline hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer shrink-0 mt-0.5"
+                                title="Hide target sentence"
+                                aria-label="Hide target sentence"
+                              >
+                                <EyeOff className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleRevealTarget(rawIdx);
-                            }}
-                            className="text-xs text-primary/80 italic py-0.5 px-2.5 rounded-lg border border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer"
-                          >
-                            Hidden target • Click to reveal
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-mono text-outline/40 tracking-widest select-none">
+                              ••••••••••••••••
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRevealTarget(rawIdx);
+                              }}
+                              className="p-1 rounded-md text-outline hover:text-primary hover:bg-primary/10 transition-colors cursor-pointer shrink-0"
+                              title="Reveal target sentence"
+                              aria-label="Reveal target sentence"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         )}
 
                         {brick.target_pron && isTargetVisible && (
@@ -612,20 +571,43 @@ export default function ListeningRetrievalModal({
                       {/* Native sentence */}
                       <div className="mt-1">
                         {isNativeVisible ? (
-                          <p className="text-xs text-on-surface-variant leading-relaxed wrap-break-words">
-                            {brick.native_text}
-                          </p>
+                          <div className="flex items-start gap-2">
+                            <p className="text-xs text-on-surface-variant leading-relaxed wrap-break-words">
+                              {brick.native_text}
+                            </p>
+                            {!showNative && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleRevealNative(rawIdx);
+                                }}
+                                className="p-1 rounded-md text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer shrink-0"
+                                title="Hide native sentence"
+                                aria-label="Hide native sentence"
+                              >
+                                <EyeOff className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleRevealNative(rawIdx);
-                            }}
-                            className="text-xs text-outline italic py-0.5 px-2 rounded-md border border-dashed border-outline-variant/60 hover:text-on-surface transition-colors cursor-pointer"
-                          >
-                            Hidden native • Click to reveal
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-outline/40 tracking-widest select-none">
+                              ••••••••••••
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRevealNative(rawIdx);
+                              }}
+                              className="p-1 rounded-md text-outline hover:text-on-surface hover:bg-surface-container transition-colors cursor-pointer shrink-0"
+                              title="Reveal native sentence"
+                              aria-label="Reveal native sentence"
+                            >
+                              <Eye className="w-3 h-3" />
+                            </button>
+                          </div>
                         )}
                       </div>
 
@@ -637,9 +619,20 @@ export default function ListeningRetrievalModal({
                       )}
                     </div>
 
-                    {/* Right side: Brick index */}
-                    <div className="shrink-0 text-right">
-                      <span className="text-[11px] font-mono text-outline">
+                    {/* Right side: Brick index & playing indicator */}
+                    <div className="shrink-0 flex items-center gap-1.5 text-right pt-0.5">
+                      {isItemPlaying && (
+                        <span className="flex items-end gap-0.5 h-3 text-primary" title="Playing">
+                          <span className="w-1 h-2 bg-primary rounded-full animate-pulse" />
+                          <span className="w-1 h-3 bg-primary rounded-full animate-pulse delay-75" />
+                          <span className="w-1 h-1.5 bg-primary rounded-full animate-pulse delay-150" />
+                        </span>
+                      )}
+                      <span
+                        className={`text-[11px] font-mono ${
+                          isActive ? "text-primary font-bold" : "text-outline"
+                        }`}
+                      >
                         #{displayIdx + 1}
                       </span>
                     </div>
@@ -722,6 +715,30 @@ export default function ListeningRetrievalModal({
                 )}
               </button>
             </div>
+
+            {/* Middle: Autoplay Play/Pause button */}
+            <button
+              type="button"
+              id="btn-listening-autoplay"
+              onClick={handleToggleAutoplay}
+              className={`w-10 h-10 rounded-full shadow-md flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                autoplay
+                  ? "bg-primary hover:bg-primary/90 text-on-primary"
+                  : "bg-surface-container hover:bg-surface-container-high text-on-surface-variant border border-outline-variant/60"
+              }`}
+              title={
+                autoplay
+                  ? "Autoplay is on • Click to turn off (Space)"
+                  : "Autoplay is off • Click to turn on (Space)"
+              }
+              aria-label={autoplay ? "Turn off autoplay" : "Turn on autoplay"}
+            >
+              {autoplay ? (
+                <Pause className="w-5 h-5 fill-current" />
+              ) : (
+                <Play className="w-5 h-5 fill-current ml-0.5" />
+              )}
+            </button>
 
             {/* Right: Playback options (Shuffle, Loop) */}
             <div className="flex items-center gap-1.5 sm:gap-2">

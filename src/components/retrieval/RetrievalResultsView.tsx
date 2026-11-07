@@ -16,9 +16,15 @@ export default function RetrievalResultsView({
   onClose,
 }: RetrievalResultsViewProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-on-surface/30 backdrop-blur-sm animate-in fade-in duration-300">
+    <div
+      style={{ willChange: "opacity" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-on-surface/30 animate-in fade-in duration-300"
+    >
       {/* Score modal */}
-      <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/60 p-8 flex flex-col items-center animate-in zoom-in-95 duration-300">
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-2xl border border-outline-variant/60 p-8 flex flex-col items-center animate-in zoom-in-95 duration-300"
+      >
         {/* Floating trophy */}
         <div className="relative w-full h-24 flex justify-center items-center mb-4">
           <div className="p-4 bg-primary/5 rounded-full animate-bounce">

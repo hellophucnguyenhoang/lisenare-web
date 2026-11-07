@@ -44,6 +44,7 @@ function AppContent() {
   const [retrievalBrickId, setRetrievalBrickId] = useState<number | null>(null);
   const [retrievalFinishedCount, setRetrievalFinishedCount] = useState(0);
   const [retrievalElapsedSeconds, setRetrievalElapsedSeconds] = useState(0);
+  const [bricksIslandId, setBricksIslandId] = useState<number | null>(null);
 
   // Set initial tab on load/reload based on authentication state
   useEffect(() => {
@@ -69,6 +70,7 @@ function AppContent() {
       setRetrievalBrickId(null);
       setRetrievalFinishedCount(0);
       setRetrievalElapsedSeconds(0);
+      setBricksIslandId(null);
       setSubview(null);
       setActiveTab("profile");
       toast.success("Logged out successfully");
@@ -128,6 +130,8 @@ function AppContent() {
       case "bricks":
         return (
           <BricksPage
+            selectedIslandId={bricksIslandId}
+            onSelectIslandId={setBricksIslandId}
             onNavigateToAddBrick={(islandId) => {
               setSubview({ type: "addBrick", islandId });
             }}

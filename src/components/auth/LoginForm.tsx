@@ -25,7 +25,7 @@ export default function LoginForm({
   setErrorMessage,
   setSuccessMessage,
 }: LoginFormProps) {
-  const { login, loginWithGoogle, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -58,15 +58,7 @@ export default function LoginForm({
   };
 
   const handleGoogleLogin = () => {
-    setErrorMessage(null);
-    loginWithGoogle({
-      onSuccess: () => {
-        toast.success("Signed in with Google successfully!");
-        setTimeout(() => {
-          onSuccess?.();
-        }, 600);
-      },
-    });
+    toast.info("Sign in with Google is a placeholder and not available yet.");
   };
 
   return (

@@ -97,7 +97,8 @@ export default function BricksFilterModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-on-surface/40 backdrop-blur-xs transition-opacity"
+        style={{ willChange: "opacity" }}
+        className="fixed inset-0 bg-on-surface/40 transition-opacity"
         aria-hidden="true"
       />
 
@@ -106,6 +107,7 @@ export default function BricksFilterModal({
         role="dialog"
         aria-modal="true"
         aria-label="Sort and filter bricks"
+        style={{ willChange: "transform, opacity" }}
         className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 z-10 max-h-[90vh] flex flex-col"
       >
         {/* Header */}

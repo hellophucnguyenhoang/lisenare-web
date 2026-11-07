@@ -31,10 +31,16 @@ export default function AuthModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200" />
+      <div
+        style={{ willChange: "opacity" }}
+        className="fixed inset-0 bg-black/40 animate-in fade-in duration-200"
+      />
 
       {/* Modal content */}
-      <div className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto animate-in zoom-in-95 fade-in duration-200">
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="relative z-10 w-full max-w-md max-h-[90vh] overflow-y-auto animate-in zoom-in-95 fade-in duration-200"
+      >
         <AuthComponent
           initialMode={initialMode}
           isModal={true}

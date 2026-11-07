@@ -53,8 +53,8 @@ export function useAuth() {
     loginMutation.mutate(params, options);
   };
 
-  const loginWithGoogle = (options?: { onSuccess?: () => void }) => {
-    options?.onSuccess?.();
+  const loginWithGoogle = (_options?: { onSuccess?: () => void }) => {
+    // Placeholder - Google OAuth is not implemented yet
   };
 
   const register = (

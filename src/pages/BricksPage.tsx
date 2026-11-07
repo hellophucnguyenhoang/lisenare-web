@@ -47,6 +47,8 @@ interface BricksPageProps {
   onNavigateToRetrieval: (brickId?: number) => void;
   onNavigateToSearch: () => void;
   onOpenAuth?: (mode: AuthMode) => void;
+  selectedIslandId?: number | null;
+  onSelectIslandId?: (id: number | null) => void;
 }
 
 export default function BricksPage({
@@ -55,12 +57,33 @@ export default function BricksPage({
   onNavigateToRetrieval,
   onNavigateToSearch,
   onOpenAuth,
+  selectedIslandId: controlledSelectedIslandId,
+  onSelectIslandId,
 }: BricksPageProps) {
   const { data: learner } = useLearnerMe();
   const isLoggedIn = Boolean(learner);
 
   // Island filter state
-  const [selectedIslandId, setSelectedIslandId] = useState<number | null>(null);
+  const [uncontrolledIslandId, setUncontrolledIslandId] = useState<number | null>(null);
+  const selectedIslandId =
+    controlledSelectedIslandId !== undefined
+      ? controlledSelectedIslandId
+      : uncontrolledIslandId;
+
+  const setSelectedIslandId = (
+    valueOrUpdater: number | null | ((prev: number | null) => number | null),
+  ) => {
+    const nextValue =
+      typeof valueOrUpdater === "function"
+        ? valueOrUpdater(selectedIslandId)
+        : valueOrUpdater;
+
+    if (onSelectIslandId) {
+      onSelectIslandId(nextValue);
+    } else {
+      setUncontrolledIslandId(nextValue);
+    }
+  };
   const [showIslandDropdown, setShowIslandDropdown] = useState(false);
   const [showIslandModal, setShowIslandModal] = useState(false);
   const [editingIsland, setEditingIsland] = useState<Island | null>(null);
@@ -432,7 +455,7 @@ export default function BricksPage({
       </section>
 
       {/* Filter bar: Island selector + Sort controls + Search button */}
-      <div className="sticky top-14 sm:top-16 z-20 bg-surface/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 mb-5 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-3 shadow-2xs transition-all">
+      <div className="sticky top-14 sm:top-16 z-20 bg-surface/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-2.5 mb-5 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
         {/* Island filter dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button

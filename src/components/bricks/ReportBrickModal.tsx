@@ -78,10 +78,16 @@ export default function ReportBrickModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200" />
+      <div
+        style={{ willChange: "opacity" }}
+        className="fixed inset-0 bg-black/40 animate-in fade-in duration-200"
+      />
 
       {/* Modal card  */}
-      <div className="relative w-full max-w-sm sm:max-w-md bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-6 shadow-2xl z-10 animate-in zoom-in-95 fade-in duration-200 space-y-5">
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="relative w-full max-w-sm sm:max-w-md bg-surface-container-lowest border border-outline-variant/60 rounded-3xl p-6 shadow-2xl z-10 animate-in zoom-in-95 fade-in duration-200 space-y-5"
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">

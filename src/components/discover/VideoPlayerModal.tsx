@@ -32,10 +32,16 @@ export default function VideoPlayerModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
+      <div
+        style={{ willChange: "opacity" }}
+        className="fixed inset-0 bg-black/70 transition-opacity animate-in fade-in duration-200"
+      />
 
       {/* Modal container  */}
-      <div className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 z-10 flex flex-col max-h-[90vh]">
+      <div
+        style={{ willChange: "transform, opacity" }}
+        className="relative bg-surface-container-lowest border border-outline-variant/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 z-10 flex flex-col max-h-[90vh]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-outline-variant/50 bg-surface-container/40">
           <div className="flex items-center gap-2 min-w-0">
