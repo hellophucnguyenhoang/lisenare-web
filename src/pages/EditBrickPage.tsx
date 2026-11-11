@@ -277,7 +277,7 @@ export default function EditBrickPage({ brick, onBack }: EditBrickPageProps) {
       </main>
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-outline-variant/30 safe-bottom z-40 p-4">
+      <div className="fixed bottom-0 left-0 w-full bg-surface-container-lowest/90 backdrop-blur-md border-t border-outline-variant/30 safe-bottom z-40 p-4">
         <div className="max-w-lg mx-auto flex flex-col">
           <button
             type="button"

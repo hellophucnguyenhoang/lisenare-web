@@ -364,7 +364,7 @@ export default function BrickAudioSection({
         </h2>
         <InfoTooltip text="The target sound you want to speak." />
       </div>
-      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex flex-col gap-4">
+      <div className="bg-surface-container-lowest p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex flex-col gap-4">
         {content}
       </div>
     </section>

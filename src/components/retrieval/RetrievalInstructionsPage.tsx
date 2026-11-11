@@ -272,7 +272,7 @@ export default function RetrievalInstructionsPage({
                 onClick={() => handleSelectLang(item.code)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isActive
-                    ? "bg-white text-primary shadow-xs border border-outline-variant/30"
+                    ? "bg-surface-container-lowest text-primary shadow-xs border border-outline-variant/30"
                     : "text-on-surface-variant hover:text-on-surface hover:bg-surface-container/50"
                 }`}
               >
@@ -286,7 +286,7 @@ export default function RetrievalInstructionsPage({
         </div>
 
         {/* Intro banner */}
-        <section className="bg-white p-5 rounded-2xl border border-outline-variant/60 shadow-xs text-center space-y-2">
+        <section className="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/60 shadow-xs text-center space-y-2">
           <h2 className="text-xl font-bold font-display text-on-surface">
             {t.introTitle}
           </h2>
@@ -301,7 +301,7 @@ export default function RetrievalInstructionsPage({
           return (
             <section
               key={idx}
-              className="bg-white p-4 sm:p-5 rounded-2xl border border-outline-variant/60 shadow-xs space-y-2"
+              className="bg-surface-container-lowest p-4 sm:p-5 rounded-2xl border border-outline-variant/60 shadow-xs space-y-2"
             >
               <div className="flex items-center gap-3">
                 <div

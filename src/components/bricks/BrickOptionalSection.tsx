@@ -82,7 +82,7 @@ export default function BrickOptionalSection({
         </h2>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-xs space-y-5">
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/60 shadow-xs space-y-5">
         {/* Target pronunciation */}
         <div className="flex flex-col gap-2">
           <label className="text-sm font-bold text-on-surface-variant flex items-center gap-1.5">

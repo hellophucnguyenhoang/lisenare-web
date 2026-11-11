@@ -20,7 +20,7 @@ export default function BrickUnitTypeSelector({
         </span>
       </div>
 
-      <div className="bg-white p-2 sm:p-2.5 rounded-2xl border border-outline-variant/60 shadow-xs">
+      <div className="bg-surface-container-lowest p-2 sm:p-2.5 rounded-2xl border border-outline-variant/60 shadow-xs">
         <div
           className="grid grid-cols-2 p-1 bg-surface-container-low rounded-xl border border-outline-variant/50 gap-1.5"
           role="radiogroup"

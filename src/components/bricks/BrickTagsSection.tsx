@@ -40,7 +40,7 @@ export default function BrickTagsSection({
         </h2>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-outline-variant/60 shadow-xs space-y-4">
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/60 shadow-xs space-y-4">
         <div className="flex gap-2">
           <div className="relative flex-1 flex items-center">
             <div className="absolute left-3 pointer-events-none text-outline">

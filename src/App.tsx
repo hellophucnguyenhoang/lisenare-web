@@ -16,6 +16,7 @@ import EditBrickPage from "@/pages/EditBrickPage";
 import AuthModal from "@/components/auth/AuthModal";
 import AppHeader from "@/components/layout/AppHeader";
 import { HeaderProvider, useHeader } from "@/context/HeaderContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -218,9 +219,11 @@ function AppContent() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <HeaderProvider>
-        <AppContent />
-      </HeaderProvider>
+      <ThemeProvider>
+        <HeaderProvider>
+          <AppContent />
+        </HeaderProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

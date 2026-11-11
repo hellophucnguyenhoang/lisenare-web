@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { Sun, Moon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { type AuthMode, type RetrievalLang } from "@/types";
 import { useLearnerMe, useUpdateRetrievalLang } from "@/hooks/useLearner";
 import { useLearningStats, useLearningTimeseries } from "@/hooks/useStats";
 import { useHeader } from "@/context/HeaderContext";
+import { useTheme } from "@/context/ThemeContext";
 import EmailManagerModal from "@/components/profile/EmailManagerModal";
 import ChangePasswordModal from "@/components/profile/ChangePasswordModal";
 import ChangeNameModal from "@/components/profile/ChangeNameModal";
@@ -111,13 +113,30 @@ export default function ProfilePage({
   };
 
   const { setHeaderContent } = useHeader();
+  const { theme, toggleTheme } = useTheme();
 
   // Dynamically update the fixed sticky header with target language info
   useEffect(() => {
+    const ThemeToggleButton = (
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="p-1.5 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all active:scale-95 cursor-pointer"
+        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      >
+        {theme === "dark" ? (
+          <Sun className="w-4 h-4" />
+        ) : (
+          <Moon className="w-4 h-4" />
+        )}
+      </button>
+    );
+
     if (!isLoggedIn) {
-      setHeaderContent(null);
-      return;
+      setHeaderContent(ThemeToggleButton);
+      return () => setHeaderContent(null);
     }
+
     const flag =
       currentRetrievalLang === "ja"
         ? "🇯🇵"
@@ -132,13 +151,16 @@ export default function ProfilePage({
           : "English";
 
     setHeaderContent(
-      <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl">
-        <span>{flag}</span>
-        <span className="hidden sm:inline">{name}</span>
+      <div className="flex items-center gap-2">
+        {ThemeToggleButton}
+        <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-xl">
+          <span>{flag}</span>
+          <span className="hidden sm:inline">{name}</span>
+        </div>
       </div>,
     );
     return () => setHeaderContent(null);
-  }, [isLoggedIn, currentRetrievalLang, setHeaderContent]);
+  }, [isLoggedIn, currentRetrievalLang, setHeaderContent, theme, toggleTheme]);
 
   if (loadingLearner) {
     return (

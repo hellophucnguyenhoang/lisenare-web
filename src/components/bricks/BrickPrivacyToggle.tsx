@@ -27,7 +27,7 @@ export default function BrickPrivacyToggle({
             onChange(!isPrivate);
           }
         }}
-        className="bg-white p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex items-center justify-between gap-4 cursor-pointer hover:border-primary/40 transition-all active:scale-[0.99] select-none"
+        className="bg-surface-container-lowest p-5 sm:p-6 rounded-2xl border border-outline-variant/60 shadow-xs flex items-center justify-between gap-4 cursor-pointer hover:border-primary/40 transition-all active:scale-[0.99] select-none"
       >
         <div className="flex items-center gap-3.5 min-w-0">
           <div
@@ -68,7 +68,7 @@ export default function BrickPrivacyToggle({
         >
           <span
             aria-hidden="true"
-            className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-in-out ${
+            className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-on-primary shadow-md ring-0 transition-transform duration-200 ease-in-out ${
               isPrivate ? "translate-x-5" : "translate-x-0"
             }`}
           />
